@@ -1,5 +1,6 @@
 <template>
   <el-card class="login-card">
+    <el-alert title="测试账号：testuser  密码：test123" type="info" show-icon style="margin-bottom: 18px;" />
     <h2>登录</h2>
     <el-form :model="form" :rules="rules" ref="formRef" label-width="70px" @keyup.enter="onSubmit">
       <el-form-item label="用户名" prop="username">
@@ -24,8 +25,10 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '../api/auth'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '../store/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const formRef = ref()
 const loading = ref(false)
 const form = ref({ username: '', password: '', remember: false })
@@ -40,7 +43,7 @@ const onSubmit = () => {
     loading.value = true
     try {
       const res = await login(form.value)
-      localStorage.setItem('token', res.token)
+      userStore.setUser(res.token, res.user)
       ElMessage.success('登录成功')
       router.push('/')
     } catch (e) {

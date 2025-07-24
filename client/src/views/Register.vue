@@ -24,8 +24,10 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { register } from '../api/auth'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '../store/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const formRef = ref()
 const loading = ref(false)
 const form = ref({ username: '', email: '', password: '' })
@@ -44,7 +46,7 @@ const onSubmit = () => {
     loading.value = true
     try {
       const res = await register(form.value)
-      localStorage.setItem('token', res.token)
+      userStore.setUser(res.token, res.User)
       ElMessage.success('注册成功')
       router.push('/')
     } catch (e) {

@@ -41,8 +41,10 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { createPost } from '../api/post'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '../store/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const formRef = ref()
 const loading = ref(false)
 const form = ref({
@@ -57,7 +59,6 @@ const rules = {
 }
 
 const onImageChange = (file, fileListArr) => {
-  // 只保留 base64
   const reader = new FileReader()
   reader.onload = e => {
     form.value.images.push(e.target.result)
@@ -66,11 +67,15 @@ const onImageChange = (file, fileListArr) => {
   fileList.value = fileListArr
 }
 const onImageRemove = (file, fileListArr) => {
-  // 移除 base64
   form.value.images.splice(fileListArr.length, 1)
   fileList.value = fileListArr
 }
 const onSubmit = () => {
+  if (!userStore.token) {
+    ElMessage.warning('请先登录后发帖')
+    router.push('/login')
+    return
+  }
   formRef.value.validate(async valid => {
     if (!valid) return
     loading.value = true
@@ -84,6 +89,7 @@ const onSubmit = () => {
       await createPost(payload)
       ElMessage.success('发布成功')
       router.push('/')
+      setTimeout(() => window.location.reload(), 300)
     } catch (e) {
       // 错误已由拦截器处理
     } finally {

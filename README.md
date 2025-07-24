@@ -234,3 +234,86 @@ chmod +x /www/server/panel/script/deploy_ufulano.sh
 ---
 
 如需进一步细化某一部分（如表结构 SQL、接口文档、CI/CD、自动化脚本等），请随时补充需求！ 
+
+---
+
+## 解决方法
+
+请务必在 `ufulano_cn/client` 目录下执行：
+
+```bash
+npm install @vitejs/plugin-vue
+```
+
+如果你还没有 `vite.config.js`，请让我帮你自动生成一个标准的 Vite+Vue 配置文件，否则 Vite 也不会自动加载该插件。
+
+### 标准 vite.config.js 示例
+
+如果你没有该文件，请在 `ufulano_cn/client` 目录下新建 `vite.config.js`，内容如下：
+
+```js
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [vue()],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000'
+    }
+  }
+})
+```
+
+---
+
+## 步骤总结
+
+1. 进入前端目录：
+   ```bash
+   cd ufulano_cn/client
+   ```
+2. 安装依赖：
+   ```bash
+   npm install @vitejs/plugin-vue
+   ```
+3. 检查或新建 `vite.config.js`，内容如上。
+4. 重启开发服务器：
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 10. 后端 API 接口列表
+
+### 用户相关
+| 路径                | 方法 | 参数/Body                | 说明           |
+|---------------------|------|--------------------------|----------------|
+| /api/login          | POST | username, password, remember | 用户登录       |
+| /api/register       | POST | username, email, password    | 用户注册       |
+
+### 帖子相关
+| 路径                | 方法 | 参数/Body                | 说明           |
+|---------------------|------|--------------------------|----------------|
+| /api/getAllPosts    | GET  | -                        | 获取所有帖子   |
+| /api/createPost     | POST | content, images, topics, visibility | 创建新帖子（需登录） |
+| /api/posts/:id      | GET  | -                        | 获取单个帖子详情 |
+
+### 评论相关
+| 路径                | 方法 | 参数/Body                | 说明           |
+|---------------------|------|--------------------------|----------------|
+| /api/comments/:postId | GET | -                        | 获取某帖评论流 |
+| /api/comments       | POST | postId, content          | 发布评论（需登录） |
+
+### 点赞相关
+| 路径                | 方法 | 参数/Body                | 说明           |
+|---------------------|------|--------------------------|----------------|
+| /api/likes/:postId  | POST | -                        | 点赞/取消点赞（需登录） |
+| /api/likes/:postId  | GET  | -                        | 获取帖子点赞数 |
+| /api/likes/:postId/status | GET | -                    | 检查当前用户是否点赞（需登录） |
+| /api/likes/user/history | GET | -                      | 获取当前用户点赞历史（需登录） |
+
+> 具体参数和响应格式详见 controllers 目录实现，可根据业务扩展。
+
+---

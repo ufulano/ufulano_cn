@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '../store/user'
 
 const routes = [
   { path: '/login', name: 'Login', component: () => import('../views/Login.vue') },
@@ -12,6 +13,17 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+})
+
+router.beforeEach((to, from, next) => {
+  const userStore = useUserStore()
+  // 允许未登录访问的页面
+  const publicPages = ['/', '/login', '/register', /^\/post\//]
+  const isPublic = publicPages.some(p => typeof p === 'string' ? to.path === p : p.test(to.path))
+  if (!isPublic && !userStore.token) {
+    return next('/login')
+  }
+  next()
 })
 
 export default router 

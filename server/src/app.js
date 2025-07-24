@@ -12,6 +12,8 @@ const commentRoutes = require('./routes/comment');
 const likeRoutes = require('./routes/like');
 const sequelize = require('./config/database');
 const jwtSecret = process.env.JWT_SECRET;
+const User = require('./models/User');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -64,8 +66,20 @@ sequelize.authenticate()
 
 // 同步数据库表结构
 sequelize.sync()
-  .then(() => {
+  .then(async () => {
     console.log('数据库表结构同步成功');
+    // 自动插入测试用户，仅开发环境
+    if (process.env.NODE_ENV !== 'production') {
+      const exists = await User.findOne({ where: { username: 'testuser' } });
+      if (!exists) {
+        await User.create({
+          username: 'testuser',
+          password: bcrypt.hashSync('test123', 10),
+          email: 'test@example.com'
+        });
+        console.log('测试用户 testuser 已创建，密码 test123');
+      }
+    }
   })
   .catch(err => {
     console.error('数据库表结构同步失败:', err);
