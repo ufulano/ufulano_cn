@@ -14,7 +14,24 @@ const {
   getDailyLikeAnalytics,
 } = require('../controllers/likeController');
 
-// 1. 点赞/取消点赞
+/**
+ * @swagger
+ * /api/likes/{postId}:
+ *   post:
+ *     summary: 点赞/取消点赞
+ *     tags: [Like]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: 点赞或取消成功
+ */
 router.post(
   '/:postId',
   authenticateToken,
@@ -22,22 +39,40 @@ router.post(
   toggleLike
 );
 
-// 2. 获取文章点赞数
+/**
+ * @swagger
+ * /api/likes/{postId}:
+ *   get:
+ *     summary: 获取帖子点赞数
+ *     tags: [Like]
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: 点赞数
+ */
 router.get(
   '/:postId',
   param('postId').isInt({ min: 1 }),
   getLikes
 );
 
-// 3. 检查用户是否点赞
-router.get(
-  '/:postId/status',
-  authenticateToken,
-  param('postId').isInt({ min: 1 }),
-  checkLikeStatus
-);
-
-// 4. 获取用户点赞历史
+/**
+ * @swagger
+ * /api/likes/user/history:
+ *   get:
+ *     summary: 获取当前用户点赞历史
+ *     tags: [Like]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 点赞历史
+ */
 router.get(
   '/user/history',
   authenticateToken,

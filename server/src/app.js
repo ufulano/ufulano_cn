@@ -14,6 +14,7 @@ const sequelize = require('./config/database');
 const jwtSecret = process.env.JWT_SECRET;
 const User = require('./models/User');
 const bcrypt = require('bcryptjs');
+const setupSwagger = require('./swagger');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -84,7 +85,9 @@ sequelize.sync()
   .catch(err => {
     console.error('数据库表结构同步失败:', err);
   });
-  
+
+setupSwagger(app);
+
 // 7. 启动服务器
 app.listen(PORT, () => {
   console.info(`服务器已启动，监听端口 ${PORT}`);
