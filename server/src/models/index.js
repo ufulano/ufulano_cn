@@ -14,7 +14,7 @@ User.hasMany(Post, {
 
 Post.belongsTo(User, {
   foreignKey: 'user_id',
-  as: 'author' 
+  as: 'user' // 统一别名
 });
 
 // 用户与点赞的关联
@@ -47,7 +47,7 @@ User.hasMany(Comment, {
 
 Comment.belongsTo(User, {
   foreignKey: 'user_id',
-  as: 'author'
+  as: 'user' // 统一别名
 });
 
 // 帖子与评论的关联

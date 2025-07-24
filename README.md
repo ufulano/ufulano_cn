@@ -161,6 +161,29 @@ pm2 save
 
 ---
 
+## Sequelize 关联别名（as）对照表
+
+| 模型      | 关联方法         | 目标模型 | 别名（as） | 说明           |
+|-----------|------------------|----------|------------|----------------|
+| User      | hasMany          | Post     | posts      | 用户的所有帖子 |
+| User      | hasMany          | Like     | likes      | 用户的所有点赞 |
+| User      | hasMany          | Comment  | comments   | 用户的所有评论 |
+| Post      | belongsTo        | User     | user       | 帖子的作者     |
+| Post      | hasMany          | Like     | likes      | 帖子的所有点赞 |
+| Post      | hasMany          | Comment  | comments   | 帖子的所有评论 |
+| Like      | belongsTo        | User     | user       | 点赞的用户     |
+| Like      | belongsTo        | Post     | post       | 点赞的帖子     |
+| Comment   | belongsTo        | User     | user       | 评论的作者     |
+| Comment   | belongsTo        | Post     | post       | 评论的帖子     |
+
+### 代码中如何访问
+- 查询帖子时 include：`{ model: User, as: 'user' }`，访问 `post.user`
+- 查询用户时 include：`{ model: Post, as: 'posts' }`，访问 `user.posts`
+- 查询评论时 include：`{ model: User, as: 'user' }`，访问 `comment.user`
+- 查询点赞时 include：`{ model: User, as: 'user' }`，访问 `like.user`
+
+---
+
 ## API接口文档
 
 ### 访问方式
@@ -285,3 +308,4 @@ pm2 save
 ---
 
 如需进一步细化某一部分（如表结构 SQL、接口文档、CI/CD、自动化脚本等），请随时补充需求！
+ 

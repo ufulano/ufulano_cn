@@ -13,8 +13,8 @@ exports.getAllPosts = async (req, res) => {
             where: { is_deleted: false },
             include: [
                 {
-                    model: User,  // 关键修正：必须指定 model 或 association
-                    as: 'User',   // 必须与关联定义中的别名一致
+                    model: User,
+                    as: 'user', // 统一别名
                     attributes: ['username', 'avatar_url']
                 }
             ],
@@ -24,11 +24,11 @@ exports.getAllPosts = async (req, res) => {
         // 转换数据结构
         const formattedPosts = posts.map(post => ({
             id: post.post_id,
-            username: post.User.username,  // 注意访问方式改为 post.User
-            avatar: post.User.avatar_url,
+            username: post.user.username,  // 统一访问方式
+            avatar: post.user.avatar_url,
             time: formatPostTime(post.post_time),
             content: post.content,
-            image: post.image_url, // 如果 image_url 不存在，则返回 n ll
+            image: post.image_url,
             comments: post.comment_count,
             reposts: post.repost_count,
             likes: post.like_count

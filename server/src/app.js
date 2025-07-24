@@ -85,7 +85,7 @@ sequelize.sync()
   .catch(err => {
     console.error('数据库表结构同步失败:', err);
   });
-
+  
 setupSwagger(app);
 
 // 7. 启动服务器
