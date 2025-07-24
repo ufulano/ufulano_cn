@@ -1,0 +1,11 @@
+{
+  "name": "ufulano-blog-client",
+  "version": "1.0.0",
+  "description": "Ufulano博客前端",
+  "scripts": {
+    "start": "serve -s public"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}

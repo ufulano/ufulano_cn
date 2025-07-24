@@ -1,0 +1,133 @@
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"app.js 数据库模型已同步"}
+{"level":"info","message":"接收到请求: POST /api/login"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"app.js 数据库模型已同步"}
+{"level":"info","message":"接收到请求: POST /api/login"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"app.js 数据库模型已同步"}
+{"level":"info","message":"接收到请求: POST /api/login"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"app.js 数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"app.js 数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"app.js 数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"app.js 数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"app.js 数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"error","message":"数据库同步失败: BLOB/TEXT column 'content' used in key specification without a key length","name":"SequelizeDatabaseError","original":{"code":"ER_BLOB_KEY_WITHOUT_LENGTH","errno":1170,"sql":"ALTER TABLE `Posts` ADD INDEX `posts_content` (`content`)","sqlMessage":"BLOB/TEXT column 'content' used in key specification without a key length","sqlState":"42000"},"parameters":{},"parent":{"code":"ER_BLOB_KEY_WITHOUT_LENGTH","errno":1170,"sql":"ALTER TABLE `Posts` ADD INDEX `posts_content` (`content`)","sqlMessage":"BLOB/TEXT column 'content' used in key specification without a key length","sqlState":"42000"},"sql":"ALTER TABLE `Posts` ADD INDEX `posts_content` (`content`)","stack":"Error\n    at Query.run (/www/wwwroot/ufulano.cn/server/node_modules/sequelize/lib/dialects/mysql/query.js:52:25)\n    at /www/wwwroot/ufulano.cn/server/node_modules/sequelize/lib/sequelize.js:315:28\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async MySQLQueryInterface.addIndex (/www/wwwroot/ufulano.cn/server/node_modules/sequelize/lib/dialects/abstract/query-interface.js:250:12)\n    at async Post.sync (/www/wwwroot/ufulano.cn/server/node_modules/sequelize/lib/model.js:999:7)\n    at async Sequelize.sync (/www/wwwroot/ufulano.cn/server/node_modules/sequelize/lib/sequelize.js:377:9)"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"error","message":"数据库同步失败: BLOB/TEXT column 'content' used in key specification without a key length","name":"SequelizeDatabaseError","original":{"code":"ER_BLOB_KEY_WITHOUT_LENGTH","errno":1170,"sql":"ALTER TABLE `Posts` ADD INDEX `posts_content` (`content`)","sqlMessage":"BLOB/TEXT column 'content' used in key specification without a key length","sqlState":"42000"},"parameters":{},"parent":{"code":"ER_BLOB_KEY_WITHOUT_LENGTH","errno":1170,"sql":"ALTER TABLE `Posts` ADD INDEX `posts_content` (`content`)","sqlMessage":"BLOB/TEXT column 'content' used in key specification without a key length","sqlState":"42000"},"sql":"ALTER TABLE `Posts` ADD INDEX `posts_content` (`content`)","stack":"Error\n    at Query.run (/www/wwwroot/ufulano.cn/server/node_modules/sequelize/lib/dialects/mysql/query.js:52:25)\n    at /www/wwwroot/ufulano.cn/server/node_modules/sequelize/lib/sequelize.js:315:28\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async MySQLQueryInterface.addIndex (/www/wwwroot/ufulano.cn/server/node_modules/sequelize/lib/dialects/abstract/query-interface.js:250:12)\n    at async Post.sync (/www/wwwroot/ufulano.cn/server/node_modules/sequelize/lib/model.js:999:7)\n    at async Sequelize.sync (/www/wwwroot/ufulano.cn/server/node_modules/sequelize/lib/sequelize.js:377:9)"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"数据库模型已同步"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
+{"level":"info","message":"服务器已启动，监听端口 3000"}
