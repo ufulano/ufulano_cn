@@ -25,7 +25,7 @@ User.init(
       unique: true,
     },
     avatar_url: {
-      type: DataTypes.STRING(200),
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     nickname: {
