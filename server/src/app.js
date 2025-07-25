@@ -1,5 +1,6 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname,'../.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+console.log('JWT_SECRET from .env:', process.env.JWT_SECRET);
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -92,5 +93,4 @@ setupSwagger(app);
 app.listen(PORT, () => {
   console.info(`服务器已启动，监听端口 ${PORT}`);
   logger.info(`服务器已启动，监听端口 ${PORT}`);
-  console.log('JWT_SECRET:', process.env.JWT_SECRET);
 });
