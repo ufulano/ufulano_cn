@@ -24,9 +24,9 @@ Post.init(
       collate: 'utf8mb4_general_ci',
     },
     image_url: {
-      type: DataTypes.STRING(200),
+      type: DataTypes.TEXT,
       allowNull: true,
-      collate: 'utf8mb4_general_ci',
+      defaultValue: null
     },
     post_time: {
       type: DataTypes.DATE,
