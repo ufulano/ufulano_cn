@@ -36,7 +36,6 @@
         </el-form-item>
       </el-form>
     </el-card>
-    <AppFooter />
   </div>
 </template>
 
@@ -47,7 +46,6 @@ import { createPost } from '../api/post'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../store/user'
 import AppHeader from '../components/AppHeader.vue'
-import AppFooter from '../components/AppFooter.vue'
 
 const router = useRouter()
 const userStore = useUserStore()

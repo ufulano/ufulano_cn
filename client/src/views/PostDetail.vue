@@ -35,7 +35,6 @@
         </el-timeline>
       </el-card>
     </main>
-    <AppFooter />
   </div>
 </template>
 
@@ -48,7 +47,6 @@ import { fetchPost } from '../api/post'
 import { fetchComments, addComment } from '../api/comment'
 import { likePost } from '../api/like'
 import AppHeader from '../components/AppHeader.vue'
-import AppFooter from '../components/AppFooter.vue'
 import PostCard from '../components/PostCard.vue'
 
 const route = useRoute()
