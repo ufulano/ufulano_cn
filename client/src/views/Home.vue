@@ -60,14 +60,14 @@ const posts = ref([
 .home-root {
   display: flex;
   flex-direction: column;
-  background: #E6F7FF;
+  background: var(--color-gray-light);
   overflow-x: hidden;
   box-sizing: border-box;
 }
 .home-main {
   flex: 1 1 0;
   width: 100vw;
-  background: #E6F7FF;
+  background: var(--color-gray-light);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -77,7 +77,7 @@ const posts = ref([
 }
 .welcome-section {
   border-radius: 18px;
-  box-shadow: 0 2px 16px 0 rgba(80,60,20,0.08);
+  box-shadow: var(--shadow-card);
   padding: 36px 32px 28px 32px;
   margin-bottom: 32px;
   width: 60%;
@@ -85,7 +85,7 @@ const posts = ref([
   margin-left: auto;
   margin-right: auto;
   text-align: center;
-  background: #fff;
+  background: var(--color-white);
 }
 .main-title {
   font-size: 2.8rem;
@@ -93,8 +93,15 @@ const posts = ref([
   letter-spacing: 2px;
   margin-bottom: 10px;
 }
+.main-title span {
+  /* 替换内联颜色 */
+  color: var(--color-black);
+}
+.main-title span:nth-child(2) {
+  color: var(--color-yellow);
+}
 .main-subtitle {
-  color: #40BFFF;
+  color: var(--color-blue);
   font-size: 1.3rem;
   margin-bottom: 24px;
 }
@@ -106,12 +113,12 @@ const posts = ref([
 .search-input {
   width: 320px;
   border-radius: 4px 0 0 4px;
-  background: #fff;
-  border: 1.5px solid #40BFFF;
+  background: var(--color-white);
+  border: 1.5px solid var(--color-blue);
 }
 .search-btn {
-  background: #40BFFF;
-  color: #fff;
+  background: var(--color-blue);
+  color: var(--color-white);
   border-radius: 0 4px 4px 0;
   font-weight: bold;
   border: none;

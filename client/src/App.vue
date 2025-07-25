@@ -12,6 +12,6 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  background: #f5f5f5;
+  background: var(--color-gray-light);
 }
 </style> 

@@ -19,18 +19,45 @@
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-      <router-link to="/" class="nav-link nav-hide-on-mobile">社区</router-link>
+      <router-link to="/community" class="nav-link nav-hide-on-mobile">社区</router-link>
       <router-link to="/" class="nav-link nav-hide-on-mobile">资源</router-link>
       <router-link to="/" class="nav-link nav-hide-on-mobile">联系</router-link>
       <router-link to="/" class="nav-link nav-hide-on-mobile">信箱</router-link>
-      <el-button class="login-btn" @click="$router.push('/login')">登录</el-button>
-      <el-button class="register-btn" @click="$router.push('/register')">注册</el-button>
+      <template v-if="userStore.token">
+        <el-dropdown trigger="click">
+          <span class="user-avatar-wrap">
+            <el-avatar :src="userStore.user?.avatar_url || ''" size="small" style="cursor:pointer;" />
+          </span>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item @click="$router.push(`/user/${userStore.user?.user_id || 1}`)">我的主页</el-dropdown-item>
+              <el-dropdown-item @click="$router.push(`/user/${userStore.user?.user_id || 1}/follow`)">我的关注</el-dropdown-item>
+              <el-dropdown-item @click="$router.push(`/user/${userStore.user?.user_id || 1}/fans`)">我的粉丝</el-dropdown-item>
+              <el-dropdown-item @click="$router.push(`/user/${userStore.user?.user_id || 1}/favorites`)">我的收藏</el-dropdown-item>
+              <el-dropdown-item @click="$router.push(`/user/${userStore.user?.user_id || 1}/likes`)">我的赞</el-dropdown-item>
+              <el-dropdown-item divided @click="onLogout">登出</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+        <el-button class="login-btn" @click="onLogout">登出</el-button>
+      </template>
+      <template v-else>
+        <el-button class="login-btn" @click="$router.push('/login')">登录</el-button>
+        <el-button class="register-btn" @click="$router.push('/register')">注册</el-button>
+      </template>
     </nav>
   </header>
 </template>
 
 <script setup>
-// 只保留Home页header内容和样式
+import { useUserStore } from '../store/user'
+import { useRouter } from 'vue-router'
+const userStore = useUserStore()
+const router = useRouter()
+const onLogout = () => {
+  userStore.logout()
+  router.push('/login')
+}
 </script>
 
 <style scoped>

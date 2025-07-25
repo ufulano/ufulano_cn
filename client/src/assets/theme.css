@@ -1,12 +1,36 @@
+:root {
+  /* 蓝色主题色 */
+  --color-blue: #40BFFF; /* 主蓝色，用于按钮、标题、主背景等 */
+  --color-blue-dark: #1890ff; /* 深蓝色，用于渐变、hover等 */
+  /* 黄色主题色 */
+  --color-yellow: #FFD600; /* 主黄色，用于按钮、强调、边框等 */
+  --color-yellow-light: #ffe066; /* 浅黄色，hover/背景 */
+  /* 基础色 */
+  --color-white: #fff; /* 白色，卡片、背景 */
+  --color-black: #222; /* 黑色，正文、按钮文字 */
+  --color-gray-dark: #333; /* 深灰，正文、次要文字 */
+  --color-gray: #888; /* 灰色，辅助文字 */
+  --color-gray-light: #E6F7FF; /* 浅蓝灰，主背景色 */
+  /* 阴影 */
+  --shadow-main: 0 4px 24px 0 rgba(64,191,255,0.10);
+  --shadow-card: 0 2px 8px 0 rgba(64,191,255,0.06);
+}
+
+/* 示例用法：
+  background: var(--color-blue);
+  color: var(--color-yellow);
+  box-shadow: var(--shadow-main);
+*/
+
 html, body {
   width: 100%;
-  background: #E6F7FF !important;
+  background: var(--color-gray-light) !important;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
 }
 #app {
-  background: #E6F7FF;
+  background: var(--color-gray-light);
 }
 
 /* 移除所有渐变、奶黄色、金色、阴影、边框等样式 */

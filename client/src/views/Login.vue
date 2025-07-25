@@ -11,7 +11,6 @@
           <div class="login-sub-title">登录</div>
         </div>
         <el-card class="login-form-card" shadow="never">
-          <el-alert title="测试账号：testuser  密码：test123" type="info" show-icon style="margin-bottom: 18px;" />
           <el-form :model="form" :rules="rules" ref="formRef" label-width="70px" @keyup.enter="onSubmit">
             <el-form-item label="用户名" prop="username">
               <el-input v-model="form.username" autocomplete="username" clearable placeholder="请输入用户名" />
@@ -90,7 +89,7 @@ const goHome = () => {
 .login-bg {
   min-height: 100vh;
   width: 100vw;
-  background: linear-gradient(120deg, #e0e7ef 0%, #e6f7ff 100%);
+  background: linear-gradient(120deg, #e0e7ef 0%, var(--color-gray-light) 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -104,7 +103,7 @@ const goHome = () => {
   flex-direction: row;
   width: 820px;
   min-height: 480px;
-  background: #fff;
+  background: var(--color-white);
   border-radius: 36px;
   box-shadow: 0 8px 48px 0 rgba(64,191,255,0.13);
   overflow: hidden;
@@ -117,7 +116,7 @@ const goHome = () => {
   align-items: center;
   justify-content: center;
   padding: 48px 32px 32px 32px;
-  background: #fff;
+  background: var(--color-white);
 }
 .login-logo-title {
   text-align: center;
@@ -134,7 +133,7 @@ const goHome = () => {
 }
 .login-sub-title {
   font-size: 1.1rem;
-  color: #888;
+  color: var(--color-gray);
   margin-bottom: 8px;
 }
 .login-form-card {
@@ -142,9 +141,9 @@ const goHome = () => {
   max-width: 340px;
   margin: 0 auto;
   border-radius: 18px;
-  box-shadow: 0 2px 16px 0 rgba(64,191,255,0.08);
+  box-shadow: var(--shadow-card);
   border: none;
-  background: #fff;
+  background: var(--color-white);
   padding: 18px 0 0 0;
 }
 .login-btn {
@@ -152,15 +151,15 @@ const goHome = () => {
   border-radius: 8px;
   font-weight: bold;
   font-size: 1.08em;
-  box-shadow: 0 2px 8px 0 rgba(64,191,255,0.10);
-  background: #40BFFF;
-  color: #fff;
+  box-shadow: var(--shadow-card);
+  background: var(--color-blue);
+  color: var(--color-white);
   border: none;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 .login-btn:hover {
-  background: #FFD600;
-  color: #222;
+  background: var(--color-yellow);
+  color: var(--color-black);
   box-shadow: 0 4px 18px 0 rgba(255,214,0,0.18);
 }
 .login-links {
@@ -169,15 +168,15 @@ const goHome = () => {
   margin-top: 8px;
 }
 .yellow-link {
-  color: #FFD600 !important;
+  color: var(--color-yellow) !important;
   font-weight: bold;
 }
 .yellow-link:hover {
-  color: #40BFFF !important;
+  color: var(--color-blue) !important;
 }
 .login-right {
   flex: 1;
-  background: linear-gradient(135deg, #E6F7FF 60%, #FFD600 100%);
+  background: linear-gradient(135deg, var(--color-gray-light) 60%, var(--color-yellow) 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -197,16 +196,16 @@ const goHome = () => {
   max-width: 340px;
   border-radius: 24px;
   margin-bottom: 18px;
-  box-shadow: 0 2px 16px 0 rgba(64,191,255,0.10);
+  box-shadow: var(--shadow-card);
 }
 .banner-desc {
   text-align: center;
-  color: #40BFFF;
+  color: var(--color-blue);
   font-size: 1.1rem;
   font-weight: bold;
 }
 :deep(.el-input__wrapper.is-focus) {
-  border-color: #40BFFF !important;
+  border-color: var(--color-blue) !important;
   box-shadow: 0 0 0 2px #FFD60033 !important;
 }
 @media (max-width: 900px) {
