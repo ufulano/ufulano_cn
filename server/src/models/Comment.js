@@ -5,10 +5,10 @@ class Comment extends Model {}
 
 Comment.init(
   {
-    Comment_id: {
+    comment_id: {
       type: DataTypes.BIGINT,
-      primaryKey: true,
       autoIncrement: true,
+      primaryKey: true
     },
     user_id: {
       type: DataTypes.BIGINT,
@@ -28,7 +28,7 @@ Comment.init(
     },
     comment_content: {
       type: DataTypes.TEXT,
-      allowNull: true,
+      allowNull: false,
       collate: 'utf8mb4_general_ci',
     },
     comment_time: {
