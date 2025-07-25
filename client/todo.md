@@ -9,9 +9,9 @@
 - **数据库**：
   - `Posts` 表
 - **已实现**：
-  - fetchPosts、PostCard展示
+  - [x] fetchPosts、PostCard展示
 - **未实现**：
-  - 搜索功能、分页、筛选
+  - [ ] 搜索功能、分页、筛选
 
 ---
 
@@ -26,9 +26,9 @@
 - **数据库**：
   - `Posts`、`Comments` 表
 - **已实现**：
-  - fetchPost、fetchComments、addComment、PostCard评论区
+  - [x] fetchPost、fetchComments、addComment、PostCard评论区
 - **未实现**：
-  - 点赞、转发、评论图片上传
+  - [ ] 点赞、转发、评论图片上传
 
 ---
 
@@ -43,9 +43,9 @@
 - **数据库**：
   - `Users` 表
 - **已实现**：
-  - login、register、setUser、logout
+  - [x] login、register、setUser、logout
 - **未实现**：
-  - 第三方登录、验证码、找回密码
+  - [ ] 第三方登录、验证码、找回密码
 
 ---
 
@@ -57,9 +57,9 @@
 - **数据库**：
   - 无
 - **已实现**：
-  - 页面展示
+  - [x] 页面展示
 - **未实现**：
-  - 热门话题、推荐内容、最新帖子API对接
+  - [ ] 热门话题、推荐内容、最新帖子API对接
 
 ---
 
@@ -72,6 +72,6 @@
 - **数据库**：
   - `Users` 表
 - **已实现**：
-  - fetchUserInfo、setUser、logout
+  - [x] fetchUserInfo、setUser、logout
 - **未实现**：
-  - 用户资料编辑、头像上传、关注/粉丝/收藏/赞API对接 
+  - [ ] 用户资料编辑、头像上传、关注/粉丝/收藏/赞API对接 
