@@ -1,3 +1,4 @@
+
 <template>
   <header class="home-header">
     <div class="header-left">
@@ -62,7 +63,7 @@ const onLogout = () => {
 
 <style scoped>
 .home-header {
-  background: #40BFFF;
+  background: var(--color-blue);
   height: 64px;
   display: flex;
   align-items: center;
@@ -91,7 +92,7 @@ const onLogout = () => {
   font-family: serif;
   font-weight: bold;
   letter-spacing: 2px;
-  color: #FFD600;
+  color: var(--color-yellow);
 }
 .header-nav {
   display: flex;
@@ -103,14 +104,14 @@ const onLogout = () => {
   font-size: 0.97rem;
 }
 .nav-link {
-  color: #fff;
+  color: var(--color-white);
   text-decoration: none;
   font-size: 0.97rem;
   margin: 0 2px;
 }
 .more-btn {
-  background: #FFD600 !important;
-  color: #222 !important;
+  background: var(--color-yellow) !important;
+  color: var(--color-black) !important;
   border: none;
   font-weight: bold;
   border-radius: 8px;
@@ -120,29 +121,29 @@ const onLogout = () => {
   transition: background 0.2s, color 0.2s;
 }
 .more-btn:hover {
-  background: #e6b800 !important;
-  color: #fff !important;
+  background: var(--color-yellow-light) !important;
+  color: var(--color-white) !important;
 }
 .login-btn {
-  background: #fff;
-  color: #40BFFF;
-  border: 1.5px solid #40BFFF;
+  background: var(--color-white);
+  color: var(--color-blue);
+  border: 1.5px solid var(--color-blue);
   margin-left: 8px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px 0 rgba(64,191,255,0.10);
+  box-shadow: var(--shadow-card);
   font-weight: bold;
   padding: 0 14px;
   font-size: 1.08em;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 .login-btn:hover {
-  background: #40BFFF;
-  color: #fff;
+  background: var(--color-blue);
+  color: var(--color-white);
   box-shadow: 0 4px 18px 0 rgba(64,191,255,0.18);
 }
 .register-btn {
-  background: #222;
-  color: #fff;
+  background: var(--color-black);
+  color: var(--color-white);
   border: none;
   margin-left: 8px;
   border-radius: 8px;
@@ -153,24 +154,24 @@ const onLogout = () => {
   transition: background 0.2s, color 0.2s, border 0.2s, box-shadow 0.2s;
 }
 .register-btn:hover {
-  background: #fff;
-  color: #222;
-  border: 1.5px solid #222;
+  background: var(--color-white);
+  color: var(--color-black);
+  border: 1.5px solid var(--color-black);
   box-shadow: 0 4px 18px 0 rgba(0,0,0,0.18);
 }
 :deep(.el-button--primary) {
   border-radius: 8px !important;
-  box-shadow: 0 2px 12px 0 rgba(64,191,255,0.10) !important;
+  box-shadow: var(--shadow-card) !important;
   font-weight: bold;
   font-size: 1.08em;
   padding: 0 22px;
-  background: linear-gradient(90deg, #40BFFF 0%, #1890ff 100%) !important;
+  background: linear-gradient(90deg, var(--color-blue) 0%, var(--color-blue-dark) 100%) !important;
   border: none !important;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s !important;
 }
 :deep(.el-button--primary:hover) {
-  background: linear-gradient(90deg, #1890ff 0%, #40BFFF 100%) !important;
-  color: #fff !important;
+  background: linear-gradient(90deg, var(--color-blue-dark) 0%, var(--color-blue) 100%) !important;
+  color: var(--color-white) !important;
   box-shadow: 0 4px 18px 0 rgba(64,191,255,0.18) !important;
 }
 @media (max-width: 900px) {
