@@ -28,32 +28,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import AppHeader from '../components/AppHeader.vue'
 import PostCard from '../components/PostCard.vue'
+import { fetchPosts } from '../api/post'
 
 const search = ref('')
-// mock 帖子流数据
-const posts = ref([
-  {
-    id: 1,
-    avatar: '',
-    username: '小明',
-    time: '刚刚',
-    content: '欢迎体验全新Ufulano首页！这里是灵感与创意的聚集地。',
-    images: [],
-    likes: 3
-  },
-  {
-    id: 2,
-    avatar: '',
-    username: '小红',
-    time: '1分钟前',
-    content: '你可以在这里发布内容，页面自适应美观，支持多种主题。',
-    images: [],
-    likes: 1
+const posts = ref([])
+
+onMounted(async () => {
+  try {
+    posts.value = await fetchPosts()
+  } catch (e) {
+    posts.value = []
   }
-])
+})
 </script>
 
 <style scoped>
