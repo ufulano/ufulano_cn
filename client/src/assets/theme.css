@@ -1,91 +1,66 @@
-:root {
-  --primary-gradient: linear-gradient(120deg, #f7e9c4 0%, #e6c463 100%);
-  --secondary-gradient: linear-gradient(135deg, #ffe7b2 0%, #b9935a 100%);
-  --accent-gradient: linear-gradient(135deg, #fffbe6 0%, #ffe7b2 100%);
-  --card-bg: rgba(255, 249, 220, 0.96);
-  --input-bg: rgba(255, 255, 240, 0.92);
-  --border-radius: 18px;
-  --shadow: 0 4px 32px 0 rgba(185, 147, 90, 0.10);
-  --text-main: #3a2c0a;
-  --text-light: #b9935a;
-  --gold: #e6c463;
-  --panel-width: 60vw;
-  --panel-max-width: 900px;
+html, body {
+  width: 100%;
+  background: #E6F7FF !important;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+#app {
+  background: #E6F7FF;
 }
 
-body {
-  min-height: 100vh;
-  background: var(--primary-gradient), url('https://img.zcool.cn/community/01b2e95d2e2e6fa801216518a7e2e2.jpg') center/cover no-repeat fixed;
-  font-family: 'Cinzel', 'Times New Roman', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, serif;
-  color: var(--text-main);
-  transition: background 1s cubic-bezier(.4,0,.2,1), color 0.5s;
+/* 移除所有渐变、奶黄色、金色、阴影、边框等样式 */
+
+/* 移除滚动条自定义样式，使用浏览器默认 */
+::-webkit-scrollbar,
+::-webkit-scrollbar-thumb {
+  background: none !important;
+  border-radius: 0 !important;
 }
 
-body.night {
-  --primary-gradient: linear-gradient(120deg, #232526 0%, #414345 100%);
-  --secondary-gradient: linear-gradient(135deg, #6b6b47 0%, #b9935a 100%);
-  --accent-gradient: linear-gradient(135deg, #232526 0%, #6b6b47 100%);
-  --card-bg: rgba(40, 36, 28, 0.96);
-  --input-bg: rgba(60, 54, 40, 0.92);
-  --text-main: #f7e9c4;
-  --text-light: #b9935a;
-  --gold: #e6c463;
-}
-
+/* 移除 el-card、el-main、el-header、el-container 的背景、阴影、边框 */
 .el-card, .el-main, .el-header, .el-container {
-  background: var(--card-bg) !important;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  border: 2px solid var(--gold);
-  transition: background 1s cubic-bezier(.4,0,.2,1), color 0.5s;
+  background: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  transition: none !important;
 }
 
+/* 移除按钮、输入框等的金色、渐变、阴影，仅保留默认或天蓝色风格（如需可后续细调） */
 .el-button--primary {
-  background: var(--secondary-gradient) !important;
-  border: 1.5px solid var(--gold);
-  color: #3a2c0a;
+  background: #40BFFF !important;
+  border: none !important;
+  color: #fff !important;
   font-weight: bold;
   letter-spacing: 1px;
-  box-shadow: 0 2px 12px 0 rgba(185, 147, 90, 0.18);
+  box-shadow: none !important;
   transition: background 0.5s, color 0.5s;
 }
 
-body.night .el-button--primary {
-  color: #f7e9c4;
-}
-
 .el-button--primary:hover {
-  background: var(--accent-gradient) !important;
-  color: #fff;
-  border-color: #b9935a;
+  background: #1890ff !important;
+  color: #fff !important;
+  border: none !important;
 }
 
 .el-input__wrapper, .el-textarea__inner {
-  background: var(--input-bg) !important;
-  border-radius: var(--border-radius);
-  border: 1.5px solid var(--gold);
-  box-shadow: 0 1px 8px 0 rgba(185, 147, 90, 0.12);
-  color: var(--text-main);
+  background: #fff !important;
+  border-radius: 8px !important;
+  border: 1.5px solid #40BFFF !important;
+  box-shadow: none !important;
+  color: #222 !important;
   transition: background 0.5s;
 }
 
 .el-input__inner, .el-textarea__inner {
-  color: var(--text-main);
-  font-family: 'Cinzel', serif;
+  color: #222 !important;
+  font-family: inherit;
 }
 
 .el-avatar {
-  box-shadow: 0 2px 8px 0 rgba(185, 147, 90, 0.18);
-  border: 2px solid var(--gold);
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-  background: var(--secondary-gradient);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--accent-gradient);
-  border-radius: 8px;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 @media (max-width: 900px) {

@@ -1,39 +1,43 @@
 <template>
-  <el-card class="new-post-card">
-    <h2>发帖</h2>
-    <el-form :model="form" :rules="rules" ref="formRef" label-width="80px">
-      <el-form-item label="内容" prop="content">
-        <el-input v-model="form.content" type="textarea" :rows="4" maxlength="500" show-word-limit />
-      </el-form-item>
-      <el-form-item label="图片">
-        <el-upload
-          action=""
-          list-type="picture-card"
-          :auto-upload="false"
-          :on-change="onImageChange"
-          :file-list="fileList"
-          :limit="4"
-          :on-remove="onImageRemove"
-        >
-          <el-icon><i class="el-icon-plus" /></el-icon>
-        </el-upload>
-      </el-form-item>
-      <el-form-item label="话题">
-        <el-input v-model="form.topics" placeholder="多个话题用逗号分隔" />
-      </el-form-item>
-      <el-form-item label="可见性">
-        <el-select v-model="form.visibility" placeholder="请选择">
-          <el-option label="公开" value="public" />
-          <el-option label="仅粉丝" value="follower" />
-          <el-option label="仅自己" value="private" />
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :loading="loading" @click="onSubmit">发布</el-button>
-        <el-button @click="goBack">返回</el-button>
-      </el-form-item>
-    </el-form>
-  </el-card>
+  <div class="page-root">
+    <AppHeader />
+    <el-card class="new-post-card">
+      <h2>发帖</h2>
+      <el-form :model="form" :rules="rules" ref="formRef" label-width="80px">
+        <el-form-item label="内容" prop="content">
+          <el-input v-model="form.content" type="textarea" :rows="4" maxlength="500" show-word-limit />
+        </el-form-item>
+        <el-form-item label="图片">
+          <el-upload
+            action=""
+            list-type="picture-card"
+            :auto-upload="false"
+            :on-change="onImageChange"
+            :file-list="fileList"
+            :limit="4"
+            :on-remove="onImageRemove"
+          >
+            <el-icon><i class="el-icon-plus" /></el-icon>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="话题">
+          <el-input v-model="form.topics" placeholder="多个话题用逗号分隔" />
+        </el-form-item>
+        <el-form-item label="可见性">
+          <el-select v-model="form.visibility" placeholder="请选择">
+            <el-option label="公开" value="public" />
+            <el-option label="仅粉丝" value="follower" />
+            <el-option label="仅自己" value="private" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="loading" @click="onSubmit">发布</el-button>
+          <el-button @click="goBack">返回</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+    <AppFooter />
+  </div>
 </template>
 
 <script setup>
@@ -42,6 +46,8 @@ import { useRouter } from 'vue-router'
 import { createPost } from '../api/post'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../store/user'
+import AppHeader from '../components/AppHeader.vue'
+import AppFooter from '../components/AppFooter.vue'
 
 const router = useRouter()
 const userStore = useUserStore()

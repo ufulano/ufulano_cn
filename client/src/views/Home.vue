@@ -1,201 +1,139 @@
 <template>
-  <el-container class="home-bg">
-    <el-header>
-      <div class="header-left">
-        <h2>ufulano</h2>
-      </div>
-      <div class="header-right" v-if="userStore.user">
-        <el-avatar :src="userStore.user.avatar_url || ''" size="small" style="margin-right:8px" />
-        <span class="username">{{ userStore.user.username }}</span>
-        <el-button type="text" @click="onLogout">登出</el-button>
-      </div>
-    </el-header>
-    <el-main>
-      <div class="debug-info">
-        <el-alert title="前端调试模式：无后端数据，页面为魔戒风格演示版" type="info" show-icon />
-      </div>
-      <div class="home-center panel-shadow">
-        <div class="feature-btns">
-          <el-button type="primary" @click="goNewPost">发帖</el-button>
-          <el-button type="primary" @click="goLogin">登录</el-button>
-          <el-button type="primary" @click="goRegister">注册</el-button>
-          <el-button type="primary" @click="goProfile">个人主页</el-button>
-          <el-button type="primary" @click="goDetail(1)">帖子详情</el-button>
+  <div class="home-root">
+    <AppHeader />
+    <main class="home-main">
+      <section class="welcome-section">
+        <h1 class="main-title"><span style="color:#222">Uf</span><span style="color:#FFD600">ula</span><span style="color:#222">no</span></h1>
+        <div class="main-subtitle">·大脑切片机·</div>
+        <div class="main-search">
+          <el-input placeholder="想要找到什么有趣的？" class="search-input" v-model="search" />
+          <el-button class="search-btn">搜索</el-button>
         </div>
-        <el-divider content-position="center">演示帖子流</el-divider>
-        <el-empty v-if="loading" description="加载中..." />
-        <el-empty v-else-if="posts.length === 0" description="暂无帖子" />
-        <el-row v-else gutter="20">
-          <el-col :span="24" v-for="post in posts" :key="post.id" style="margin-bottom: 20px;">
-            <el-card shadow="hover">
-              <div style="display:flex;align-items:center;">
-                <el-avatar :src="post.avatar" size="small" />
-                <span style="margin-left:8px;font-weight:bold">{{ post.username }}</span>
-                <span style="margin-left:auto;color:#b9935a">{{ post.time }}</span>
-              </div>
-              <div style="margin:12px 0;white-space:pre-line;">{{ post.content }}</div>
-              <div v-if="post.image">
-                <el-image v-for="img in parseImages(post.image)" :key="img" :src="img" style="max-width:120px;margin-right:8px;" fit="cover" />
-              </div>
-              <div style="margin-top:8px;display:flex;align-items:center;">
-                <el-button size="small" type="text" @click="goDetail(post.id)">评论({{ post.comments }})</el-button>
-                <el-button size="small" type="text" @click="onLike(post.id)">
-                  <el-icon><i class="el-icon-thumb" /></el-icon> {{ post.likes }}
-                </el-button>
-              </div>
-            </el-card>
-          </el-col>
-        </el-row>
-      </div>
-    </el-main>
-  </el-container>
+      </section>
+      <section class="post-list-section">
+        <PostCard
+          v-for="post in posts"
+          :key="post.id"
+          :avatar="post.avatar"
+          :username="post.username"
+          :time="post.time"
+          :content="post.content"
+          :images="post.images"
+          :like-count="post.likes"
+        />
+      </section>
+    </main>
+    
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { useUserStore } from '../store/user'
-import { fetchPosts } from '../api/post'
+import { ref } from 'vue'
+import AppHeader from '../components/AppHeader.vue'
+import PostCard from '../components/PostCard.vue'
 
-const router = useRouter()
-const userStore = useUserStore()
-const posts = ref([])
-const loading = ref(true)
-
-const loadPosts = async () => {
-  loading.value = true
-  try {
-    posts.value = await fetchPosts()
-  } catch (e) {
-    // 错误已由拦截器处理
-    posts.value = [
-      { id: 1, username: '小明', avatar: '', time: '刚刚', content: '欢迎体验灵幻主题前端！这是一个美观的社交网站演示。', image: '', comments: 0, likes: 0 },
-      { id: 2, username: '小红', avatar: '', time: '1分钟前', content: '你可以在这里发布内容，页面自适应美观，支持多种主题。', image: '', comments: 0, likes: 0 }
-    ]
-  } finally {
-    loading.value = false
+const search = ref('')
+// mock 帖子流数据
+const posts = ref([
+  {
+    id: 1,
+    avatar: '',
+    username: '小明',
+    time: '刚刚',
+    content: '欢迎体验全新Ufulano首页！这里是灵感与创意的聚集地。',
+    images: [],
+    likes: 3
+  },
+  {
+    id: 2,
+    avatar: '',
+    username: '小红',
+    time: '1分钟前',
+    content: '你可以在这里发布内容，页面自适应美观，支持多种主题。',
+    images: [],
+    likes: 1
   }
-}
-
-const onLike = async (id) => {
-  if (!userStore.token) {
-    ElMessage.warning('请先登录后再操作')
-    router.push('/login')
-    return
-  }
-  // TODO: 调用 likePost(id) 实现点赞
-  ElMessage.success('演示点赞成功')
-  loadPosts()
-}
-const goDetail = (id) => {
-  router.push(`/post/${id}`)
-}
-const goNewPost = () => {
-  if (!userStore.token) {
-    ElMessage.warning('请先登录后发帖')
-    router.push('/login')
-    return
-  }
-  router.push('/post/new')
-}
-const goLogin = () => {
-  router.push('/login')
-}
-const goRegister = () => {
-  router.push('/register')
-}
-const goProfile = () => {
-  if (!userStore.token) {
-    ElMessage.warning('请先登录后访问个人中心')
-    router.push('/login')
-    return
-  }
-  router.push('/user/1')
-}
-const onLogout = () => {
-  userStore.logout()
-  router.push('/login')
-}
-const parseImages = (imgStr) => {
-  try {
-    const arr = JSON.parse(imgStr)
-    return Array.isArray(arr) ? arr : []
-  } catch {
-    return []
-  }
-}
-onMounted(loadPosts)
+])
 </script>
 
 <style scoped>
-.home-bg {
-  min-height: 100vh;
+.home-root {
   display: flex;
   flex-direction: column;
-  background: none;
+  background: #E6F7FF;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
-.el-header {
+.home-main {
+  flex: 1 1 0;
+  width: 100vw;
+  background: #E6F7FF;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  padding: 0 32px;
+  padding: 32px 0 24px 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
-.header-left h2 {
-  margin: 0;
-  font-size: 2rem;
-  letter-spacing: 2px;
+.welcome-section {
+  border-radius: 18px;
+  box-shadow: 0 2px 16px 0 rgba(80,60,20,0.08);
+  padding: 36px 32px 28px 32px;
+  margin-bottom: 32px;
+  width: 60%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  background: #fff;
 }
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.username {
+.main-title {
+  font-size: 2.8rem;
   font-weight: bold;
-  margin-right: 8px;
-  color: var(--gold);
+  letter-spacing: 2px;
+  margin-bottom: 10px;
 }
-.el-main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 24px;
-  background: none;
-}
-.home-center {
-  width: var(--panel-width);
-  max-width: var(--panel-max-width);
-  margin: 0 auto;
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  border: 2px solid var(--gold);
-  padding: 32px 24px 24px 24px;
-}
-.panel-shadow {
-  box-shadow: 0 8px 40px 0 rgba(80, 60, 20, 0.22);
-}
-.debug-info {
-  width: var(--panel-width);
-  max-width: var(--panel-max-width);
-  margin: 0 auto 24px auto;
-}
-.feature-btns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center;
+.main-subtitle {
+  color: #40BFFF;
+  font-size: 1.3rem;
   margin-bottom: 24px;
 }
-@media (max-width: 900px) {
-  .home-center, .debug-info {
+.main-search {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.search-input {
+  width: 320px;
+  border-radius: 4px 0 0 4px;
+  background: #fff;
+  border: 1.5px solid #40BFFF;
+}
+.search-btn {
+  background: #40BFFF;
+  color: #fff;
+  border-radius: 0 4px 4px 0;
+  font-weight: bold;
+  border: none;
+}
+.post-list-section {
+  width: 60%;
+  max-width: 900px;
+  margin-top: 12px;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (max-width: 1200px) {
+  .welcome-section, .post-list-section {
+    max-width: 98vw;
     width: 98vw;
-    max-width: 100vw;
     padding: 8px;
   }
-  .el-header {
-    padding: 0 8px;
+  .main-title {
+    font-size: 2rem;
+  }
+  .search-input {
+    width: 160px;
   }
 }
 </style> 

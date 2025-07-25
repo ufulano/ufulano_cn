@@ -1,27 +1,20 @@
 <template>
-  <el-container>
-    <el-header>
-      <el-button @click="goBack">返回</el-button>
-      <h2>帖子详情</h2>
-    </el-header>
-    <el-main>
-      <el-card v-if="post" class="post-detail-card">
-        <div style="display:flex;align-items:center;">
-          <el-avatar :src="post.avatar" size="small" />
-          <span style="margin-left:8px;font-weight:bold">{{ post.username }}</span>
-          <span style="margin-left:auto;color:#b9935a">{{ post.time }}</span>
-        </div>
-        <div style="margin:12px 0;white-space:pre-line;">{{ post.content }}</div>
-        <div v-if="post.image">
-          <el-image v-for="img in parseImages(post.image)" :key="img" :src="img" style="max-width:120px;margin-right:8px;" fit="cover" />
-        </div>
-        <div style="margin-top:8px;display:flex;align-items:center;">
-          <el-button size="small" type="text" @click="onLike" :disabled="likeLoading">
-            <el-icon><i class="el-icon-thumb" /></el-icon> {{ likeCount }}
-          </el-button>
-        </div>
-      </el-card>
-      <el-card class="comment-section" style="margin-top:24px;">
+  <div class="page-root">
+    <AppHeader />
+    <main class="post-detail-main">
+      <el-button @click="goBack" style="margin-bottom:18px;">返回</el-button>
+      <PostCard
+        v-if="post"
+        :avatar="post.avatar"
+        :username="post.username"
+        :time="post.time"
+        :content="post.content"
+        :images="parseImages(post.image)"
+        :like-count="likeCount"
+        :like-loading="likeLoading"
+        @like="onLike"
+      />
+      <el-card class="comment-section">
         <div style="font-weight:bold;margin-bottom:8px;">评论区</div>
         <el-form v-if="userStore.token" :model="commentForm" ref="commentFormRef" @submit.prevent="onComment">
           <el-form-item>
@@ -41,8 +34,9 @@
           </el-timeline-item>
         </el-timeline>
       </el-card>
-    </el-main>
-  </el-container>
+    </main>
+    <AppFooter />
+  </div>
 </template>
 
 <script setup>
@@ -53,6 +47,9 @@ import { useUserStore } from '../store/user'
 import { fetchPost } from '../api/post'
 import { fetchComments, addComment } from '../api/comment'
 import { likePost } from '../api/like'
+import AppHeader from '../components/AppHeader.vue'
+import AppFooter from '../components/AppFooter.vue'
+import PostCard from '../components/PostCard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -130,7 +127,20 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.post-detail-card {
-  margin-bottom: 24px;
+.page-root {
+  min-height: 100vh;
+  background: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+}
+.post-detail-main {
+  max-width: 700px;
+  margin: 40px auto 24px auto;
+  flex: 1;
+}
+.comment-section {
+  margin-top: 24px;
+  border-radius: 10px;
+  background: #fff;
 }
 </style> 

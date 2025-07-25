@@ -1,22 +1,43 @@
 <template>
-  <el-card class="register-card">
-    <h2>注册</h2>
-    <el-form :model="form" :rules="rules" ref="formRef" label-width="70px" @keyup.enter="onSubmit">
-      <el-form-item label="用户名" prop="username">
-        <el-input v-model="form.username" autocomplete="username" />
-      </el-form-item>
-      <el-form-item label="邮箱" prop="email">
-        <el-input v-model="form.email" autocomplete="email" />
-      </el-form-item>
-      <el-form-item label="密码" prop="password">
-        <el-input v-model="form.password" type="password" autocomplete="new-password" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :loading="loading" @click="onSubmit">注册</el-button>
-        <el-button link @click="goLogin">登录</el-button>
-      </el-form-item>
-    </el-form>
-  </el-card>
+  <div class="register-bg">
+    <AppHeader />
+    <div class="register-card-2col">
+      <div class="register-left">
+        <div class="register-logo-title">
+          <img src="../logo.png" alt="logo" class="register-logo" @click="goHome" style="cursor:pointer;" />
+          <div class="register-main-title">
+            <span style="color:#40BFFF">Uf</span><span style="color:#FFD600">ula</span><span style="color:#40BFFF">no</span>
+          </div>
+          <div class="register-sub-title">注册</div>
+        </div>
+        <el-card class="register-form-card" shadow="never">
+          <el-form :model="form" :rules="rules" ref="formRef" label-width="70px" @keyup.enter="onSubmit">
+            <el-form-item label="用户名" prop="username">
+              <el-input v-model="form.username" autocomplete="username" clearable placeholder="请输入用户名" />
+            </el-form-item>
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="form.email" autocomplete="email" clearable placeholder="请输入邮箱" />
+            </el-form-item>
+            <el-form-item label="密码" prop="password">
+              <el-input v-model="form.password" type="password" autocomplete="new-password" show-password clearable placeholder="请输入密码" />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" :loading="loading" @click="onSubmit" class="register-btn">注册</el-button>
+            </el-form-item>
+            <div class="register-links">
+              <el-button link @click="goLogin" class="yellow-link">已有账号？登录</el-button>
+            </div>
+          </el-form>
+        </el-card>
+      </div>
+      <div class="register-right">
+        <div class="register-banner-bg">
+          <img class="register-banner" src="https://via.placeholder.com/400x400?text=Banner" alt="banner" @click="goHome" style="cursor:pointer;" />
+          <div class="banner-desc">Ufulano - 发现有趣的人和事</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -25,6 +46,7 @@ import { useRouter } from 'vue-router'
 import { register } from '../api/auth'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../store/user'
+import AppHeader from '../components/AppHeader.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -50,7 +72,7 @@ const onSubmit = () => {
       ElMessage.success('注册成功')
       router.push('/')
     } catch (e) {
-      // 错误已由拦截器处理
+      ElMessage.error(e?.message || '注册失败')
     } finally {
       loading.value = false
     }
@@ -60,12 +82,148 @@ const onSubmit = () => {
 const goLogin = () => {
   router.push('/login')
 }
+
+const goHome = () => {
+  router.push('/')
+}
 </script>
 
 <style scoped>
-.register-card {
-  max-width: 400px;
-  margin: 100px auto;
-  padding: 32px 24px;
+.register-bg {
+  min-height: 100vh;
+  width: 100vw;
+  background: linear-gradient(120deg, #e0e7ef 0%, #e6f7ff 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 80px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+.register-card-2col {
+  display: flex;
+  flex-direction: row;
+  width: 820px;
+  min-height: 480px;
+  background: #fff;
+  border-radius: 36px;
+  box-shadow: 0 8px 48px 0 rgba(64,191,255,0.13);
+  overflow: hidden;
+  margin: 0 auto;
+}
+.register-left {
+  flex: 1.1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px 32px 32px;
+  background: #fff;
+}
+.register-logo-title {
+  text-align: center;
+  margin-bottom: 18px;
+}
+.register-logo {
+  height: 64px;
+  margin-bottom: 8px;
+}
+.register-main-title {
+  font-size: 2.1rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+.register-sub-title {
+  font-size: 1.1rem;
+  color: #888;
+  margin-bottom: 8px;
+}
+.register-form-card {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px 0 rgba(64,191,255,0.08);
+  border: none;
+  background: #fff;
+  padding: 18px 0 0 0;
+}
+.register-btn {
+  width: 100%;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.08em;
+  box-shadow: 0 2px 8px 0 rgba(64,191,255,0.10);
+  background: #40BFFF;
+  color: #fff;
+  border: none;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.register-btn:hover {
+  background: #FFD600;
+  color: #222;
+  box-shadow: 0 4px 18px 0 rgba(255,214,0,0.18);
+}
+.register-links {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.yellow-link {
+  color: #FFD600 !important;
+  font-weight: bold;
+}
+.yellow-link:hover {
+  color: #40BFFF !important;
+}
+.register-right {
+  flex: 1;
+  background: linear-gradient(135deg, #E6F7FF 60%, #FFD600 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: 320px;
+}
+.register-banner-bg {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.register-banner {
+  width: 90%;
+  max-width: 340px;
+  border-radius: 24px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 16px 0 rgba(64,191,255,0.10);
+}
+.banner-desc {
+  text-align: center;
+  color: #40BFFF;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+:deep(.el-input__wrapper.is-focus) {
+  border-color: #40BFFF !important;
+  box-shadow: 0 0 0 2px #FFD60033 !important;
+}
+@media (max-width: 900px) {
+  .register-card-2col {
+    flex-direction: column;
+    width: 98vw;
+    min-height: 0;
+    border-radius: 18px;
+  }
+  .register-right {
+    min-width: 0;
+    padding: 18px 0 18px 0;
+  }
+  .register-left {
+    padding: 32px 12px 18px 12px;
+  }
 }
 </style> 
