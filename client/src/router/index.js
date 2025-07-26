@@ -8,7 +8,6 @@ const routes = [
   { path: '/community', name: 'Community', component: () => import('../views/Community.vue') },
   { path: '/post/new', name: 'NewPost', component: () => import('../views/NewPost.vue') },
   { path: '/post/:id', name: 'PostDetail', component: () => import('../views/PostDetail.vue') },
-  { path: '/user/:id', name: 'UserProfile', component: () => import('../views/UserProfile.vue') },
 ]
 
 const router = createRouter({
