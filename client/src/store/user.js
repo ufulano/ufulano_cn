@@ -39,7 +39,9 @@ export const useUserStore = defineStore('user', {
     
     // 检查是否需要自动登录
     shouldAutoLogin: (state) => {
-      return state.rememberMe && !state.isTokenExpired
+      if (!state.rememberMe) return false
+      if (!state.tokenExpiry) return false
+      return new Date() <= new Date(state.tokenExpiry)
     }
   },
   

@@ -21,7 +21,10 @@ exports.getComment = async (req, res) => {
   try {
     const { postId } = req.params;
     
-    console.log('获取评论请求:', { postId });
+    console.log('=== 获取评论请求 ===');
+    console.log('postId:', postId);
+    console.log('req.params:', req.params);
+    console.log('req.url:', req.url);
 
     // 查询评论，包含用户信息
     const comments = await Comment.findAll({

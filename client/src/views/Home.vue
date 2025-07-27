@@ -40,8 +40,18 @@
         </el-empty>
       </section>
       
+      <!-- 调试信息 -->
+      <section class="debug-section" style="background: #f0f0f0; padding: 10px; margin: 10px; border-radius: 8px;">
+        <p>调试信息:</p>
+        <p>isLoggedIn: {{ userStore.isLoggedIn }}</p>
+        <p>token: {{ userStore.token ? '存在' : '不存在' }}</p>
+        <p>user: {{ userStore.user ? '存在' : '不存在' }}</p>
+        <p>initialized: {{ userStore.initialized }}</p>
+        <el-button @click="testLogin">测试登录状态</el-button>
+      </section>
+      
       <!-- 新建帖子卡片 -->
-      <section v-if="userStore.isLoggedIn" class="new-post-section">
+      <section v-if="debugLoginStatus" class="new-post-section">
         <el-card class="new-post-card">
           <div class="new-post-header">
             <el-avatar :src="userStore.avatar" size="large" />
@@ -172,6 +182,12 @@ const loading = ref(false)
 const error = ref(false)
 const searchLoading = ref(false)
 
+// 调试用户登录状态
+console.log('=== Home.vue 用户状态调试 ===')
+console.log('userStore.isLoggedIn:', userStore.isLoggedIn)
+console.log('userStore.token:', userStore.token ? '存在' : '不存在')
+console.log('userStore.user:', userStore.user)
+
 // 新建帖子相关数据
 const newPostContent = ref('')
 const newPostImages = ref([])
@@ -203,6 +219,16 @@ const formatTime = (timeStr) => {
   
   return date.toLocaleDateString('zh-CN')
 }
+
+// 调试登录状态的计算属性
+const debugLoginStatus = computed(() => {
+  console.log('=== 调试登录状态 ===')
+  console.log('userStore.isLoggedIn:', userStore.isLoggedIn)
+  console.log('userStore.token:', userStore.token ? '存在' : '不存在')
+  console.log('userStore.user:', userStore.user)
+  console.log('userStore.initialized:', userStore.initialized)
+  return userStore.isLoggedIn
+})
 
 // 过滤帖子（搜索功能）
 const filteredPosts = computed(() => {
@@ -301,6 +327,20 @@ const handleRepost = (post) => {
   ElMessage.success('转发成功')
 }
 
+// 测试登录状态
+const testLogin = () => {
+  console.log('=== 测试登录状态 ===')
+  console.log('userStore.isLoggedIn:', userStore.isLoggedIn)
+  console.log('userStore.token:', userStore.token)
+  console.log('userStore.user:', userStore.user)
+  console.log('userStore.initialized:', userStore.initialized)
+  
+  // 尝试重新初始化
+  userStore.initFromStorage()
+  
+  ElMessage.info(`登录状态: ${userStore.isLoggedIn ? '已登录' : '未登录'}`)
+}
+
 // 新建帖子相关方法
 const onNewPostImageChange = (file) => {
   if (newPostImages.value.length >= 4) {
@@ -363,6 +403,14 @@ onMounted(() => {
   console.log('组件已挂载，开始加载帖子')
   console.log('当前路由:', window.location.href)
   console.log('当前时间:', new Date().toISOString())
+  
+  // 检查用户登录状态
+  console.log('用户登录状态检查:', {
+    isLoggedIn: userStore.isLoggedIn,
+    token: userStore.token ? '存在' : '不存在',
+    user: userStore.user,
+    initialized: userStore.initialized
+  })
   
   // 检查网络连接
   if (navigator.onLine) {
