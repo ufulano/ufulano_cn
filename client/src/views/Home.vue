@@ -338,7 +338,10 @@ const testLogin = () => {
   // 尝试重新初始化
   userStore.initFromStorage()
   
-  ElMessage.info(`登录状态: ${userStore.isLoggedIn ? '已登录' : '未登录'}`)
+  // 验证和修复用户数据
+  const isValid = userStore.validateAndFixUserData()
+  
+  ElMessage.info(`登录状态: ${userStore.isLoggedIn ? '已登录' : '未登录'}, 数据验证: ${isValid ? '通过' : '失败'}`)
 }
 
 // 新建帖子相关方法

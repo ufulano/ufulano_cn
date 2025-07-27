@@ -70,9 +70,10 @@ exports.getComment = async (req, res) => {
 exports.createComment = async (req, res) => {
   try {
     const { postId, content } = req.body;
-    const userId = req.user.user_id; // 从认证中间件获取
+    const userId = req.user.userId; // 从认证中间件获取，注意是 userId 不是 user_id
 
     console.log('创建评论请求:', { postId, content, userId });
+    console.log('req.user:', req.user);
 
     // 验证输入
     if (!postId || !content) {

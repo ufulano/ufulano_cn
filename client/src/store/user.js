@@ -147,34 +147,62 @@ export const useUserStore = defineStore('user', {
       try {
         if (typeof localStorage === 'undefined') return false
         
+        // 首先尝试加载新格式的数据
         const dataStr = localStorage.getItem('userStore')
-        if (!dataStr) return false
-        
-        const data = JSON.parse(dataStr)
-        
-        // 检查数据完整性
-        if (!data.token || !data.user) {
-          console.log('localStorage 数据不完整，清除')
-          this.clearStorage()
-          return false
+        if (dataStr) {
+          const data = JSON.parse(dataStr)
+          
+          // 检查数据完整性
+          if (!data.token || !data.user) {
+            console.log('新格式 localStorage 数据不完整，尝试旧格式')
+          } else {
+            // 检查 token 是否过期
+            if (data.tokenExpiry && new Date() > new Date(data.tokenExpiry)) {
+              console.log('localStorage 中的 token 已过期，清除')
+              this.clearStorage()
+              return false
+            }
+            
+            // 恢复数据
+            this.token = data.token
+            this.user = data.user
+            this.rememberMe = data.rememberMe || false
+            this.tokenExpiry = data.tokenExpiry ? new Date(data.tokenExpiry) : null
+            this.lastActivity = data.lastActivity ? new Date(data.lastActivity) : null
+            
+            console.log('从新格式 localStorage 恢复用户数据成功')
+            return true
+          }
         }
         
-        // 检查 token 是否过期
-        if (data.tokenExpiry && new Date() > new Date(data.tokenExpiry)) {
-          console.log('localStorage 中的 token 已过期，清除')
-          this.clearStorage()
-          return false
+        // 尝试加载旧格式的数据（兼容性）
+        const oldToken = localStorage.getItem('token')
+        const oldUserStr = localStorage.getItem('user')
+        
+        if (oldToken && oldUserStr) {
+          try {
+            const oldUser = JSON.parse(oldUserStr)
+            
+            if (oldUser && typeof oldUser === 'object') {
+              this.token = oldToken
+              this.user = oldUser
+              this.rememberMe = false // 旧格式默认不记住
+              this.tokenExpiry = new Date(Date.now() + 60 * 60 * 1000) // 1小时过期
+              this.lastActivity = new Date()
+              
+              // 迁移到新格式
+              this.saveToStorage()
+              
+              console.log('从旧格式 localStorage 恢复用户数据成功，已迁移到新格式')
+              return true
+            }
+          } catch (parseError) {
+            console.error('解析旧格式用户数据失败:', parseError)
+          }
         }
         
-        // 恢复数据
-        this.token = data.token
-        this.user = data.user
-        this.rememberMe = data.rememberMe || false
-        this.tokenExpiry = data.tokenExpiry ? new Date(data.tokenExpiry) : null
-        this.lastActivity = data.lastActivity ? new Date(data.lastActivity) : null
-        
-        console.log('从 localStorage 恢复用户数据成功')
-        return true
+        console.log('localStorage 中无有效用户数据')
+        return false
         
       } catch (error) {
         console.error('从 localStorage 加载用户数据失败:', error)
@@ -215,6 +243,9 @@ export const useUserStore = defineStore('user', {
         console.log('localStorage 中无有效用户数据')
       }
       
+      // 验证和修复用户数据
+      this.validateAndFixUserData()
+      
       this.initialized = true
       console.log('初始化完成 - 登录状态:', this.isLoggedIn)
     },
@@ -224,6 +255,47 @@ export const useUserStore = defineStore('user', {
       this.rememberMe = rememberMe
       this.saveToStorage()
       console.log('记住我状态已更新:', rememberMe)
+    },
+    
+    // 验证和修复用户数据
+    validateAndFixUserData() {
+      console.log('=== 验证和修复用户数据 ===')
+      
+      // 检查是否有 token 但没有用户数据
+      if (this.token && !this.user) {
+        console.log('发现 token 存在但用户数据缺失，尝试修复...')
+        
+        // 尝试从旧格式恢复
+        const oldUserStr = localStorage.getItem('user')
+        if (oldUserStr) {
+          try {
+            const oldUser = JSON.parse(oldUserStr)
+            if (oldUser && typeof oldUser === 'object') {
+              this.user = oldUser
+              this.saveToStorage()
+              console.log('成功修复用户数据')
+              return true
+            }
+          } catch (error) {
+            console.error('修复用户数据失败:', error)
+          }
+        }
+        
+        // 如果无法修复，清除无效数据
+        console.log('无法修复用户数据，清除无效 token')
+        this.logout()
+        return false
+      }
+      
+      // 检查是否有用户数据但没有 token
+      if (!this.token && this.user) {
+        console.log('发现用户数据存在但 token 缺失，清除无效数据')
+        this.logout()
+        return false
+      }
+      
+      console.log('用户数据验证通过')
+      return true
     }
   }
 }) 
