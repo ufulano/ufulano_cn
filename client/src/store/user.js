@@ -37,6 +37,12 @@ export const useUserStore = defineStore('user', {
       return state.user.avatar_url || ''
     },
     
+    // 获取用户ID
+    userId: (state) => {
+      if (!state.user) return null
+      return state.user.user_id || state.user.id || null
+    },
+    
     // 检查是否需要自动登录
     shouldAutoLogin: (state) => {
       if (!state.rememberMe) return false
