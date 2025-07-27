@@ -101,10 +101,12 @@ const filteredPosts = computed(() => {
   switch (props.filterMode) {
     case 'user':
       // 只显示当前用户的帖子
-      result = props.posts.filter(post => 
-        post.user_id == props.currentUserId || 
-        post.userId == props.currentUserId
-      )
+      result = props.posts.filter(post => {
+        const postUserId = post.user_id || post.userId
+        const currentUserId = props.currentUserId
+        console.log('筛选比较:', { postUserId, currentUserId, match: postUserId == currentUserId })
+        return postUserId == currentUserId
+      })
       console.log('PostStream - 用户筛选结果:', result.length, '条')
       break
     case 'following':

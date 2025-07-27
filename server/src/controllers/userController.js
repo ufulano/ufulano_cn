@@ -224,6 +224,7 @@ exports.getUserPosts = async (req, res) => {
     // 格式化帖子数据
     const formattedPosts = posts.map(post => ({
       id: post.post_id,
+      user_id: post.user_id, // 添加用户ID字段
       username: post.user?.username || '未知用户',
       nickname: post.user?.nickname || '',
       avatar: post.user?.avatar_url || '',

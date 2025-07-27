@@ -28,6 +28,7 @@ exports.getAllPosts = async (req, res) => {
             console.info('处理帖子:', post.post_id, '用户:', post.user?.username, '头像:', post.user?.avatar_url ? '存在' : '不存在');
             return {
                 id: post.post_id,
+                user_id: post.user_id, // 添加用户ID字段
                 username: post.user?.username || '未知用户',
                 nickname: post.user?.nickname || '',
                 avatar: post.user?.avatar_url || '',
