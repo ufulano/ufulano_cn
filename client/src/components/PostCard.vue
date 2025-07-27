@@ -74,7 +74,7 @@
     
     <!-- 转发输入区 -->
     <div v-if="showRepostBar" class="repost-bar">
-      <el-avatar :src="avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'" size="small" class="comment-avatar" style="width: 32px; height: 32px;" />
+      <el-avatar :src="avatar || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjQ0NDQ0NDIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuWbvueJhzwvdGV4dD4KPC9zdmc+Cg=='" size="small" class="comment-avatar" style="width: 32px; height: 32px;" />
       <el-input v-model="repostText" placeholder="说点什么..." class="repost-input" clearable />
       <el-popover placement="top" width="220" trigger="click">
         <template #reference>
@@ -93,7 +93,7 @@
     
     <!-- 评论输入区 -->
     <div v-if="showCommentBar" class="comment-bar">
-      <el-avatar :src="avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'" size="small" class="comment-avatar" style="width: 32px; height: 32px;" />
+      <el-avatar :src="avatar || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjQ0NDQ0NDIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuWbvueJhzwvdGV4dD4KPC9zdmc+Cg=='" size="small" class="comment-avatar" style="width: 32px; height: 32px;" />
       <el-input v-model="commentText" placeholder="发布你的评论" class="comment-input" clearable />
       <el-popover placement="top" width="220" trigger="click">
         <template #reference>
@@ -127,7 +127,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Share, ChatLineSquare, Star, PictureFilled, ChatDotRound } from '@element-plus/icons-vue'
 import AvatarUpload from './AvatarUpload.vue'

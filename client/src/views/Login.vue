@@ -33,7 +33,7 @@
       </div>
       <div class="login-right">
         <div class="login-banner-bg">
-          <img class="login-banner" src="https://via.placeholder.com/400x400?text=Banner" alt="banner" @click="goHome" style="cursor:pointer;" />
+          <img class="login-banner" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNDA5RUZGIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5CYW5uZXI8L3RleHQ+Cjwvc3ZnPgo=" alt="banner" @click="goHome" style="cursor:pointer;" />
           <div class="banner-desc">Ufulano - 发现有趣的人和事</div>
         </div>
       </div>

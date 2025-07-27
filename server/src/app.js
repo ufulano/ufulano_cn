@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const winston = require('winston');
 const fs = require('fs');
+const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const postRoutes = require('./routes/post');
 const commentRoutes = require('./routes/comment');
@@ -33,6 +34,14 @@ const logger = winston.createLogger({
 });
 
 // 2. 中间件配置
+console.log('=== 配置CORS ===');
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
 console.log('=== 配置bodyParser ===');
 console.log('JSON limit: 50mb');
 console.log('URL encoded limit: 50mb');
@@ -124,13 +133,22 @@ sequelize.authenticate()
     console.error('数据库连接失败:', err);
   });
 
-// 同步数据库表结构
-sequelize.sync({ alter: true })
+// 同步数据库表结构（使用 force: false 避免删除表）
+sequelize.sync({ force: false, alter: false })
   .then(async () => {
     console.log('数据库表结构同步成功');
   })
   .catch(err => {
     console.error('数据库表结构同步失败:', err);
+    
+    // 如果是外键约束错误，提供解决方案
+    if (err.code === 'ER_CANT_DROP_FIELD_OR_KEY') {
+      console.error('外键约束错误，请手动执行以下SQL:');
+      console.error('-- 查看当前外键约束');
+      console.error('SHOW CREATE TABLE Likes;');
+      console.error('-- 手动添加缺失的外键约束');
+      console.error('ALTER TABLE Likes ADD CONSTRAINT Likes_post_id_fk FOREIGN KEY (post_id) REFERENCES Posts(post_id) ON DELETE CASCADE ON UPDATE CASCADE;');
+    }
     
     // 如果是索引过多错误，提供解决方案
     if (err.code === 'ER_TOO_MANY_KEYS') {
