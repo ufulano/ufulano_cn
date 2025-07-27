@@ -185,30 +185,7 @@ watch(content, (newValue) => {
   }
 })
 
-// 解析头像数据
-const parseAvatar = (avatarData) => {
-  if (!avatarData) return 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'
-  
-  try {
-    // 如果头像数据是JSON字符串（数组格式），解析它
-    if (avatarData.startsWith('[') && avatarData.endsWith(']')) {
-      const parsed = JSON.parse(avatarData)
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed[0]
-      }
-    }
-    
-    // 如果已经是base64格式，直接返回
-    if (avatarData.startsWith('data:image/')) {
-      return avatarData
-    }
-    
-    return 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'
-  } catch (error) {
-    console.error('解析头像数据失败:', error)
-    return 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'
-  }
-}
+
 </script>
 
 <style scoped>
