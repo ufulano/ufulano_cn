@@ -10,19 +10,30 @@ const service = axios.create({
 // 请求拦截器，自动携带 token 和缓存处理
 service.interceptors.request.use(config => {
   console.log('=== 请求拦截器 ===')
-  console.log('请求方法:', config.method?.toUpperCase())
+  
+  // 确保 config 和 config.method 存在
+  if (!config) {
+    console.error('请求配置为空')
+    return Promise.reject(new Error('请求配置为空'))
+  }
+  
+  const method = config.method || 'GET'
+  console.log('请求方法:', method.toUpperCase())
   console.log('请求URL:', config.url)
   console.log('完整URL:', config.baseURL + config.url)
   
+  // 临时禁用缓存，直接发送请求
+  console.log('跳过缓存检查，直接发送请求')
+  
   // 检查缓存（仅对GET请求）
-  if (config.method?.toLowerCase() === 'get' && !config.noCache) {
-    const cacheKey = `${config.url}_${JSON.stringify(config.params || {})}`
-    const cachedData = getCache(cacheKey)
-    if (cachedData) {
-      console.log('使用缓存数据:', cacheKey)
-      return Promise.resolve({ data: cachedData, fromCache: true })
-    }
-  }
+  // if (method.toLowerCase() === 'get' && !config.noCache) {
+  //   const cacheKey = `${config.url}_${JSON.stringify(config.params || {})}`
+  //   const cachedData = getCache(cacheKey)
+  //   if (cachedData) {
+  //     console.log('使用缓存数据:', cacheKey)
+  //     return Promise.resolve({ data: cachedData, fromCache: true })
+  //   }
+  // }
   
   // 尝试从新的 userStore 格式获取 token
   let token = null
@@ -46,6 +57,10 @@ service.interceptors.request.use(config => {
   console.log('最终使用的 token:', token ? '存在' : '不存在')
   
   if (token) {
+    // 确保 headers 存在
+    if (!config.headers) {
+      config.headers = {}
+    }
     config.headers.Authorization = `Bearer ${token}`
     console.log('已添加Authorization头')
   }
@@ -68,12 +83,13 @@ service.interceptors.response.use(
       return response.data
     }
     
+    // 临时禁用响应缓存
     // 缓存GET请求的响应数据
-    if (response.config.method?.toLowerCase() === 'get' && !response.config.noCache) {
-      const cacheKey = `${response.config.url}_${JSON.stringify(response.config.params || {})}`
-      setCache(cacheKey, response.data)
-      console.log('已缓存数据:', cacheKey)
-    }
+    // if (response.config && response.config.method && response.config.method.toLowerCase() === 'get' && !response.config.noCache) {
+    //   const cacheKey = `${response.config.url}_${JSON.stringify(response.config.params || {})}`
+    //   setCache(cacheKey, response.data)
+    //   console.log('已缓存数据:', cacheKey)
+    // }
     
     console.log('响应状态:', response.status)
     console.log('响应数据:', response.data)
