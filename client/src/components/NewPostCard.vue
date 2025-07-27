@@ -3,7 +3,7 @@
     <el-card class="new-post-card">
       <div class="new-post-header">
         <AvatarUpload 
-          :avatar="avatar" 
+          :avatar="avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'" 
           size="large" 
           :editable="false"
           class="new-post-avatar"

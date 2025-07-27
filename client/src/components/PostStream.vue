@@ -23,21 +23,21 @@
     
     <!-- 帖子列表 -->
     <section v-else class="post-list-section">
-      <PostCard
-        v-for="post in posts"
-        :key="post.id"
-        :post-id="post.id"
-        :avatar="post.avatar || post.User?.avatar_url"
-        :username="post.username || post.User?.username || post.User?.nickname"
-        :time="formatTime(post.createdAt || post.time)"
-        :content="post.content"
-        :images="post.images || []"
-        :like-count="post.likes || post.like_count || 0"
-        :read-count="post.read_count || 0"
-        @like="handleLike(post)"
-        @comment="handleComment(post)"
-        @repost="handleRepost(post)"
-      />
+              <PostCard
+          v-for="post in posts"
+          :key="post.id"
+          :post-id="post.id"
+          :avatar="post.avatar || post.User?.avatar_url || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'"
+          :username="post.username || post.User?.username || post.User?.nickname || '未知用户'"
+          :time="formatTime(post.createdAt || post.time)"
+          :content="post.content"
+          :images="post.images || []"
+          :like-count="post.likes || post.like_count || 0"
+          :read-count="post.read_count || 0"
+          @like="handleLike(post)"
+          @comment="handleComment(post)"
+          @repost="handleRepost(post)"
+        />
     </section>
   </div>
 </template>

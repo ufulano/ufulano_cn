@@ -2,7 +2,7 @@
   <div class="post-card">
     <div class="post-header">
       <AvatarUpload 
-        :avatar="avatar" 
+        :avatar="avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'" 
         size="large" 
         :editable="false"
         class="post-avatar"
@@ -62,7 +62,7 @@
           <el-button class="comment-icon-btn">😀</el-button>
         </template>
         <div class="emoji-panel">
-          <span v-for="emoji in emojiList" :key="emoji" class="emoji-item" @click="insertEmoji(repostText, emoji)">{{ emoji }}</span>
+          <span v-for="emoji in emojiList" :key="emoji" class="emoji-item" @click="insertRepostEmoji(emoji)">{{ emoji }}</span>
         </div>
       </el-popover>
       <el-upload :show-file-list="false" :auto-upload="false" :on-change="onRepostImageChange">
@@ -81,7 +81,7 @@
           <el-button class="comment-icon-btn">😀</el-button>
         </template>
         <div class="emoji-panel">
-          <span v-for="emoji in emojiList" :key="emoji" class="emoji-item" @click="insertEmoji(commentText, emoji)">{{ emoji }}</span>
+          <span v-for="emoji in emojiList" :key="emoji" class="emoji-item" @click="insertCommentEmoji(emoji)">{{ emoji }}</span>
         </div>
       </el-popover>
       <el-upload :show-file-list="false" :auto-upload="false" :on-change="onImageChange">
@@ -94,11 +94,11 @@
     <!-- 评论列表 -->
     <div v-if="comments.length" class="comment-list">
       <div v-for="c in comments" :key="c.id" class="comment-item">
-        <el-avatar :src="c.avatar" size="small" class="comment-avatar" />
+        <el-avatar :src="c.user?.avatar || c.avatar" size="small" class="comment-avatar" />
         <div class="comment-content">
-          <span class="comment-username">{{ c.username }}</span>
+          <span class="comment-username">{{ c.user?.username || c.username }}</span>
           <span class="comment-time">{{ c.time }}</span>
-          <div class="comment-text">{{ c.text }}</div>
+          <div class="comment-text">{{ c.content || c.text }}</div>
         </div>
       </div>
     </div>
@@ -168,10 +168,14 @@ const toggleRepostBar = () => {
   }
 }
 
-// 插入表情
-const insertEmoji = (target, emoji) => {
-  if (target.value == null) target.value = ''
-  target.value += emoji
+// 插入表情到评论
+const insertCommentEmoji = (emoji) => {
+  commentText.value += emoji
+}
+
+// 插入表情到转发
+const insertRepostEmoji = (emoji) => {
+  repostText.value += emoji
 }
 
 // 处理图片上传
