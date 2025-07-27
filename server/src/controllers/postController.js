@@ -134,12 +134,12 @@ exports.createPost = async (req, res) => {
             return base64Regex.test(base64Image);
         }
 
-        // 验证图片大小（限制为5MB）
+        // 验证图片大小（限制为10MB）
         function validateImageSize(base64Image) {
             const base64Data = base64Image.split(',')[1];
             const sizeInBytes = Math.ceil((base64Data.length * 3) / 4);
             const sizeInMB = sizeInBytes / (1024 * 1024);
-            return sizeInMB <= 5; // 限制5MB
+            return sizeInMB <= 10; // 限制10MB
         }
 
         // 验证图片格式
@@ -165,7 +165,7 @@ exports.createPost = async (req, res) => {
                 if (!validateImageSize(image)) {
                     console.error(`第${i + 1}张图片大小超过限制`);
                     return res.status(400).json({ 
-                        error: `第${i + 1}张图片大小不能超过5MB` 
+                        error: `第${i + 1}张图片大小不能超过10MB` 
                     });
                 }
                 
@@ -187,8 +187,8 @@ exports.createPost = async (req, res) => {
         const cleanImages = images && images.length > 0 ? images : [];
         const cleanImageUrl = JSON.stringify(cleanImages);
         
-        // 检查数据长度
-        if (cleanImageUrl.length > 65535) { // TEXT字段的最大长度
+        // 检查数据长度 (LONGTEXT最大4GB，但为了性能限制在10MB)
+        if (cleanImageUrl.length > 10 * 1024 * 1024) { // 10MB限制
             console.error('图片数据过长:', cleanImageUrl.length);
             return res.status(400).json({ message: '图片数据过长，请减少图片数量或压缩图片' });
         }

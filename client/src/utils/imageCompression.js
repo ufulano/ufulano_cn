@@ -5,7 +5,7 @@
  * @param {number} maxSizeKB - 最大文件大小(KB)
  * @returns {Promise<string>} 压缩后的base64图片数据
  */
-export function compressImage(base64String, maxWidth = 800, maxSizeKB = 500) {
+export function compressImage(base64String, maxWidth = 1200, maxSizeKB = 2000) {
   return new Promise((resolve, reject) => {
     const img = new Image()
     

@@ -146,9 +146,9 @@ const onImageChange = async (file) => {
     return
   }
   
-  // 验证文件大小（限制为10MB）
-  if (!isValidImageSize(file.raw, 10)) {
-    ElMessage.error('图片大小不能超过10MB')
+  // 验证文件大小（限制为20MB）
+  if (!isValidImageSize(file.raw, 20)) {
+    ElMessage.error('图片大小不能超过20MB')
     return
   }
   
@@ -165,8 +165,8 @@ const onImageChange = async (file) => {
       const originalSize = getImageSize(e.target.result)
       console.log('原始图片大小:', originalSize.toFixed(2), 'KB')
       
-      // 压缩图片
-      const compressedImage = await compressImage(e.target.result)
+      // 压缩图片 (允许更大的图片)
+      const compressedImage = await compressImage(e.target.result, 1200, 2000)
       
       const compressedSize = getImageSize(compressedImage)
       console.log('压缩后图片大小:', compressedSize.toFixed(2), 'KB')
