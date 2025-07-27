@@ -26,7 +26,12 @@
       <template v-if="userStore.isLoggedIn">
         <el-dropdown trigger="click">
           <span class="user-avatar-wrap">
-            <el-avatar :src="userStore.avatar" size="small" style="cursor:pointer;" />
+            <AvatarUpload 
+              :avatar="userStore.avatar" 
+              size="small" 
+              :editable="false"
+              class="header-avatar"
+            />
           </span>
           <template #dropdown>
             <el-dropdown-menu>
@@ -50,6 +55,7 @@
 <script setup>
 import { useUserStore } from '../store/user'
 import { useRouter } from 'vue-router'
+import AvatarUpload from './AvatarUpload.vue'
 const userStore = useUserStore()
 const router = useRouter()
 const onLogout = () => {
@@ -183,6 +189,20 @@ const onLogout = () => {
     padding: 0 8px;
   }
 }
+.user-avatar-wrap {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.header-avatar {
+  cursor: pointer;
+}
+
+.header-avatar .avatar-overlay {
+  display: none;
+}
+
 @media (max-width: 600px) {
   .nav-hide-on-mobile {
     display: none !important;

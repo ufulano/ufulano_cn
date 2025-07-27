@@ -37,13 +37,20 @@ exports.login = async (req, res) => {
       avatar_url: user.avatar_url || ''
     };
 
-    console.log('登录成功');
-    console.log('返回的用户数据:', userData);
+    console.log('=== 登录成功 ===');
+    console.log('用户ID:', user.user_id);
+    console.log('用户名:', user.username);
+    console.log('构建的用户数据:', userData);
+    console.log('生成的token:', token ? '存在' : '不存在');
     console.log('返回的完整响应:', { token, user: userData });
-    res.json({
+    
+    const response = {
         token,
         user: userData
-    });
+    };
+    
+    console.log('发送响应:', response);
+    res.json(response);
   } catch (error) {
     console.error('登录错误:', error);
     res.status(500).json({ message: '服务器错误' });

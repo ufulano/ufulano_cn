@@ -70,9 +70,13 @@ const onSubmit = () => {
       
       const res = await login(form.value)
       console.log('=== 登录响应 ===')
+      console.log('响应类型:', typeof res)
+      console.log('响应是否为对象:', typeof res === 'object')
+      console.log('响应键:', Object.keys(res))
       console.log('完整响应:', res)
       console.log('token:', res.token ? '存在' : '不存在')
       console.log('user:', res.user)
+      console.log('user 类型:', typeof res.user)
       
       if (!res.user) {
         console.error('❌ 后端没有返回用户数据！')

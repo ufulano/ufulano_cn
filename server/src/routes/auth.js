@@ -4,7 +4,16 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
-const { login, register} = require('../controllers/authController'); 
+const { login, register} = require('../controllers/authController');
+
+// 测试路由
+router.get('/test', (req, res) => {
+  console.log('=== 认证测试路由被调用 ===');
+  res.json({ 
+    message: '认证路由工作正常',
+    timestamp: new Date().toISOString()
+  });
+}); 
 const authenticateToken = require('../middleware/authMiddleware');
 
 /**

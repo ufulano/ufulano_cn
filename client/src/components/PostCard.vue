@@ -1,7 +1,12 @@
 <template>
   <div class="post-card">
     <div class="post-header">
-      <el-avatar :src="avatar" size="large" />
+      <AvatarUpload 
+        :avatar="avatar" 
+        size="large" 
+        :editable="false"
+        class="post-avatar"
+      />
       <div class="post-userinfo">
         <div class="post-username">{{ username }}</div>
         <div class="post-meta">
@@ -106,6 +111,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Share, ChatLineSquare, Star, PictureFilled, ChatDotRound } from '@element-plus/icons-vue'
+import AvatarUpload from './AvatarUpload.vue'
 import { fetchComments, addComment } from '../api/comment'
 
 const props = defineProps({

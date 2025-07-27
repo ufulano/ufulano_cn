@@ -29,13 +29,12 @@
               <!-- 头像设置 -->
               <el-form-item label="头像" prop="avatar">
                 <div class="avatar-section">
-                  <div class="current-avatar">
-                    <el-avatar :size="80" :src="basicForm.avatar || userStore.user?.avatar_url" />
-                    <div class="avatar-overlay" @click="showAvatarUpload = true">
-                      <el-icon><Camera /></el-icon>
-                      <span>更换头像</span>
-                    </div>
-                  </div>
+                  <AvatarUpload 
+                    :avatar="basicForm.avatar || userStore.avatar" 
+                    size="80" 
+                    :editable="true"
+                    @avatar-changed="handleAvatarChanged"
+                  />
                   
                   <div class="avatar-info">
                     <p>支持 JPG、PNG 格式，文件大小不超过 2MB</p>
@@ -224,7 +223,7 @@ import {
 } from '@element-plus/icons-vue'
 import AppHeader from '../components/AppHeader.vue'
 import UserSidebar from '../components/UserSidebar.vue'
-import AvatarCropper from '../components/AvatarCropper.vue'
+import AvatarUpload from '../components/AvatarUpload.vue'
 import { useUserStore } from '../store/user'
 
 const userStore = useUserStore()
@@ -367,15 +366,10 @@ const savePrivacySettings = async () => {
   }
 }
 
-// 处理头像文件选择
-const handleAvatarChange = (file) => {
-  if (file.size > 2 * 1024 * 1024) {
-    ElMessage.error('文件大小不能超过 2MB')
-    return
-  }
-  
-  avatarFile.value = file
-  avatarPreview.value = URL.createObjectURL(file.raw)
+// 处理头像变更
+const handleAvatarChanged = (newAvatarUrl) => {
+  basicForm.avatar = newAvatarUrl
+  console.log('头像已更新:', newAvatarUrl)
 }
 
 

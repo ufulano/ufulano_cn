@@ -40,22 +40,16 @@
         </el-empty>
       </section>
       
-      <!-- 调试信息 -->
-      <section class="debug-section" style="background: #f0f0f0; padding: 10px; margin: 10px; border-radius: 8px;">
-        <p>调试信息:</p>
-        <p>isLoggedIn: {{ userStore.isLoggedIn }}</p>
-        <p>token: {{ userStore.token ? '存在' : '不存在' }}</p>
-        <p>user: {{ userStore.user ? '存在' : '不存在' }}</p>
-        <p>initialized: {{ userStore.initialized }}</p>
-        <el-button @click="testLogin">测试登录状态</el-button>
-        <el-button @click="forceReload" type="danger" size="small">强制重新加载</el-button>
-      </section>
-      
       <!-- 新建帖子卡片 -->
-      <section v-if="debugLoginStatus" class="new-post-section">
+      <section v-if="userStore.isLoggedIn" class="new-post-section">
         <el-card class="new-post-card">
           <div class="new-post-header">
-            <el-avatar :src="userStore.avatar" size="large" />
+            <AvatarUpload 
+              :avatar="userStore.avatar" 
+              size="large" 
+              :editable="false"
+              class="new-post-avatar"
+            />
             <div class="new-post-input-wrapper">
               <el-input
                 v-model="newPostContent"
@@ -173,6 +167,7 @@ import { ElMessage } from 'element-plus'
 import { PictureFilled, Close } from '@element-plus/icons-vue'
 import AppHeader from '../components/AppHeader.vue'
 import PostCard from '../components/PostCard.vue'
+import AvatarUpload from '../components/AvatarUpload.vue'
 import { fetchPosts, createPost } from '../api/post'
 import { useUserStore } from '../store/user'
 
@@ -182,12 +177,6 @@ const posts = ref([])
 const loading = ref(false)
 const error = ref(false)
 const searchLoading = ref(false)
-
-// 调试用户登录状态
-console.log('=== Home.vue 用户状态调试 ===')
-console.log('userStore.isLoggedIn:', userStore.isLoggedIn)
-console.log('userStore.token:', userStore.token ? '存在' : '不存在')
-console.log('userStore.user:', userStore.user)
 
 // 新建帖子相关数据
 const newPostContent = ref('')
@@ -221,15 +210,7 @@ const formatTime = (timeStr) => {
   return date.toLocaleDateString('zh-CN')
 }
 
-// 调试登录状态的计算属性
-const debugLoginStatus = computed(() => {
-  console.log('=== 调试登录状态 ===')
-  console.log('userStore.isLoggedIn:', userStore.isLoggedIn)
-  console.log('userStore.token:', userStore.token ? '存在' : '不存在')
-  console.log('userStore.user:', userStore.user)
-  console.log('userStore.initialized:', userStore.initialized)
-  return userStore.isLoggedIn
-})
+
 
 // 过滤帖子（搜索功能）
 const filteredPosts = computed(() => {
@@ -245,50 +226,25 @@ const filteredPosts = computed(() => {
 
 // 加载帖子
 const loadPosts = async () => {
-  console.log('=== 开始加载帖子 ===')
-  console.log('当前时间:', new Date().toISOString())
-  console.log('loading状态:', loading.value)
-  console.log('error状态:', error.value)
-  
   loading.value = true
   error.value = false
   
   try {
-    console.log('准备调用 fetchPosts API...')
-    console.log('fetchPosts函数:', typeof fetchPosts)
-    
     const response = await fetchPosts()
-    console.log('API响应原始数据:', response)
-    console.log('响应类型:', typeof response)
-    console.log('是否为数组:', Array.isArray(response))
     
     if (Array.isArray(response)) {
       posts.value = response
-      console.log('直接使用数组响应，帖子数量:', response.length)
     } else if (response && response.data) {
       posts.value = response.data
-      console.log('使用response.data，帖子数量:', response.data.length)
     } else {
       posts.value = []
-      console.log('响应格式异常，设置为空数组')
     }
-    
-    console.log('最终posts.value:', posts.value)
-    console.log('=== 加载帖子成功 ===')
   } catch (e) {
-    console.error('=== 加载帖子失败 ===')
-    console.error('错误对象:', e)
-    console.error('错误消息:', e.message)
-    console.error('错误堆栈:', e.stack)
-    console.error('错误响应:', e.response)
-    console.error('错误状态:', e.response?.status)
-    console.error('错误数据:', e.response?.data)
-    
+    console.error('加载帖子失败:', e)
     error.value = true
     ElMessage.error(`加载失败: ${e.message || '请检查网络连接'}`)
   } finally {
     loading.value = false
-    console.log('loading状态已重置为:', loading.value)
   }
 }
 
@@ -310,52 +266,22 @@ const handleSearch = async () => {
 
 // 点赞处理
 const handleLike = (post) => {
-  console.log('点赞帖子:', post.id)
   // TODO: 调用点赞API
   ElMessage.success('点赞成功')
 }
 
 // 评论处理
 const handleComment = (post) => {
-  console.log('评论帖子:', post.id)
   // TODO: 可以跳转到详情页或展开评论框
 }
 
 // 转发处理
 const handleRepost = (post) => {
-  console.log('转发帖子:', post.id)
   // TODO: 调用转发API
   ElMessage.success('转发成功')
 }
 
-            // 测试登录状态
-            const testLogin = () => {
-              console.log('=== 测试登录状态 ===')
-              console.log('userStore.isLoggedIn:', userStore.isLoggedIn)
-              console.log('userStore.token:', userStore.token)
-              console.log('userStore.user:', userStore.user)
-              console.log('userStore.initialized:', userStore.initialized)
-              
-              // 检查 localStorage 原始数据
-              console.log('=== localStorage 原始数据 ===')
-              console.log('userStore:', localStorage.getItem('userStore'))
-              console.log('token:', localStorage.getItem('token'))
-              console.log('user:', localStorage.getItem('user'))
-              
-              // 尝试重新初始化
-              userStore.initFromStorage()
-              
-              // 验证和修复用户数据
-              const isValid = userStore.validateAndFixUserData()
-              
-              ElMessage.info(`登录状态: ${userStore.isLoggedIn ? '已登录' : '未登录'}, 数据验证: ${isValid ? '通过' : '失败'}`)
-            }
-            
-            // 强制重新加载
-            const forceReload = () => {
-              const success = userStore.forceReload()
-              ElMessage.info(`强制重新加载: ${success ? '成功' : '失败'}`)
-            }
+
 
 // 新建帖子相关方法
 const onNewPostImageChange = (file) => {
@@ -415,26 +341,6 @@ const publishNewPost = async () => {
 }
 
 onMounted(() => {
-  console.log('=== Home.vue onMounted ===')
-  console.log('组件已挂载，开始加载帖子')
-  console.log('当前路由:', window.location.href)
-  console.log('当前时间:', new Date().toISOString())
-  
-  // 检查用户登录状态
-  console.log('用户登录状态检查:', {
-    isLoggedIn: userStore.isLoggedIn,
-    token: userStore.token ? '存在' : '不存在',
-    user: userStore.user,
-    initialized: userStore.initialized
-  })
-  
-  // 检查网络连接
-  if (navigator.onLine) {
-    console.log('网络连接正常')
-  } else {
-    console.warn('网络连接异常')
-  }
-  
   loadPosts()
 })
 </script>

@@ -55,6 +55,9 @@ service.interceptors.response.use(
     console.log('=== 响应拦截器成功 ===')
     console.log('响应状态:', response.status)
     console.log('响应头:', response.headers)
+    console.log('响应数据类型:', typeof response.data)
+    console.log('响应数据是否为对象:', typeof response.data === 'object')
+    console.log('响应数据键:', Object.keys(response.data))
     console.log('响应数据:', response.data)
     console.log('返回数据:', response.data)
     return response.data
