@@ -39,6 +39,8 @@
             :content="post.content"
             :images="post.images || []"
             :like-count="post.likes || post.like_count || 0"
+            :comment-count="post.comments || post.comment_count || 0"
+            :repost-count="post.reposts || post.repost_count || 0"
             :read-count="post.read_count || 0"
             @like="handleLike(post)"
             @comment="handleComment(post)"
