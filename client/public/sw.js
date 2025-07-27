@@ -6,9 +6,7 @@ const API_CACHE = 'ufulano-api-v1'
 // 需要缓存的静态资源
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
-  '/assets/index.css',
-  '/assets/index.js'
+  '/index.html'
 ]
 
 // 需要缓存的API路径
@@ -24,7 +22,12 @@ self.addEventListener('install', (event) => {
     caches.open(STATIC_CACHE)
       .then(cache => {
         console.log('Caching static assets')
+        // 只缓存主页，其他资源按需缓存
         return cache.addAll(STATIC_ASSETS)
+      })
+      .catch(error => {
+        console.log('缓存静态资源失败:', error)
+        // 即使缓存失败也继续安装
       })
       .then(() => self.skipWaiting())
   )
@@ -54,8 +57,8 @@ self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
   
-  // 静态资源缓存策略
-  if (request.method === 'GET' && isStaticAsset(url.pathname)) {
+  // 只缓存主页
+  if (request.method === 'GET' && url.pathname === '/') {
     event.respondWith(
       caches.match(request)
         .then(response => {
@@ -63,48 +66,17 @@ self.addEventListener('fetch', (event) => {
             return response
           }
           return fetch(request)
-            .then(response => {
-              if (response.status === 200) {
-                const responseClone = response.clone()
-                caches.open(STATIC_CACHE)
-                  .then(cache => cache.put(request, responseClone))
-              }
-              return response
-            })
+        })
+        .catch(() => {
+          // 如果缓存和网络都失败，返回离线页面
+          return caches.match('/index.html')
         })
     )
   }
   
-  // API缓存策略
+  // API请求不缓存，直接通过
   if (request.method === 'GET' && isApiRequest(url.pathname)) {
-    event.respondWith(
-      caches.match(request)
-        .then(response => {
-          if (response) {
-            // 返回缓存，同时更新缓存
-            fetch(request)
-              .then(response => {
-                if (response.status === 200) {
-                  const responseClone = response.clone()
-                  caches.open(API_CACHE)
-                    .then(cache => cache.put(request, responseClone))
-                }
-              })
-              .catch(() => {}) // 忽略更新失败
-            return response
-          }
-          
-          return fetch(request)
-            .then(response => {
-              if (response.status === 200) {
-                const responseClone = response.clone()
-                caches.open(API_CACHE)
-                  .then(cache => cache.put(request, responseClone))
-              }
-              return response
-            })
-        })
-    )
+    event.respondWith(fetch(request))
   }
 })
 
@@ -112,7 +84,9 @@ self.addEventListener('fetch', (event) => {
 function isStaticAsset(pathname) {
   return pathname.startsWith('/assets/') || 
          pathname === '/' || 
-         pathname === '/index.html'
+         pathname === '/index.html' ||
+         pathname.endsWith('.js') ||
+         pathname.endsWith('.css')
 }
 
 // 判断是否为API请求

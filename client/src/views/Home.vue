@@ -57,7 +57,9 @@ const performanceMonitor = new PerformanceMonitor()
 // 过滤帖子（搜索功能）
 const filteredPosts = computed(() => {
   console.log('Home - 当前帖子数据:', posts.value?.length || 0, '条')
+  console.log('Home - 帖子数据详情:', posts.value)
   if (posts.value && posts.value.length > 0) {
+    console.log('Home - 第一个帖子:', posts.value[0])
     console.log('Home - 第一个帖子头像:', posts.value[0].avatar ? '存在' : '不存在')
   }
   return posts.value || []
@@ -67,14 +69,17 @@ const filteredPosts = computed(() => {
 const loadPosts = async () => {
   performanceMonitor.mark('loadPosts-start')
   
+  // 临时禁用缓存，强制从API加载
+  console.log('强制从API加载数据')
+  
   // 检查缓存
   const cacheKey = 'posts_list'
   const cachedPosts = getCache(cacheKey)
   if (cachedPosts) {
-    console.log('使用缓存的帖子数据')
-    posts.value = cachedPosts
-    performanceMonitor.measure('loadPosts-cache', 'loadPosts-start')
-    return
+    console.log('发现缓存数据，但跳过使用:', cachedPosts)
+    // posts.value = cachedPosts
+    // performanceMonitor.measure('loadPosts-cache', 'loadPosts-start')
+    // return
   }
   
   loading.value = true
@@ -90,6 +95,8 @@ const loadPosts = async () => {
       postData = response.data
     }
     
+    console.log('Home - API响应数据:', response)
+    console.log('Home - 处理后的帖子数据:', postData)
     posts.value = postData
     
     // 缓存数据（5分钟）

@@ -51,6 +51,7 @@
 </template>
 
 <script setup>
+import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import PostCard from './PostCard.vue'
 import VirtualPostList from './VirtualPostList.vue'
@@ -85,29 +86,43 @@ const props = defineProps({
 
 // 筛选帖子
 const filteredPosts = computed(() => {
+  console.log('PostStream - 接收到的帖子数据:', props.posts)
+  console.log('PostStream - 筛选模式:', props.filterMode)
+  console.log('PostStream - 当前用户ID:', props.currentUserId)
+  
   if (!props.posts || props.posts.length === 0) {
+    console.log('PostStream - 没有帖子数据')
     return []
   }
   
+  let result = []
   switch (props.filterMode) {
     case 'user':
       // 只显示当前用户的帖子
-      return props.posts.filter(post => 
+      result = props.posts.filter(post => 
         post.user_id == props.currentUserId || 
         post.userId == props.currentUserId
       )
+      console.log('PostStream - 用户筛选结果:', result.length, '条')
+      break
     case 'following':
       // 显示关注用户的帖子（暂时返回所有帖子）
-      return props.posts
+      result = props.posts
+      console.log('PostStream - 关注筛选结果:', result.length, '条')
+      break
     case 'all':
     default:
       // 显示所有帖子
-      return props.posts
+      result = props.posts
+      console.log('PostStream - 全部筛选结果:', result.length, '条')
+      break
   }
+  
+  console.log('PostStream - 最终筛选结果:', result)
+  return result
 })
 
 // 监听posts变化，优化性能
-import { watch } from 'vue'
 watch(() => filteredPosts.value, (newPosts) => {
   console.log('PostStream - 筛选后帖子数据:', newPosts.length, '条')
   
