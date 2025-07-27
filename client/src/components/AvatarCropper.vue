@@ -6,6 +6,7 @@
         ref="imageRef"
         class="cropper-image"
         @load="onImageLoad"
+        @error="onImageError"
         @mousedown="startDrag"
         @touchstart="startDrag"
       />
@@ -112,6 +113,7 @@ const cropHoleStyle = computed(() => ({
 const onImageLoad = () => {
   const img = imageRef.value
   if (img) {
+    console.log('图片加载完成:', img.naturalWidth, 'x', img.naturalHeight)
     imageSize.value = {
       width: img.naturalWidth,
       height: img.naturalHeight
@@ -120,6 +122,12 @@ const onImageLoad = () => {
     // 居中定位剪裁框
     centerCropFrame()
   }
+}
+
+// 图片加载错误
+const onImageError = (error) => {
+  console.error('图片加载失败:', error)
+  console.error('图片源:', props.imageSrc)
 }
 
 // 居中剪裁框
@@ -243,23 +251,66 @@ const onEnd = () => {
 const getCropResult = () => {
   if (!imageRef.value || !containerRef.value) return null
   
-  const img = imageRef.value
-  const container = containerRef.value
-  const containerRect = container.getBoundingClientRect()
-  
-  // 计算剪裁区域
-  const cropX = position.value.x / containerRect.width
-  const cropY = position.value.y / containerRect.height
-  const cropWidth = props.cropSize / containerRect.width
-  const cropHeight = props.cropSize / containerRect.height
-  
-  return {
-    x: cropX,
-    y: cropY,
-    width: cropWidth,
-    height: cropHeight,
-    scale: scale.value,
-    rotation: rotation.value
+  try {
+    // 创建canvas进行裁剪
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    // 设置canvas大小为裁剪框大小
+    canvas.width = props.cropSize
+    canvas.height = props.cropSize
+    
+    const img = imageRef.value
+    const container = containerRef.value
+    const containerRect = container.getBoundingClientRect()
+    
+    // 计算实际的裁剪区域（考虑缩放和旋转）
+    const scaleX = img.naturalWidth / containerRect.width
+    const scaleY = img.naturalHeight / containerRect.height
+    
+    // 考虑图片的缩放
+    const actualScaleX = scaleX / scale.value
+    const actualScaleY = scaleY / scale.value
+    
+    const cropX = position.value.x * actualScaleX
+    const cropY = position.value.y * actualScaleY
+    const cropWidth = props.cropSize * actualScaleX
+    const cropHeight = props.cropSize * actualScaleY
+    
+    // 如果有旋转，需要先旋转图片
+    if (rotation.value !== 0) {
+      // 保存当前状态
+      ctx.save()
+      
+      // 移动到canvas中心
+      ctx.translate(canvas.width / 2, canvas.height / 2)
+      
+      // 旋转
+      ctx.rotate((rotation.value * Math.PI) / 180)
+      
+      // 绘制图片（从中心开始）
+      ctx.drawImage(
+        img,
+        cropX, cropY, cropWidth, cropHeight,  // 源图片裁剪区域
+        -props.cropSize / 2, -props.cropSize / 2, props.cropSize, props.cropSize  // 目标canvas区域
+      )
+      
+      // 恢复状态
+      ctx.restore()
+    } else {
+      // 直接绘制裁剪后的图片
+      ctx.drawImage(
+        img,
+        cropX, cropY, cropWidth, cropHeight,  // 源图片裁剪区域
+        0, 0, props.cropSize, props.cropSize   // 目标canvas区域
+      )
+    }
+    
+    // 返回base64数据
+    return canvas.toDataURL('image/jpeg', 0.8)
+  } catch (error) {
+    console.error('裁剪失败:', error)
+    return null
   }
 }
 
@@ -306,6 +357,9 @@ onUnmounted(() => {
   height: 100%;
   object-fit: contain;
   transition: transform 0.2s ease;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .crop-frame {

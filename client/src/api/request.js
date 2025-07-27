@@ -3,7 +3,7 @@ import { ElMessage } from 'element-plus'
 
 const service = axios.create({
   baseURL: '/api', // 代理到后端
-  timeout: 10000,
+  timeout: 10000, // 增加超时时间到60秒，适应图片上传
 })
 
 // 请求拦截器，自动携带 token
@@ -76,6 +76,9 @@ service.interceptors.response.use(
         console.error('401未授权错误，跳转到登录页')
         ElMessage.error('请先登录')
         window.location.href = '/login'
+      } else if (error.response.status === 413) {
+        console.error('413请求体过大错误')
+        ElMessage.error('图片数据过大，请压缩图片后重试')
       } else {
         console.error('其他HTTP错误')
         ElMessage.error(error.response.data.message || '请求出错')

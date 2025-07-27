@@ -39,7 +39,7 @@
     >
       <AvatarCropper 
         ref="cropperRef"
-        :src="tempImageUrl"
+        :image-src="tempImageUrl"
         @crop-complete="handleCropComplete"
       />
       <template #footer>
@@ -127,8 +127,13 @@ const handleFileChange = (file) => {
   // 显示裁剪对话框
   const reader = new FileReader()
   reader.onload = (e) => {
+    console.log('文件读取完成，准备显示裁剪器')
     tempImageUrl.value = e.target.result
     showCropper.value = true
+  }
+  reader.onerror = (error) => {
+    console.error('文件读取失败:', error)
+    ElMessage.error('文件读取失败')
   }
   reader.readAsDataURL(file.raw)
 }
@@ -148,14 +153,16 @@ const confirmCrop = async () => {
 
   uploading.value = true
   try {
-    const croppedData = cropperRef.value.getCropResult()
-    if (!croppedData) {
-      ElMessage.error('请先裁剪图片')
+    const croppedImageData = cropperRef.value.getCropResult()
+    if (!croppedImageData) {
+      ElMessage.error('裁剪失败，请重试')
       return
     }
 
+    console.log('裁剪后的图片数据长度:', croppedImageData.length)
+
     // 上传头像
-    const response = await updateUserAvatar(croppedData)
+    const response = await updateUserAvatar(croppedImageData)
     
     // 更新用户store
     userStore.updateAvatar(response.avatar_url)

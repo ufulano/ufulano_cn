@@ -33,8 +33,8 @@ const logger = winston.createLogger({
 });
 
 // 2. 中间件配置
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
 // 3. 请求日志中间件
@@ -94,6 +94,14 @@ app.use((err, req, res, next) => {
   console.error('错误:', err);
   console.error('请求URL:', req.url);
   console.error('请求方法:', req.method);
+  
+  // 处理请求体过大的错误
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({
+      message: '请求数据过大，请压缩图片后重试',
+      error: 'PayloadTooLargeError'
+    });
+  }
   
   res.status(500).json({
     message: '服务器内部错误',

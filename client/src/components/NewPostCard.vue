@@ -130,16 +130,66 @@ const emojiList = [
   '😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😍','😘','😜','😎','😭','😡','👍','👏','🎉','❤️','🔥','🌈','🐱','🐶','🍉','🍔','⚽','🏀','🚗','✈️','🎵','💡','⭐'
 ]
 
+// 压缩图片
+const compressImage = (base64String, maxWidth = 1200, quality = 0.8) => {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      
+      // 计算新的尺寸
+      let { width, height } = img
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width
+        width = maxWidth
+      }
+      
+      canvas.width = width
+      canvas.height = height
+      
+      // 绘制压缩后的图片
+      ctx.drawImage(img, 0, 0, width, height)
+      
+      // 转换为base64
+      const compressedBase64 = canvas.toDataURL('image/jpeg', quality)
+      resolve(compressedBase64)
+    }
+    img.src = base64String
+  })
+}
+
 // 图片上传处理
-const onImageChange = (file) => {
+const onImageChange = async (file) => {
   if (images.value.length >= 4) {
     ElMessage.warning('最多只能上传4张图片')
     return
   }
   
+  // 验证文件类型
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+  if (!allowedTypes.includes(file.raw.type)) {
+    ElMessage.error('只支持JPG、PNG、GIF格式的图片')
+    return
+  }
+  
+  // 验证文件大小（限制为5MB）
+  if (file.raw.size > 5 * 1024 * 1024) {
+    ElMessage.error('图片大小不能超过5MB')
+    return
+  }
+  
   const reader = new FileReader()
-  reader.onload = e => {
-    images.value.push(e.target.result)
+  reader.onload = async (e) => {
+    try {
+      // 压缩图片
+      const compressedImage = await compressImage(e.target.result)
+      images.value.push(compressedImage)
+      ElMessage.success('图片添加成功')
+    } catch (error) {
+      console.error('图片压缩失败:', error)
+      ElMessage.error('图片处理失败')
+    }
   }
   reader.readAsDataURL(file.raw)
 }
