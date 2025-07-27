@@ -31,11 +31,9 @@
           </span>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="$router.push(`/user/${userStore.user?.user_id || 1}`)">我的主页</el-dropdown-item>
-              <el-dropdown-item @click="$router.push(`/user/${userStore.user?.user_id || 1}/follow`)">我的关注</el-dropdown-item>
-              <el-dropdown-item @click="$router.push(`/user/${userStore.user?.user_id || 1}/fans`)">我的粉丝</el-dropdown-item>
-              <el-dropdown-item @click="$router.push(`/user/${userStore.user?.user_id || 1}/favorites`)">我的收藏</el-dropdown-item>
-              <el-dropdown-item @click="$router.push(`/user/${userStore.user?.user_id || 1}/likes`)">我的赞</el-dropdown-item>
+              <el-dropdown-item @click="$router.push('/')">我的主页</el-dropdown-item>
+              <el-dropdown-item @click="$router.push('/community')">社区中心</el-dropdown-item>
+              <el-dropdown-item @click="$router.push('/post/new')">发布帖子</el-dropdown-item>
               <el-dropdown-item divided @click="onLogout">登出</el-dropdown-item>
             </el-dropdown-menu>
           </template>

@@ -5,7 +5,8 @@ export const useUserStore = defineStore('user', {
     token: localStorage.getItem('token') || '',
     user: (() => {
       try {
-        return JSON.parse(localStorage.getItem('user') || 'null')
+        const userStr = localStorage.getItem('user')
+        return userStr ? JSON.parse(userStr) : null
       } catch {
         return null
       }
