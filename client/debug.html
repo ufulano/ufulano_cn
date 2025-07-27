@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试页面</title>
+</head>
+<body>
+    <h1>调试信息</h1>
+    <div id="debug-info"></div>
+    
+    <script>
+        function updateDebugInfo() {
+            const debugDiv = document.getElementById('debug-info');
+            const info = {
+                '当前时间': new Date().toISOString(),
+                'localStorage 可用': typeof localStorage !== 'undefined',
+                'localStorage token': localStorage.getItem('token') || '无',
+                'localStorage user': localStorage.getItem('user') || '无',
+                '用户代理': navigator.userAgent,
+                '在线状态': navigator.onLine
+            };
+            
+            let html = '<h3>系统信息</h3><ul>';
+            for (const [key, value] of Object.entries(info)) {
+                html += `<li><strong>${key}:</strong> ${value}</li>`;
+            }
+            html += '</ul>';
+            
+            debugDiv.innerHTML = html;
+        }
+        
+        // 页面加载时更新信息
+        updateDebugInfo();
+        
+        // 每秒更新一次
+        setInterval(updateDebugInfo, 1000);
+        
+        // 监听在线状态变化
+        window.addEventListener('online', () => {
+            console.log('网络连接恢复');
+            updateDebugInfo();
+        });
+        
+        window.addEventListener('offline', () => {
+            console.log('网络连接断开');
+            updateDebugInfo();
+        });
+    </script>
+</body>
+</html> 
