@@ -51,7 +51,7 @@ export function searchPosts(keyword) {
 
 // 获取用户帖子
 export function getUserPosts(userId) {
-  return request.get(`/userPosts/${userId}`)
+  return request.get(`/user/${userId}/posts`)
 }
 
 // 获取热门帖子

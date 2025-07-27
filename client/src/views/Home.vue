@@ -22,7 +22,7 @@
         :loading="loading"
         :error="error"
         filter-mode="all"
-        :current-user-id="userStore.userId"
+        :current-user-id="null"
         @like="handleLike"
         @comment="handleComment"
         @repost="handleRepost"

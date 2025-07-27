@@ -149,6 +149,7 @@ import PostStream from '../components/PostStream.vue'
 import UserSidebar from '../components/UserSidebar.vue'
 import { useUserStore } from '../store/user'
 import { fetchPosts } from '../api/post'
+import { getUserPosts } from '../api/user'
 import { parseAvatar } from '../utils/avatar'
 
 const route = useRoute()
@@ -200,8 +201,22 @@ const loadUserPosts = async () => {
   loading.value = true
   error.value = false
   try {
-    const response = await fetchPosts()
-    posts.value = Array.isArray(response) ? response : (response.data || [])
+    // 获取当前用户ID
+    const userId = route.params.id || userStore.userId
+    console.log('加载用户帖子，用户ID:', userId)
+    
+    if (userId) {
+      // 使用专门的用户帖子API
+      const response = await getUserPosts(userId)
+      // 后端返回格式: { posts: [...], pagination: {...} }
+      posts.value = response.posts || response.data || []
+    } else {
+      // 如果没有用户ID，获取所有帖子
+      const response = await fetchPosts()
+      posts.value = Array.isArray(response) ? response : (response.data || [])
+    }
+    
+    console.log('用户帖子加载成功:', posts.value.length, '条')
   } catch (err) {
     console.error('加载用户帖子失败:', err)
     error.value = true
