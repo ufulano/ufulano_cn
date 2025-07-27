@@ -15,25 +15,33 @@ exports.getAllPosts = async (req, res) => {
                 {
                     model: User,
                     as: 'user', // 统一别名
-                    attributes: ['username', 'avatar_url']
+                    attributes: ['username', 'nickname', 'avatar_url']
                 }
             ],
             order: [['post_time', 'DESC']]
         });
 
-        // 转换数据结构
-        const formattedPosts = posts.map(post => ({
-            id: post.post_id,
-            username: post.user.username,  // 统一访问方式
-            avatar: post.user.avatar_url,
-            time: formatPostTime(post.post_time),
-            content: post.content,
-            image: post.image_url,
-            comments: post.comment_count,
-            reposts: post.repost_count,
-            likes: post.like_count
-        }));
+        console.info(`查询到 ${posts.length} 条帖子`);
 
+        // 转换数据结构
+        const formattedPosts = posts.map(post => {
+            console.info('处理帖子:', post.post_id, '用户:', post.user?.username);
+            return {
+                id: post.post_id,
+                username: post.user?.username || '未知用户',
+                nickname: post.user?.nickname || '',
+                avatar: post.user?.avatar_url || '',
+                time: formatPostTime(post.post_time),
+                content: post.content || '',
+                images: post.image_url ? [post.image_url] : [],
+                comments: post.comment_count || 0,
+                reposts: post.repost_count || 0,
+                likes: post.like_count || 0,
+                createdAt: post.post_time
+            };
+        });
+
+        console.info('返回格式化后的帖子数据:', formattedPosts.length, '条');
         res.json(formattedPosts);
     } catch (err) {
         console.error('获取文章失败:', err);

@@ -8,27 +8,67 @@ const service = axios.create({
 
 // 请求拦截器，自动携带 token
 service.interceptors.request.use(config => {
+  console.log('=== 请求拦截器 ===')
+  console.log('请求方法:', config.method?.toUpperCase())
+  console.log('请求URL:', config.url)
+  console.log('完整URL:', config.baseURL + config.url)
+  console.log('请求头:', config.headers)
+  console.log('请求参数:', config.params)
+  console.log('请求数据:', config.data)
+  
   const token = localStorage.getItem('token')
+  console.log('localStorage中的token:', token ? '存在' : '不存在')
+  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+    console.log('已添加Authorization头')
   }
+  
+  console.log('最终请求配置:', config)
   return config
-}, error => Promise.reject(error))
+}, error => {
+  console.error('请求拦截器错误:', error)
+  return Promise.reject(error)
+})
 
 // 响应拦截器，统一错误处理
 service.interceptors.response.use(
-  response => response.data,
+  response => {
+    console.log('=== 响应拦截器成功 ===')
+    console.log('响应状态:', response.status)
+    console.log('响应头:', response.headers)
+    console.log('响应数据:', response.data)
+    console.log('返回数据:', response.data)
+    return response.data
+  },
   error => {
+    console.error('=== 响应拦截器错误 ===')
+    console.error('错误对象:', error)
+    console.error('错误消息:', error.message)
+    
     if (error.response) {
+      console.error('错误响应状态:', error.response.status)
+      console.error('错误响应数据:', error.response.data)
+      console.error('错误响应头:', error.response.headers)
+      
       if (error.response.status === 401) {
+        console.error('401未授权错误，跳转到登录页')
         ElMessage.error('请先登录')
         window.location.href = '/login'
       } else {
+        console.error('其他HTTP错误')
         ElMessage.error(error.response.data.message || '请求出错')
       }
+    } else if (error.request) {
+      console.error('请求已发送但没有收到响应')
+      console.error('请求配置:', error.request)
+      ElMessage.error('网络错误：服务器无响应')
     } else {
-      ElMessage.error('网络错误')
+      console.error('请求配置错误')
+      console.error('错误配置:', error.config)
+      ElMessage.error('网络错误：请求配置错误')
     }
+    
     return Promise.reject(error)
   }
 )

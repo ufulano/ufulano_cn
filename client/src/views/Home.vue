@@ -108,18 +108,50 @@ const filteredPosts = computed(() => {
 
 // 加载帖子
 const loadPosts = async () => {
+  console.log('=== 开始加载帖子 ===')
+  console.log('当前时间:', new Date().toISOString())
+  console.log('loading状态:', loading.value)
+  console.log('error状态:', error.value)
+  
   loading.value = true
   error.value = false
   
   try {
+    console.log('准备调用 fetchPosts API...')
+    console.log('fetchPosts函数:', typeof fetchPosts)
+    
     const response = await fetchPosts()
-    posts.value = Array.isArray(response) ? response : (response.data || [])
+    console.log('API响应原始数据:', response)
+    console.log('响应类型:', typeof response)
+    console.log('是否为数组:', Array.isArray(response))
+    
+    if (Array.isArray(response)) {
+      posts.value = response
+      console.log('直接使用数组响应，帖子数量:', response.length)
+    } else if (response && response.data) {
+      posts.value = response.data
+      console.log('使用response.data，帖子数量:', response.data.length)
+    } else {
+      posts.value = []
+      console.log('响应格式异常，设置为空数组')
+    }
+    
+    console.log('最终posts.value:', posts.value)
+    console.log('=== 加载帖子成功 ===')
   } catch (e) {
-    console.error('加载帖子失败:', e)
+    console.error('=== 加载帖子失败 ===')
+    console.error('错误对象:', e)
+    console.error('错误消息:', e.message)
+    console.error('错误堆栈:', e.stack)
+    console.error('错误响应:', e.response)
+    console.error('错误状态:', e.response?.status)
+    console.error('错误数据:', e.response?.data)
+    
     error.value = true
-    ElMessage.error('加载失败，请检查网络连接')
+    ElMessage.error(`加载失败: ${e.message || '请检查网络连接'}`)
   } finally {
     loading.value = false
+    console.log('loading状态已重置为:', loading.value)
   }
 }
 
@@ -160,6 +192,18 @@ const handleRepost = (post) => {
 }
 
 onMounted(() => {
+  console.log('=== Home.vue onMounted ===')
+  console.log('组件已挂载，开始加载帖子')
+  console.log('当前路由:', window.location.href)
+  console.log('当前时间:', new Date().toISOString())
+  
+  // 检查网络连接
+  if (navigator.onLine) {
+    console.log('网络连接正常')
+  } else {
+    console.warn('网络连接异常')
+  }
+  
   loadPosts()
 })
 </script>
