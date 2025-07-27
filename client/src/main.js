@@ -7,6 +7,19 @@ import pinia from './store'
 import { useUserStore } from './store/user'
 import './assets/theme.css'
 
+// 注册Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        console.log('SW registered: ', registration)
+      })
+      .catch(registrationError => {
+        console.log('SW registration failed: ', registrationError)
+      })
+  })
+}
+
 console.log('=== 应用启动 ===')
 console.log('开始创建 Vue 应用...')
 

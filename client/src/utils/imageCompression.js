@@ -1,11 +1,55 @@
 /**
- * 智能压缩图片
+ * 生成缩略图
+ * @param {string} base64String - 原始base64图片数据
+ * @param {number} maxWidth - 缩略图最大宽度
+ * @returns {Promise<string>} 缩略图base64数据
+ */
+export function generateThumbnail(base64String, maxWidth = 200) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        
+        // 计算缩略图尺寸
+        let { width, height } = img
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width
+          width = maxWidth
+        }
+        
+        canvas.width = width
+        canvas.height = height
+        
+        // 绘制缩略图
+        ctx.drawImage(img, 0, 0, width, height)
+        
+        // 使用较低质量生成缩略图
+        const thumbnail = canvas.toDataURL('image/jpeg', 0.7)
+        resolve(thumbnail)
+      } catch (error) {
+        reject(error)
+      }
+    }
+    
+    img.onerror = (error) => {
+      reject(new Error('图片加载失败'))
+    }
+    
+    img.src = base64String
+  })
+}
+
+/**
+ * 智能压缩图片（用于原图）
  * @param {string} base64String - 原始base64图片数据
  * @param {number} maxWidth - 最大宽度
  * @param {number} maxSizeKB - 最大文件大小(KB)
  * @returns {Promise<string>} 压缩后的base64图片数据
  */
-export function compressImage(base64String, maxWidth = 1200, maxSizeKB = 2000) {
+export function compressImage(base64String, maxWidth = 800, maxSizeKB = 500) {
   return new Promise((resolve, reject) => {
     const img = new Image()
     
@@ -41,7 +85,7 @@ export function compressImage(base64String, maxWidth = 1200, maxSizeKB = 2000) {
           }
         }
         
-        const result = compressWithQuality(0.9)
+        const result = compressWithQuality(0.8)
         resolve(result)
       } catch (error) {
         reject(error)

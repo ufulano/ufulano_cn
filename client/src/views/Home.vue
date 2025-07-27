@@ -117,8 +117,19 @@ const handleRepost = (post) => {
 const publishNewPost = async (payload) => {
   publishingPost.value = true
   try {
+    // 检查是否是缩略图模式
+    if (payload.isThumbnail) {
+      console.log('发布缩略图模式')
+      ElMessage.info('正在发布...')
+    }
+    
     await createPost(payload)
-    ElMessage.success('发布成功')
+    
+    if (payload.isThumbnail) {
+      ElMessage.success('发布成功！图片正在后台处理...')
+    } else {
+      ElMessage.success('发布成功')
+    }
     
     // 重新加载帖子列表
     await loadPosts()

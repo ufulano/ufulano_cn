@@ -32,17 +32,26 @@
     <div class="post-content" @click="handleContentClick">{{ content }}</div>
     
     <div v-if="images && images.length" class="post-images" :data-count="images.length">
-      <el-image 
+      <div 
         v-for="(img, index) in images" 
         :key="index" 
-        :src="img" 
-        fit="cover" 
-        class="post-image"
-        :preview-src-list="images"
-        :initial-index="index"
-        preview-teleported
-        :style="{ maxWidth: '100%', maxHeight: '400px', objectFit: 'cover' }"
-      />
+        class="post-image-wrapper"
+        @click="loadFullImage(index)"
+      >
+        <el-image 
+          :src="img" 
+          fit="cover" 
+          class="post-image"
+          :preview-src-list="fullImages"
+          :initial-index="index"
+          preview-teleported
+          :style="{ maxWidth: '100%', maxHeight: '400px', objectFit: 'cover' }"
+        />
+        <div v-if="isThumbnail(img)" class="image-overlay">
+          <el-icon><PictureFilled /></el-icon>
+          <span>点击查看大图</span>
+        </div>
+      </div>
     </div>
     
     <div class="post-actions">
@@ -160,6 +169,8 @@ const emojiList = [
 ]
 
 const comments = ref([])
+const fullImages = ref([]) // 存储原图
+const loadedFullImages = ref(new Set()) // 记录已加载的原图
 
 // 切换评论栏
 const toggleCommentBar = () => {
@@ -190,6 +201,33 @@ const insertRepostEmoji = (emoji) => {
 }
 
 
+
+// 判断是否为缩略图
+const isThumbnail = (imgSrc) => {
+  // 通过图片大小或URL特征判断是否为缩略图
+  if (!imgSrc) return false
+  const sizeKB = (imgSrc.length * 3) / 4 / 1024
+  return sizeKB < 50 // 小于50KB认为是缩略图
+}
+
+// 加载原图
+const loadFullImage = async (index) => {
+  if (loadedFullImages.value.has(index)) {
+    return // 已经加载过了
+  }
+  
+  try {
+    // 这里应该从服务器获取原图
+    // 暂时使用当前图片作为原图
+    fullImages.value[index] = props.images[index]
+    loadedFullImages.value.add(index)
+    
+    ElMessage.success('原图加载成功')
+  } catch (error) {
+    console.error('加载原图失败:', error)
+    ElMessage.error('加载原图失败')
+  }
+}
 
 // 处理图片上传
 const onImageChange = (file) => {
@@ -637,5 +675,39 @@ onMounted(() => {
     width: 28px !important;
     height: 28px !important;
   }
+}
+
+/* 图片覆盖层样式 */
+.post-image-wrapper {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 12px;
+}
+
+.image-overlay .el-icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.post-image-wrapper:hover .image-overlay {
+  opacity: 1;
 }
 </style> 

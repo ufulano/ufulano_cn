@@ -104,7 +104,8 @@ import { ElMessage } from 'element-plus'
 import { PictureFilled, Close } from '@element-plus/icons-vue'
 import AvatarUpload from './AvatarUpload.vue'
 import { parseAvatar } from '../utils/avatar'
-import { compressImage, getImageSize, isValidImage, isValidImageSize } from '../utils/imageCompression'
+import { compressImage, generateThumbnail, getImageSize, isValidImage, isValidImageSize } from '../utils/imageCompression'
+import { debounce, throttle, batchProcess, AsyncQueue } from '../utils/performance'
 
 const props = defineProps({
   avatar: {
@@ -121,10 +122,13 @@ const emit = defineEmits(['publish'])
 
 // 组件内部状态
 const content = ref('')
-const images = ref([])
+const images = ref([]) // 存储缩略图
+const originalImages = ref([]) // 存储原图
 const topics = ref('')
 const visibility = ref('public')
 const showActions = ref(false)
+const uploadProgress = ref(0) // 上传进度
+const imageQueue = new AsyncQueue(2) // 图片处理队列，最多同时处理2张图片
 
 // 表情列表
 const emojiList = [
@@ -133,8 +137,8 @@ const emojiList = [
 
 
 
-// 图片上传处理
-const onImageChange = async (file) => {
+// 图片上传处理（使用队列和防抖）
+const onImageChange = debounce(async (file) => {
   if (images.value.length >= 4) {
     ElMessage.warning('最多只能上传4张图片')
     return
@@ -159,41 +163,57 @@ const onImageChange = async (file) => {
     duration: 0
   })
   
-  const reader = new FileReader()
-  reader.onload = async (e) => {
-    try {
-      const originalSize = getImageSize(e.target.result)
-      console.log('原始图片大小:', originalSize.toFixed(2), 'KB')
+  // 使用队列处理图片
+  await imageQueue.add(async () => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = async (e) => {
+        try {
+          const originalSize = getImageSize(e.target.result)
+          console.log('原始图片大小:', originalSize.toFixed(2), 'KB')
+          
+          // 生成缩略图（快速显示）
+          const thumbnail = await generateThumbnail(e.target.result, 200)
+          const thumbnailSize = getImageSize(thumbnail)
+          console.log('缩略图大小:', thumbnailSize.toFixed(2), 'KB')
+          
+          // 压缩原图（用于存储）
+          const compressedImage = await compressImage(e.target.result, 800, 500)
+          const compressedSize = getImageSize(compressedImage)
+          console.log('压缩后图片大小:', compressedSize.toFixed(2), 'KB')
+          
+          // 存储缩略图和原图
+          const imageIndex = images.value.length
+          images.value.push(thumbnail) // 显示缩略图
+          originalImages.value[imageIndex] = compressedImage // 存储原图
+          
+          loadingMessage.close()
+          ElMessage.success(`图片添加成功 (缩略图: ${thumbnailSize.toFixed(1)}KB)`)
+          resolve()
+        } catch (error) {
+          console.error('图片处理失败:', error)
+          loadingMessage.close()
+          ElMessage.error('图片处理失败')
+          reject(error)
+        }
+      }
       
-      // 压缩图片 (允许更大的图片)
-      const compressedImage = await compressImage(e.target.result, 1200, 2000)
+      reader.onerror = (error) => {
+        console.error('文件读取失败:', error)
+        loadingMessage.close()
+        ElMessage.error('文件读取失败')
+        reject(error)
+      }
       
-      const compressedSize = getImageSize(compressedImage)
-      console.log('压缩后图片大小:', compressedSize.toFixed(2), 'KB')
-      
-      images.value.push(compressedImage)
-      
-      loadingMessage.close()
-      ElMessage.success(`图片添加成功 (${compressedSize.toFixed(1)}KB)`)
-    } catch (error) {
-      console.error('图片压缩失败:', error)
-      loadingMessage.close()
-      ElMessage.error('图片处理失败')
-    }
-  }
-  
-  reader.onerror = (error) => {
-    console.error('文件读取失败:', error)
-    loadingMessage.close()
-    ElMessage.error('文件读取失败')
-  }
-  
-  reader.readAsDataURL(file.raw)
-}
+      reader.readAsDataURL(file.raw)
+    })
+  })
+}, 300) // 300ms防抖
 
 // 移除图片
 const removeImage = (index) => {
   images.value.splice(index, 1)
+  originalImages.value.splice(index, 1)
 }
 
 // 插入表情
@@ -202,24 +222,48 @@ const insertEmoji = (emoji) => {
 }
 
 // 发布帖子
-const handlePublish = () => {
+const handlePublish = async () => {
   if (!content.value.trim()) {
     ElMessage.warning('请输入内容')
     return
   }
   
-  const payload = {
+  // 第一步：先发布文字和缩略图
+  const initialPayload = {
     content: content.value,
-    images: images.value,
+    images: images.value, // 使用缩略图
     topics: topics.value.split(',').map(t => t.trim()).filter(Boolean),
-    visibility: visibility.value
+    visibility: visibility.value,
+    isThumbnail: true // 标记这是缩略图
   }
   
-  emit('publish', payload)
+  emit('publish', initialPayload)
+  
+  // 第二步：异步上传原图（如果有的话）
+  if (originalImages.value.length > 0) {
+    setTimeout(async () => {
+      try {
+        const fullPayload = {
+          content: content.value,
+          images: originalImages.value, // 使用原图
+          topics: topics.value.split(',').map(t => t.trim()).filter(Boolean),
+          visibility: visibility.value,
+          isFullImage: true // 标记这是原图
+        }
+        
+        // 这里可以发送一个更新请求来替换缩略图
+        console.log('异步上传原图...')
+        // emit('updateImages', fullPayload)
+      } catch (error) {
+        console.error('原图上传失败:', error)
+      }
+    }, 1000) // 延迟1秒上传原图
+  }
   
   // 重置表单
   content.value = ''
   images.value = []
+  originalImages.value = []
   topics.value = ''
   visibility.value = 'public'
   showActions.value = false

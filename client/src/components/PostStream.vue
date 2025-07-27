@@ -23,21 +23,29 @@
     
     <!-- 帖子列表 -->
     <section v-else class="post-list-section">
-              <PostCard
-          v-for="post in posts"
-          :key="post.id"
-          :post-id="post.id"
-          :avatar="parseAvatar(post.avatar)"
-          :username="post.username || '未知用户'"
-          :time="formatTime(post.createdAt || post.time)"
-          :content="post.content"
-          :images="post.images || []"
-          :like-count="post.likes || post.like_count || 0"
-          :read-count="post.read_count || 0"
-          @like="handleLike(post)"
-          @comment="handleComment(post)"
-          @repost="handleRepost(post)"
-        />
+      <VirtualPostList 
+        :items="posts" 
+        :item-height="300"
+        :buffer-size="3"
+        class="virtual-post-list"
+      >
+        <template #default="{ item: post }">
+          <PostCard
+            :key="post.id"
+            :post-id="post.id"
+            :avatar="parseAvatar(post.avatar)"
+            :username="post.username || '未知用户'"
+            :time="formatTime(post.createdAt || post.time)"
+            :content="post.content"
+            :images="post.images || []"
+            :like-count="post.likes || post.like_count || 0"
+            :read-count="post.read_count || 0"
+            @like="handleLike(post)"
+            @comment="handleComment(post)"
+            @repost="handleRepost(post)"
+          />
+        </template>
+      </VirtualPostList>
     </section>
   </div>
 </template>
@@ -45,7 +53,10 @@
 <script setup>
 import { ElMessage } from 'element-plus'
 import PostCard from './PostCard.vue'
+import VirtualPostList from './VirtualPostList.vue'
 import { parseAvatar } from '../utils/avatar'
+import { preloadImages, clearImageCache } from '../utils/imageLoader'
+import { debounce, throttle } from '../utils/performance'
 
 const props = defineProps({
   posts: {
@@ -62,17 +73,23 @@ const props = defineProps({
   }
 })
 
-// 监听posts变化，调试数据
+// 监听posts变化，优化性能
 import { watch } from 'vue'
 watch(() => props.posts, (newPosts) => {
   console.log('PostStream - 收到帖子数据:', newPosts.length, '条')
+  
+  // 预加载图片
   if (newPosts.length > 0) {
-    console.log('第一个帖子数据:', {
-      id: newPosts[0].id,
-      username: newPosts[0].username,
-      avatar: newPosts[0].avatar ? '存在' : '不存在',
-      avatarLength: newPosts[0].avatar ? newPosts[0].avatar.length : 0
-    })
+    const imageUrls = newPosts
+      .flatMap(post => post.images || [])
+      .filter(img => img && img.startsWith('data:image/'))
+    
+    if (imageUrls.length > 0) {
+      preloadImages(imageUrls.slice(0, 10)) // 只预加载前10张图片
+    }
+    
+    // 清理缓存
+    clearImageCache(50)
   }
 }, { immediate: true })
 
@@ -137,6 +154,24 @@ const handleRepost = (post) => {
   margin-top: 12px;
   margin-left: auto;
   margin-right: auto;
+  height: calc(100vh - 200px);
+  overflow: hidden;
+}
+
+.virtual-post-list {
+  height: 100%;
+}
+
+/* 优化渲染性能 */
+.post-card {
+  will-change: transform;
+  contain: layout style paint;
+}
+
+/* 图片懒加载优化 */
+.post-image {
+  loading: lazy;
+  decoding: async;
 }
 
 @media (max-width: 1200px) {

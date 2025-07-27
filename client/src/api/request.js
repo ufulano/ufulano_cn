@@ -3,7 +3,7 @@ import { ElMessage } from 'element-plus'
 
 const service = axios.create({
   baseURL: '/api', // 代理到后端
-  timeout: 10000, // 增加超时时间到60秒，适应图片上传
+  timeout: 60000, // 增加超时时间到60秒，适应图片上传
 })
 
 // 请求拦截器，自动携带 token
