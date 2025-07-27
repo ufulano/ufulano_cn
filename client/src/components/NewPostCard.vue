@@ -104,6 +104,7 @@ import { ElMessage } from 'element-plus'
 import { PictureFilled, Close } from '@element-plus/icons-vue'
 import AvatarUpload from './AvatarUpload.vue'
 import { parseAvatar } from '../utils/avatar'
+import { compressImage, getImageSize, isValidImage, isValidImageSize } from '../utils/imageCompression'
 
 const props = defineProps({
   avatar: {
@@ -130,34 +131,7 @@ const emojiList = [
   '😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😍','😘','😜','😎','😭','😡','👍','👏','🎉','❤️','🔥','🌈','🐱','🐶','🍉','🍔','⚽','🏀','🚗','✈️','🎵','💡','⭐'
 ]
 
-// 压缩图片
-const compressImage = (base64String, maxWidth = 1200, quality = 0.8) => {
-  return new Promise((resolve) => {
-    const img = new Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      
-      // 计算新的尺寸
-      let { width, height } = img
-      if (width > maxWidth) {
-        height = (height * maxWidth) / width
-        width = maxWidth
-      }
-      
-      canvas.width = width
-      canvas.height = height
-      
-      // 绘制压缩后的图片
-      ctx.drawImage(img, 0, 0, width, height)
-      
-      // 转换为base64
-      const compressedBase64 = canvas.toDataURL('image/jpeg', quality)
-      resolve(compressedBase64)
-    }
-    img.src = base64String
-  })
-}
+
 
 // 图片上传处理
 const onImageChange = async (file) => {
@@ -167,30 +141,53 @@ const onImageChange = async (file) => {
   }
   
   // 验证文件类型
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
-  if (!allowedTypes.includes(file.raw.type)) {
+  if (!isValidImage(file.raw)) {
     ElMessage.error('只支持JPG、PNG、GIF格式的图片')
     return
   }
   
-  // 验证文件大小（限制为5MB）
-  if (file.raw.size > 5 * 1024 * 1024) {
-    ElMessage.error('图片大小不能超过5MB')
+  // 验证文件大小（限制为10MB）
+  if (!isValidImageSize(file.raw, 10)) {
+    ElMessage.error('图片大小不能超过10MB')
     return
   }
+  
+  // 显示压缩进度
+  const loadingMessage = ElMessage({
+    message: '正在压缩图片...',
+    type: 'info',
+    duration: 0
+  })
   
   const reader = new FileReader()
   reader.onload = async (e) => {
     try {
+      const originalSize = getImageSize(e.target.result)
+      console.log('原始图片大小:', originalSize.toFixed(2), 'KB')
+      
       // 压缩图片
       const compressedImage = await compressImage(e.target.result)
+      
+      const compressedSize = getImageSize(compressedImage)
+      console.log('压缩后图片大小:', compressedSize.toFixed(2), 'KB')
+      
       images.value.push(compressedImage)
-      ElMessage.success('图片添加成功')
+      
+      loadingMessage.close()
+      ElMessage.success(`图片添加成功 (${compressedSize.toFixed(1)}KB)`)
     } catch (error) {
       console.error('图片压缩失败:', error)
+      loadingMessage.close()
       ElMessage.error('图片处理失败')
     }
   }
+  
+  reader.onerror = (error) => {
+    console.error('文件读取失败:', error)
+    loadingMessage.close()
+    ElMessage.error('文件读取失败')
+  }
+  
   reader.readAsDataURL(file.raw)
 }
 

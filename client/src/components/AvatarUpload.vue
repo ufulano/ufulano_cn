@@ -62,6 +62,7 @@ import AvatarCropper from './AvatarCropper.vue'
 import { updateUserAvatar } from '../api/user.js'
 import { useUserStore } from '../store/user.js'
 import { parseAvatar } from '../utils/avatar'
+import { isValidImage, isValidImageSize } from '../utils/imageCompression'
 
 const props = defineProps({
   avatar: {
@@ -109,17 +110,13 @@ const handleFileChange = (file) => {
   }
   
   // 验证文件类型
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
-  const isImage = allowedTypes.includes(file.raw.type)
-  
-  // 验证文件大小（限制为2MB）
-  const isLt2M = file.raw.size / 1024 / 1024 < 2
-
-  if (!isImage) {
+  if (!isValidImage(file.raw)) {
     ElMessage.error('只能上传JPG、PNG、GIF格式的图片文件!')
     return
   }
-  if (!isLt2M) {
+  
+  // 验证文件大小（限制为2MB）
+  if (!isValidImageSize(file.raw, 2)) {
     ElMessage.error('图片大小不能超过 2MB!')
     return
   }
