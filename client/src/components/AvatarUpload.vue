@@ -61,6 +61,7 @@ import { Camera } from '@element-plus/icons-vue'
 import AvatarCropper from './AvatarCropper.vue'
 import { updateUserAvatar } from '../api/user.js'
 import { useUserStore } from '../store/user.js'
+import { parseAvatar } from '../utils/avatar'
 
 const props = defineProps({
   avatar: {
@@ -93,13 +94,11 @@ const currentAvatar = computed(() => {
   console.log('AvatarUpload - props.avatar:', props.avatar ? '存在' : '不存在')
   console.log('AvatarUpload - userStore.avatar:', userStore.avatar ? '存在' : '不存在')
   
-  if (props.avatar && props.avatar.trim()) {
-    return props.avatar
-  }
-  if (userStore.avatar && userStore.avatar.trim()) {
-    return userStore.avatar
-  }
-  return defaultAvatar
+  const avatarData = props.avatar || userStore.avatar
+  const parsedAvatar = parseAvatar(avatarData)
+  
+  console.log('解析后的头像:', parsedAvatar.substring(0, 50) + '...')
+  return parsedAvatar
 })
 
 // 处理文件选择

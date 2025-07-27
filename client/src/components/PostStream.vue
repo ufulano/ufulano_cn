@@ -27,7 +27,7 @@
           v-for="post in posts"
           :key="post.id"
           :post-id="post.id"
-          :avatar="post.avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'"
+          :avatar="parseAvatar(post.avatar)"
           :username="post.username || '未知用户'"
           :time="formatTime(post.createdAt || post.time)"
           :content="post.content"
@@ -45,6 +45,7 @@
 <script setup>
 import { ElMessage } from 'element-plus'
 import PostCard from './PostCard.vue'
+import { parseAvatar } from '../utils/avatar'
 
 const props = defineProps({
   posts: {
@@ -60,6 +61,20 @@ const props = defineProps({
     default: false
   }
 })
+
+// 监听posts变化，调试数据
+import { watch } from 'vue'
+watch(() => props.posts, (newPosts) => {
+  console.log('PostStream - 收到帖子数据:', newPosts.length, '条')
+  if (newPosts.length > 0) {
+    console.log('第一个帖子数据:', {
+      id: newPosts[0].id,
+      username: newPosts[0].username,
+      avatar: newPosts[0].avatar ? '存在' : '不存在',
+      avatarLength: newPosts[0].avatar ? newPosts[0].avatar.length : 0
+    })
+  }
+}, { immediate: true })
 
 const emit = defineEmits(['like', 'comment', 'repost', 'reload'])
 
@@ -98,6 +113,8 @@ const handleRepost = (post) => {
   emit('repost', post)
   ElMessage.success('转发成功')
 }
+
+
 </script>
 
 <style scoped>

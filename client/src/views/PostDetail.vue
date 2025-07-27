@@ -3,17 +3,17 @@
     <AppHeader />
     <main class="post-detail-main">
       <el-button @click="goBack" style="margin-bottom:18px;">返回</el-button>
-      <PostCard
-        v-if="post"
-        :avatar="post.avatar"
-        :username="post.username"
-        :time="post.time"
-        :content="post.content"
-        :images="parseImages(post.image)"
-        :like-count="likeCount"
-        :like-loading="likeLoading"
-        @like="onLike"
-      />
+              <PostCard
+          v-if="post"
+          :avatar="parseAvatar(post.avatar)"
+          :username="post.username"
+          :time="post.time"
+          :content="post.content"
+          :images="parseImages(post.image)"
+          :like-count="likeCount"
+          :like-loading="likeLoading"
+          @like="onLike"
+        />
       <el-card class="comment-section">
         <div style="font-weight:bold;margin-bottom:8px;">评论区</div>
         <el-form v-if="userStore.token" :model="commentForm" ref="commentFormRef" @submit.prevent="onComment">
@@ -28,7 +28,7 @@
         <el-empty v-if="comments.length === 0" description="暂无评论" />
         <el-timeline v-else>
           <el-timeline-item v-for="c in comments" :key="c.comment_id" :timestamp="c.comment_time">
-            <el-avatar :src="c.avatar_url || ''" size="small" style="margin-right:8px" />
+            <el-avatar :src="parseAvatar(c.avatar_url)" size="small" style="margin-right:8px" />
             <span style="font-weight:bold">{{ c.username }}</span>
             <span style="margin-left:8px;">{{ c.content }}</span>
           </el-timeline-item>
@@ -48,6 +48,7 @@ import { fetchComments, addComment } from '../api/comment'
 import { likePost } from '../api/like'
 import AppHeader from '../components/AppHeader.vue'
 import PostCard from '../components/PostCard.vue'
+import { parseAvatar } from '../utils/avatar'
 
 const route = useRoute()
 const router = useRouter()

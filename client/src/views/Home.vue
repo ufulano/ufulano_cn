@@ -49,7 +49,10 @@ const publishingPost = ref(false)
 
 // 过滤帖子（搜索功能）
 const filteredPosts = computed(() => {
-  console.log('当前帖子数据:', posts.value)
+  console.log('Home - 当前帖子数据:', posts.value?.length || 0, '条')
+  if (posts.value && posts.value.length > 0) {
+    console.log('Home - 第一个帖子头像:', posts.value[0].avatar ? '存在' : '不存在')
+  }
   return posts.value || []
 })
 

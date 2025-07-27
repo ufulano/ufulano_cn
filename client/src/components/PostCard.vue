@@ -1,12 +1,20 @@
 <template>
   <div class="post-card">
     <div class="post-header">
-      <AvatarUpload 
-        :avatar="avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'" 
-        size="large" 
-        :editable="false"
-        class="post-avatar"
-      />
+      <div class="post-avatar-wrapper">
+        <img 
+          v-if="parseAvatar(avatar) && parseAvatar(avatar).startsWith('data:image/')" 
+          :src="parseAvatar(avatar)" 
+          :alt="username"
+          class="post-avatar-img"
+        />
+        <el-avatar 
+          v-else
+          :src="parseAvatar(avatar)" 
+          size="large" 
+          class="post-avatar"
+        />
+      </div>
       <div class="post-userinfo">
         <div class="post-username">{{ username }}</div>
         <div class="post-meta">
@@ -94,7 +102,7 @@
     <!-- 评论列表 -->
     <div v-if="comments.length" class="comment-list">
       <div v-for="c in comments" :key="c.id" class="comment-item">
-        <el-avatar :src="c.user?.avatar || c.avatar" size="small" class="comment-avatar" />
+        <el-avatar :src="parseAvatar(c.user?.avatar || c.avatar)" size="small" class="comment-avatar" />
         <div class="comment-content">
           <span class="comment-username">{{ c.user?.username || c.username }}</span>
           <span class="comment-time">{{ c.time }}</span>
@@ -113,6 +121,7 @@ import { ElMessage } from 'element-plus'
 import { Share, ChatLineSquare, Star, PictureFilled, ChatDotRound } from '@element-plus/icons-vue'
 import AvatarUpload from './AvatarUpload.vue'
 import { fetchComments, addComment } from '../api/comment'
+import { parseAvatar } from '../utils/avatar'
 
 const props = defineProps({
   avatar: String,
@@ -177,6 +186,8 @@ const insertCommentEmoji = (emoji) => {
 const insertRepostEmoji = (emoji) => {
   repostText.value += emoji
 }
+
+
 
 // 处理图片上传
 const onImageChange = (file) => {

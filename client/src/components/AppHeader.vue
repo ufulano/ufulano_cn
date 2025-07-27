@@ -7,7 +7,7 @@
     <nav class="header-nav">
       <el-dropdown>
         <el-button class="more-btn" type="primary">
-          More！!！<el-icon style="margin-left:4px;"><i class="el-icon-arrow-down" /></el-icon>
+          More!!!<el-icon style="margin-left:4px;"><i class="el-icon-arrow-down" /></el-icon>
         </el-button>
         <template #dropdown>
           <el-dropdown-menu>
@@ -27,7 +27,7 @@
         <el-dropdown trigger="click">
           <span class="user-avatar-wrap">
             <AvatarUpload 
-              :avatar="userStore.avatar" 
+              :avatar="parseAvatar(userStore.avatar)" 
               size="small" 
               :editable="false"
               class="header-avatar"
@@ -56,6 +56,7 @@
 import { useUserStore } from '../store/user'
 import { useRouter } from 'vue-router'
 import AvatarUpload from './AvatarUpload.vue'
+import { parseAvatar } from '../utils/avatar'
 const userStore = useUserStore()
 const router = useRouter()
 const onLogout = () => {

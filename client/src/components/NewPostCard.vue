@@ -3,7 +3,7 @@
     <el-card class="new-post-card">
       <div class="new-post-header">
         <AvatarUpload 
-          :avatar="avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'" 
+          :avatar="parseAvatar(avatar)" 
           size="large" 
           :editable="false"
           class="new-post-avatar"
@@ -103,6 +103,7 @@ import { ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { PictureFilled, Close } from '@element-plus/icons-vue'
 import AvatarUpload from './AvatarUpload.vue'
+import { parseAvatar } from '../utils/avatar'
 
 const props = defineProps({
   avatar: {
@@ -183,6 +184,31 @@ watch(content, (newValue) => {
     showActions.value = true
   }
 })
+
+// 解析头像数据
+const parseAvatar = (avatarData) => {
+  if (!avatarData) return 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'
+  
+  try {
+    // 如果头像数据是JSON字符串（数组格式），解析它
+    if (avatarData.startsWith('[') && avatarData.endsWith(']')) {
+      const parsed = JSON.parse(avatarData)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed[0]
+      }
+    }
+    
+    // 如果已经是base64格式，直接返回
+    if (avatarData.startsWith('data:image/')) {
+      return avatarData
+    }
+    
+    return 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'
+  } catch (error) {
+    console.error('解析头像数据失败:', error)
+    return 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'
+  }
+}
 </script>
 
 <style scoped>

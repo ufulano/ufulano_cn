@@ -30,7 +30,7 @@
               <el-form-item label="头像" prop="avatar">
                 <div class="avatar-section">
                   <AvatarUpload 
-                    :avatar="basicForm.avatar || userStore.avatar" 
+                    :avatar="parseAvatar(basicForm.avatar || userStore.avatar)" 
                     size="80" 
                     :editable="true"
                     @avatar-changed="handleAvatarChanged"
@@ -225,6 +225,7 @@ import AppHeader from '../components/AppHeader.vue'
 import UserSidebar from '../components/UserSidebar.vue'
 import AvatarUpload from '../components/AvatarUpload.vue'
 import { useUserStore } from '../store/user'
+import { parseAvatar } from '../utils/avatar'
 
 const userStore = useUserStore()
 

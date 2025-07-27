@@ -26,7 +26,7 @@
           <!-- 用户基本信息 -->
           <div class="user-info">
             <div class="user-avatar">
-              <el-avatar :size="80" :src="userInfo.avatar_url || 'https://picsum.photos/80/80'" />
+              <el-avatar :size="80" :src="parseAvatar(userInfo.avatar_url)" />
             </div>
             
             <div class="user-details">
@@ -90,7 +90,7 @@
                     v-for="post in posts"
                     :key="post.id"
                     :post-id="post.id"
-                    :avatar="post.avatar || post.User?.avatar_url"
+                    :avatar="parseAvatar(post.avatar || post.User?.avatar_url)"
                     :username="post.username || post.User?.username || post.User?.nickname"
                     :time="formatTime(post.createdAt || post.time)"
                     :content="post.content"
@@ -152,6 +152,7 @@ import PostCard from '../components/PostCard.vue'
 import UserSidebar from '../components/UserSidebar.vue'
 import { useUserStore } from '../store/user'
 import { fetchPosts } from '../api/post'
+import { parseAvatar } from '../utils/avatar'
 
 const route = useRoute()
 const router = useRouter()
