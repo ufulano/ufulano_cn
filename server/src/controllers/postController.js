@@ -25,7 +25,7 @@ exports.getAllPosts = async (req, res) => {
 
         // 转换数据结构
         const formattedPosts = posts.map(post => {
-            console.info('处理帖子:', post.post_id, '用户:', post.user?.username);
+            console.info('处理帖子:', post.post_id, '用户:', post.user?.username, '头像:', post.user?.avatar_url ? '存在' : '不存在');
             return {
                 id: post.post_id,
                 username: post.user?.username || '未知用户',
