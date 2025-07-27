@@ -24,9 +24,10 @@ Post.init(
       collate: 'utf8mb4_general_ci',
     },
     image_url: {
-      type: DataTypes.LONGTEXT,
+      type: DataTypes.TEXT,
       allowNull: true,
-      defaultValue: null
+      defaultValue: null,
+      comment: '图片数据，使用LONGTEXT类型存储'
     },
     post_time: {
       type: DataTypes.DATE,
