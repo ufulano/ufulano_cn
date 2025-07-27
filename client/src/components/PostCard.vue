@@ -55,7 +55,7 @@
     
     <!-- 转发输入区 -->
     <div v-if="showRepostBar" class="repost-bar">
-      <el-avatar :src="avatar" size="small" class="comment-avatar" />
+      <el-avatar :src="avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'" size="small" class="comment-avatar" />
       <el-input v-model="repostText" placeholder="说点什么..." class="repost-input" clearable />
       <el-popover placement="top" width="220" trigger="click">
         <template #reference>
@@ -74,7 +74,7 @@
     
     <!-- 评论输入区 -->
     <div v-if="showCommentBar" class="comment-bar">
-      <el-avatar :src="avatar" size="small" class="comment-avatar" />
+      <el-avatar :src="avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'" size="small" class="comment-avatar" />
       <el-input v-model="commentText" placeholder="发布你的评论" class="comment-input" clearable />
       <el-popover placement="top" width="220" trigger="click">
         <template #reference>

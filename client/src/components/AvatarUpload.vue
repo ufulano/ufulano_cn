@@ -90,8 +90,15 @@ const defaultAvatar = 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=�
 
 // 当前头像
 const currentAvatar = computed(() => {
-  if (props.avatar) return props.avatar
-  if (userStore.avatar) return userStore.avatar
+  console.log('AvatarUpload - props.avatar:', props.avatar ? '存在' : '不存在')
+  console.log('AvatarUpload - userStore.avatar:', userStore.avatar ? '存在' : '不存在')
+  
+  if (props.avatar && props.avatar.trim()) {
+    return props.avatar
+  }
+  if (userStore.avatar && userStore.avatar.trim()) {
+    return userStore.avatar
+  }
   return defaultAvatar
 })
 
