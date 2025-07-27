@@ -125,12 +125,26 @@ sequelize.authenticate()
   });
 
 // 同步数据库表结构
-sequelize.sync()
+sequelize.sync({ alter: true })
   .then(async () => {
     console.log('数据库表结构同步成功');
   })
   .catch(err => {
     console.error('数据库表结构同步失败:', err);
+    
+    // 如果是索引过多错误，提供解决方案
+    if (err.code === 'ER_TOO_MANY_KEYS') {
+      console.error('索引过多错误，请手动执行以下SQL:');
+      console.error('DROP INDEX IF EXISTS email_2 ON Users;');
+      console.error('DROP INDEX IF EXISTS username_2 ON Users;');
+      console.error('ALTER TABLE Posts MODIFY COLUMN image_url LONGTEXT;');
+    }
+    
+    // 如果是数据类型错误，提供解决方案
+    if (err.code === 'ER_DATA_TOO_LONG') {
+      console.error('数据太长错误，请手动执行以下SQL:');
+      console.error('ALTER TABLE Posts MODIFY COLUMN image_url LONGTEXT;');
+    }
   });
   
 setupSwagger(app);

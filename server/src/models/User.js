@@ -13,7 +13,7 @@ User.init(
     username: {
       type: DataTypes.STRING(50),
       allowNull: false,
-      unique: true,
+      // unique: true, // 暂时注释掉，避免索引过多
     },
     password: {
       type: DataTypes.STRING(100),
@@ -22,7 +22,7 @@ User.init(
     email: {
       type: DataTypes.STRING(100),
       allowNull: false,
-      unique: true,
+      // unique: true, // 暂时注释掉，避免索引过多
     },
     avatar_url: {
       type: DataTypes.TEXT,
