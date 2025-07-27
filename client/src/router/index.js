@@ -6,8 +6,10 @@ const routes = [
   { path: '/register', name: 'Register', component: () => import('../views/Register.vue') },
   { path: '/', name: 'Home', component: () => import('../views/Home.vue') },
   { path: '/community', name: 'Community', component: () => import('../views/Community.vue') },
-  { path: '/post/new', name: 'NewPost', component: () => import('../views/NewPost.vue') },
+
   { path: '/post/:id', name: 'PostDetail', component: () => import('../views/PostDetail.vue') },
+  { path: '/user/:id', name: 'UserProfile', component: () => import('../views/UserProfile.vue') },
+  { path: '/settings', name: 'AccountSettings', component: () => import('../views/AccountSettings.vue') },
 ]
 
 const router = createRouter({
@@ -21,20 +23,28 @@ router.beforeEach((to, from, next) => {
     console.log('目标路由:', to.path)
     console.log('来源路由:', from.path)
     
-    const userStore = useUserStore()
-    console.log('用户 store 获取成功')
-    console.log('当前 token:', userStore.token ? '存在' : '不存在')
+                    const userStore = useUserStore()
+                console.log('用户 store 获取成功')
+                console.log('当前登录状态:', userStore.isLoggedIn)
+                console.log('Token 是否过期:', userStore.isTokenExpired)
     
     // 允许未登录访问的页面
-    const publicPages = ['/', '/login', '/register', '/community', /^\/post\//]
+    const publicPages = ['/', '/login', '/register', '/community', /^\/post\//, /^\/user\//]
     const isPublic = publicPages.some(p => typeof p === 'string' ? to.path === p : p.test(to.path))
     
     console.log('是否为公开页面:', isPublic)
     
-    if (!isPublic && !userStore.token) {
-      console.log('需要登录，重定向到登录页')
-      return next('/login')
-    }
+                    // 检查 token 是否过期
+                if (userStore.isLoggedIn && userStore.isTokenExpired) {
+                  console.log('Token 已过期，自动登出')
+                  userStore.logout()
+                  return next('/login')
+                }
+                
+                if (!isPublic && !userStore.isLoggedIn) {
+                  console.log('需要登录，重定向到登录页')
+                  return next('/login')
+                }
     
     console.log('路由守卫通过')
     next()

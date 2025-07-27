@@ -22,6 +22,9 @@
               <el-input v-model="form.password" type="password" autocomplete="new-password" show-password clearable placeholder="请输入密码" />
             </el-form-item>
             <el-form-item>
+              <el-checkbox v-model="form.remember">记住我</el-checkbox>
+            </el-form-item>
+            <el-form-item>
               <el-button type="primary" :loading="loading" @click="onSubmit" class="register-btn">注册</el-button>
             </el-form-item>
             <div class="register-links">
@@ -52,7 +55,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const formRef = ref()
 const loading = ref(false)
-const form = ref({ username: '', email: '', password: '' })
+const form = ref({ username: '', email: '', password: '', remember: false })
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   email: [
@@ -68,7 +71,7 @@ const onSubmit = () => {
     loading.value = true
     try {
       const res = await register(form.value)
-      userStore.setUser(res.token, res.User)
+      userStore.setUser(res.token, res.User, form.value.remember)
       ElMessage.success('注册成功')
       router.push('/')
     } catch (e) {

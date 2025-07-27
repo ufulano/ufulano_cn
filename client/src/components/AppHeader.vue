@@ -3,7 +3,6 @@
   <header class="home-header">
     <div class="header-left">
       <img src="../logo.png" alt="logo" class="logo-img" @click="$router.push('/')" style="cursor:pointer;" />
-      <span class="logo-text">Ufulano</span>
     </div>
     <nav class="header-nav">
       <el-dropdown>
@@ -24,16 +23,16 @@
       <router-link to="/" class="nav-link nav-hide-on-mobile">资源</router-link>
       <router-link to="/" class="nav-link nav-hide-on-mobile">联系</router-link>
       <router-link to="/" class="nav-link nav-hide-on-mobile">信箱</router-link>
-      <template v-if="userStore.token">
+      <template v-if="userStore.isLoggedIn">
         <el-dropdown trigger="click">
           <span class="user-avatar-wrap">
-            <el-avatar :src="userStore.user?.avatar_url || ''" size="small" style="cursor:pointer;" />
+            <el-avatar :src="userStore.avatar" size="small" style="cursor:pointer;" />
           </span>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="$router.push('/')">我的主页</el-dropdown-item>
+              <el-dropdown-item @click="$router.push(`/user/${userStore.user?.user_id || 1}`)">我的主页</el-dropdown-item>
+              <el-dropdown-item @click="$router.push('/settings')">账号设置</el-dropdown-item>
               <el-dropdown-item @click="$router.push('/community')">社区中心</el-dropdown-item>
-              <el-dropdown-item @click="$router.push('/post/new')">发布帖子</el-dropdown-item>
               <el-dropdown-item divided @click="onLogout">登出</el-dropdown-item>
             </el-dropdown-menu>
           </template>

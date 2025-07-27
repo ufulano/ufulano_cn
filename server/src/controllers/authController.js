@@ -68,7 +68,7 @@ exports.register = async (req, res) => {
     });
 
     const token = jwt.sign(
-      { id: newUser.user_id }, 
+      { userId: newUser.user_id }, 
       process.env.JWT_SECRET, 
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );

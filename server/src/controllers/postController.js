@@ -33,7 +33,14 @@ exports.getAllPosts = async (req, res) => {
                 avatar: post.user?.avatar_url || '',
                 time: formatPostTime(post.post_time),
                 content: post.content || '',
-                images: post.image_url ? [post.image_url] : [],
+                images: post.image_url ? (() => {
+                    try {
+                        return JSON.parse(post.image_url);
+                    } catch (e) {
+                        console.warn('解析图片数据失败:', e);
+                        return [];
+                    }
+                })() : [],
                 comments: post.comment_count || 0,
                 reposts: post.repost_count || 0,
                 likes: post.like_count || 0,

@@ -41,6 +41,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -65,7 +66,7 @@ const onSubmit = () => {
     loading.value = true
     try {
       const res = await login(form.value)
-      userStore.setUser(res.token, res.user)
+      userStore.setUser(res.token, res.user, form.value.remember)
       ElMessage.success('登录成功')
       router.push('/')
     } catch (e) {

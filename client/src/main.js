@@ -24,16 +24,16 @@ console.log('Router 已加载')
 
 // 初始化用户状态
 console.log('准备初始化用户状态...')
-setTimeout(() => {
-  try {
-    const userStore = useUserStore()
-    console.log('用户 store 获取成功')
-    userStore.initFromStorage()
-    console.log('用户状态初始化完成')
-  } catch (error) {
-    console.error('用户状态初始化失败:', error)
+const userStore = useUserStore()
+userStore.initFromStorage()
+console.log('用户状态初始化完成')
+
+// 定期检查 token 过期
+setInterval(() => {
+  if (userStore.isLoggedIn) {
+    userStore.checkTokenExpiry()
   }
-}, 100) // 延迟100ms确保Pinia完全初始化
+}, 60000) // 每分钟检查一次
 
 console.log('准备挂载应用到 DOM...')
 app.mount('#app')

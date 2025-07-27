@@ -17,7 +17,7 @@
     
     <div class="post-content" @click="handleContentClick">{{ content }}</div>
     
-    <div v-if="images && images.length" class="post-images">
+    <div v-if="images && images.length" class="post-images" :data-count="images.length">
       <el-image 
         v-for="(img, index) in images" 
         :key="index" 
@@ -283,6 +283,18 @@ onMounted(() => {
   display: flex;
   align-items: center;
   margin-bottom: 16px;
+  gap: 12px;
+}
+
+.post-header .el-avatar {
+  border: 2px solid var(--color-gray-light);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.post-header .el-avatar:hover {
+  border-color: var(--color-blue);
+  transform: scale(1.05);
 }
 
 .post-userinfo {
@@ -335,21 +347,61 @@ onMounted(() => {
 
 .post-images {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 8px;
   margin-bottom: 16px;
+}
+
+.post-images[data-count="1"] {
+  grid-template-columns: 1fr;
+  max-width: 400px;
+}
+
+.post-images[data-count="2"] {
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 500px;
+}
+
+.post-images[data-count="3"] {
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 600px;
+}
+
+.post-images[data-count="4"] {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  max-width: 500px;
 }
 
 .post-image {
   width: 100%;
   height: 200px;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: transform 0.3s;
+  transition: all 0.3s ease;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .post-image:hover {
   transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 针对不同数量图片的高度优化 */
+.post-images[data-count="1"] .post-image {
+  height: 300px;
+}
+
+.post-images[data-count="2"] .post-image {
+  height: 180px;
+}
+
+.post-images[data-count="3"] .post-image {
+  height: 150px;
+}
+
+.post-images[data-count="4"] .post-image {
+  height: 140px;
 }
 
 .post-actions {
@@ -399,6 +451,13 @@ onMounted(() => {
 
 .comment-avatar {
   flex-shrink: 0;
+  border: 1px solid var(--color-gray-light);
+  transition: all 0.2s ease;
+}
+
+.comment-avatar:hover {
+  border-color: var(--color-blue);
+  transform: scale(1.05);
 }
 
 .repost-input,
@@ -520,7 +579,16 @@ onMounted(() => {
   }
   
   .post-images {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+  }
+  
+  .post-images .post-image {
+    height: 200px !important;
+  }
+  
+  .post-header .el-avatar {
+    width: 40px !important;
+    height: 40px !important;
   }
 }
 </style> 
