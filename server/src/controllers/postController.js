@@ -82,6 +82,11 @@ exports.createPost = async (req, res) => {
 
         const { content, images, topics, visibility } = req.body;
         const userId = req.user.userId;
+        
+        console.log('=== 用户信息调试 ===');
+        console.log('req.user:', req.user);
+        console.log('userId:', userId);
+        console.log('userId类型:', typeof userId);
 
         if (!content) {
             console.warn('内容为空，无法发布推文');
@@ -126,57 +131,66 @@ exports.createPost = async (req, res) => {
         }
     
         // 验证所有图片数据
-        for (let i = 0; i < images.length; i++) {
-            const image = images[i];
-            
-            if (!isValidBase64Image(image)) {
-                return res.status(400).json({ 
-                    error: `第${i + 1}张图片格式无效` 
-                });
+        if (images && images.length > 0) {
+            console.info(`验证 ${images.length} 张图片`);
+            for (let i = 0; i < images.length; i++) {
+                const image = images[i];
+                
+                if (!isValidBase64Image(image)) {
+                    console.error(`第${i + 1}张图片格式无效:`, image.substring(0, 50) + '...');
+                    return res.status(400).json({ 
+                        error: `第${i + 1}张图片格式无效` 
+                    });
+                }
+                
+                if (!validateImageSize(image)) {
+                    console.error(`第${i + 1}张图片大小超过限制`);
+                    return res.status(400).json({ 
+                        error: `第${i + 1}张图片大小不能超过5MB` 
+                    });
+                }
+                
+                if (!validateImageFormat(image)) {
+                    console.error(`第${i + 1}张图片格式不支持`);
+                    return res.status(400).json({ 
+                        error: `第${i + 1}张图片格式不支持，只支持JPG、PNG、GIF格式` 
+                    });
+                }
             }
-            
-            if (!validateImageSize(image)) {
-                return res.status(400).json({ 
-                    error: `第${i + 1}张图片大小不能超过5MB` 
-                });
-            }
-            
-            if (!validateImageFormat(image)) {
-                return res.status(400).json({ 
-                    error: `第${i + 1}张图片格式不支持，只支持JPG、PNG、GIF格式` 
-                });
-            }
+        } else {
+            console.info('没有图片需要验证');
         }
             
         
                 // 创建新帖子（添加调试日志）
-        console.log('准备创建的帖子数据:', {
+        const postData = {
           user_id: userId,
           content,
           image_url: JSON.stringify(images), // 重点检查这个值
           topics: topicsString,
           visibility: visibilityValue
-        });
-
+        };
+        
+        console.log('准备创建的帖子数据:', postData);
+        console.log('用户ID类型:', typeof userId, '值:', userId);
+        console.log('图片数据长度:', images ? images.length : 0);
 
         // 创建新帖子
-        const post = await Post.create({
-            user_id: userId,
-            content,
-            image_url: JSON.stringify(images),
-            topics: topicsString,
-            visibility: visibilityValue, // 使用转换后的数字值
-            // 其他字段会自动填充默认值
-        });
+        const post = await Post.create(postData);
 
         console.info('帖子创建成功:', post.toJSON());
         console.log('创建后的帖子数据:', post.toJSON());
         res.status(201).json(post);
     } catch (err) {
         console.error('创建帖子时发生错误:', err);
+        console.error('错误堆栈:', err.stack);
+        console.error('请求体:', req.body);
+        console.error('用户信息:', req.user);
+        
         res.status(500).json({ 
             message: '创建文章失败',
-            error: process.env.NODE_ENV === 'development' ? err.message : undefined
+            error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+            details: process.env.NODE_ENV === 'development' ? err.stack : undefined
         });
     }
 };
