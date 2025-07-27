@@ -46,7 +46,7 @@
         :class="{ active: activeTab === 'likes' }"
         @click="handleNavClick('likes')"
       >
-        <el-icon><ThumbsUp /></el-icon>
+        <el-icon><StarFilled /></el-icon>
         <span>我的赞</span>
       </div>
       
@@ -69,7 +69,7 @@ import {
   User, 
   UserFilled, 
   Star, 
-  ThumbsUp, 
+  StarFilled, 
   Setting
 } from '@element-plus/icons-vue'
 

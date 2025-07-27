@@ -141,7 +141,7 @@ import {
   User, 
   UserFilled, 
   Star, 
-  ThumbsUp, 
+  StarFilled, 
   Setting, 
   ArrowLeft, 
   Location,
