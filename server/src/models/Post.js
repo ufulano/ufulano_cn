@@ -24,7 +24,7 @@ Post.init(
       collate: 'utf8mb4_general_ci',
     },
     image_url: {
-      type: DataTypes.TEXT,
+      type: DataTypes.LONGTEXT,
       allowNull: true,
       defaultValue: null,
       comment: '图片数据，使用LONGTEXT类型存储'

@@ -1,20 +1,28 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import { getCache, setCache, deleteCache } from '../utils/cacheManager'
 
 const service = axios.create({
   baseURL: '/api', // 代理到后端
   timeout: 60000, // 增加超时时间到60秒，适应图片上传
 })
 
-// 请求拦截器，自动携带 token
+// 请求拦截器，自动携带 token 和缓存处理
 service.interceptors.request.use(config => {
   console.log('=== 请求拦截器 ===')
   console.log('请求方法:', config.method?.toUpperCase())
   console.log('请求URL:', config.url)
   console.log('完整URL:', config.baseURL + config.url)
-  console.log('请求头:', config.headers)
-  console.log('请求参数:', config.params)
-  console.log('请求数据:', config.data)
+  
+  // 检查缓存（仅对GET请求）
+  if (config.method?.toLowerCase() === 'get' && !config.noCache) {
+    const cacheKey = `${config.url}_${JSON.stringify(config.params || {})}`
+    const cachedData = getCache(cacheKey)
+    if (cachedData) {
+      console.log('使用缓存数据:', cacheKey)
+      return Promise.resolve({ data: cachedData, fromCache: true })
+    }
+  }
   
   // 尝试从新的 userStore 格式获取 token
   let token = null
@@ -49,17 +57,26 @@ service.interceptors.request.use(config => {
   return Promise.reject(error)
 })
 
-// 响应拦截器，统一错误处理
+// 响应拦截器，统一错误处理和缓存
 service.interceptors.response.use(
   response => {
     console.log('=== 响应拦截器成功 ===')
+    
+    // 处理缓存数据
+    if (response.fromCache) {
+      console.log('返回缓存数据')
+      return response.data
+    }
+    
+    // 缓存GET请求的响应数据
+    if (response.config.method?.toLowerCase() === 'get' && !response.config.noCache) {
+      const cacheKey = `${response.config.url}_${JSON.stringify(response.config.params || {})}`
+      setCache(cacheKey, response.data)
+      console.log('已缓存数据:', cacheKey)
+    }
+    
     console.log('响应状态:', response.status)
-    console.log('响应头:', response.headers)
-    console.log('响应数据类型:', typeof response.data)
-    console.log('响应数据是否为对象:', typeof response.data === 'object')
-    console.log('响应数据键:', Object.keys(response.data))
     console.log('响应数据:', response.data)
-    console.log('返回数据:', response.data)
     return response.data
   },
   error => {

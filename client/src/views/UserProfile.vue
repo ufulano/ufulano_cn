@@ -86,20 +86,16 @@
                   />
                 </div>
                 <div class="content-list">
-                  <PostCard
-                    v-for="post in posts"
-                    :key="post.id"
-                    :post-id="post.id"
-                    :avatar="parseAvatar(post.avatar || post.User?.avatar_url)"
-                    :username="post.username || post.User?.username || post.User?.nickname"
-                    :time="formatTime(post.createdAt || post.time)"
-                    :content="post.content"
-                    :images="post.images || (post.image_url ? [post.image_url] : [])"
-                    :like-count="post.likes || post.like_count || 0"
-                    :read-count="post.read_count || 0"
-                    @like="handleLike(post)"
-                    @comment="handleComment(post)"
-                    @repost="handleRepost(post)"
+                  <PostStream 
+                    :posts="posts"
+                    :loading="loading"
+                    :error="error"
+                    filter-mode="user"
+                    :current-user-id="userInfo.user_id || userInfo.id"
+                    @like="handleLike"
+                    @comment="handleComment"
+                    @repost="handleRepost"
+                    @reload="loadUserPosts"
                   />
                 </div>
               </div>
@@ -149,6 +145,7 @@ import {
 } from '@element-plus/icons-vue'
 import AppHeader from '../components/AppHeader.vue'
 import PostCard from '../components/PostCard.vue'
+import PostStream from '../components/PostStream.vue'
 import UserSidebar from '../components/UserSidebar.vue'
 import { useUserStore } from '../store/user'
 import { fetchPosts } from '../api/post'
@@ -163,6 +160,7 @@ const activeTab = ref('profile')
 const contentTab = ref('posts')
 const posts = ref([])
 const loading = ref(false)
+const error = ref(false)
 
 // 用户信息
 const userInfo = computed(() => {
@@ -200,11 +198,13 @@ const formatTime = (timeStr) => {
 // 加载用户帖子
 const loadUserPosts = async () => {
   loading.value = true
+  error.value = false
   try {
     const response = await fetchPosts()
     posts.value = Array.isArray(response) ? response : (response.data || [])
-  } catch (error) {
-    console.error('加载用户帖子失败:', error)
+  } catch (err) {
+    console.error('加载用户帖子失败:', err)
+    error.value = true
     ElMessage.error('加载失败')
   } finally {
     loading.value = false

@@ -133,6 +133,7 @@ import { Share, ChatLineSquare, Star, PictureFilled, ChatDotRound } from '@eleme
 import AvatarUpload from './AvatarUpload.vue'
 import { fetchComments, addComment } from '../api/comment'
 import { parseAvatar } from '../utils/avatar'
+import { lazyLoadImage, preloadImages } from '../utils/imageLoader'
 
 const props = defineProps({
   avatar: String,
@@ -171,6 +172,10 @@ const emojiList = [
 const comments = ref([])
 const fullImages = ref([]) // 存储原图
 const loadedFullImages = ref(new Set()) // 记录已加载的原图
+
+// 图片懒加载状态
+const imageLoadingStates = ref(new Map())
+const imageIntersectionObserver = ref(null)
 
 // 切换评论栏
 const toggleCommentBar = () => {
@@ -226,6 +231,39 @@ const loadFullImage = async (index) => {
   } catch (error) {
     console.error('加载原图失败:', error)
     ElMessage.error('加载原图失败')
+  }
+}
+
+// 图片懒加载
+const setupImageLazyLoading = () => {
+  if (!props.images || props.images.length === 0) return
+  
+  // 预加载第一张图片
+  if (props.images[0]) {
+    lazyLoadImage(props.images[0], () => {
+      console.log('第一张图片预加载完成')
+    })
+  }
+  
+  // 设置Intersection Observer
+  if ('IntersectionObserver' in window) {
+    imageIntersectionObserver.value = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const imgIndex = parseInt(entry.target.dataset.index)
+          const imgSrc = props.images[imgIndex]
+          
+          if (imgSrc && !imageLoadingStates.value.get(imgIndex)) {
+            imageLoadingStates.value.set(imgIndex, 'loading')
+            lazyLoadImage(imgSrc, () => {
+              imageLoadingStates.value.set(imgIndex, 'loaded')
+            })
+          }
+        }
+      })
+    }, {
+      rootMargin: '50px' // 提前50px开始加载
+    })
   }
 }
 
@@ -299,6 +337,19 @@ const loadComments = async () => {
     comments.value = []
   }
 }
+
+// 组件挂载时设置图片懒加载
+onMounted(() => {
+  setupImageLazyLoading()
+  loadComments()
+})
+
+// 组件卸载时清理Observer
+onUnmounted(() => {
+  if (imageIntersectionObserver.value) {
+    imageIntersectionObserver.value.disconnect()
+  }
+})
 
 // 处理点赞
 const handleLike = () => {

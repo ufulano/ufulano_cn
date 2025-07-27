@@ -6,6 +6,7 @@ import router from './router'
 import pinia from './store'
 import { useUserStore } from './store/user'
 import './assets/theme.css'
+import './utils/debugTools.js'
 
 // 注册Service Worker
 if ('serviceWorker' in navigator) {

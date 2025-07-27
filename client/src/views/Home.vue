@@ -21,6 +21,8 @@
         :posts="filteredPosts"
         :loading="loading"
         :error="error"
+        filter-mode="all"
+        :current-user-id="userStore.userId"
         @like="handleLike"
         @comment="handleComment"
         @repost="handleRepost"
@@ -39,6 +41,8 @@ import NewPostCard from '../components/NewPostCard.vue'
 import PostStream from '../components/PostStream.vue'
 import { fetchPosts, createPost } from '../api/post'
 import { useUserStore } from '../store/user'
+import { getCache, setCache, deleteCache, getCacheStats } from '../utils/cacheManager'
+import { PerformanceMonitor } from '../utils/performance'
 
 const userStore = useUserStore()
 const posts = ref([])
@@ -46,6 +50,9 @@ const loading = ref(false)
 const error = ref(false)
 const searchLoading = ref(false)
 const publishingPost = ref(false)
+
+// 性能监控
+const performanceMonitor = new PerformanceMonitor()
 
 // 过滤帖子（搜索功能）
 const filteredPosts = computed(() => {
@@ -56,25 +63,44 @@ const filteredPosts = computed(() => {
   return posts.value || []
 })
 
-// 加载帖子
+// 加载帖子（带缓存）
 const loadPosts = async () => {
+  performanceMonitor.mark('loadPosts-start')
+  
+  // 检查缓存
+  const cacheKey = 'posts_list'
+  const cachedPosts = getCache(cacheKey)
+  if (cachedPosts) {
+    console.log('使用缓存的帖子数据')
+    posts.value = cachedPosts
+    performanceMonitor.measure('loadPosts-cache', 'loadPosts-start')
+    return
+  }
+  
   loading.value = true
   error.value = false
   
   try {
     const response = await fetchPosts()
     
+    let postData = []
     if (Array.isArray(response)) {
-      posts.value = response
+      postData = response
     } else if (response && response.data) {
-      posts.value = response.data
-    } else {
-      posts.value = []
+      postData = response.data
     }
+    
+    posts.value = postData
+    
+    // 缓存数据（5分钟）
+    setCache(cacheKey, postData, 5 * 60 * 1000)
+    
+    performanceMonitor.measure('loadPosts-success', 'loadPosts-start')
   } catch (e) {
     console.error('加载帖子失败:', e)
     error.value = true
     ElMessage.error(`加载失败: ${e.message || '请检查网络连接'}`)
+    performanceMonitor.measure('loadPosts-error', 'loadPosts-start')
   } finally {
     loading.value = false
   }
@@ -115,7 +141,9 @@ const handleRepost = (post) => {
 
 // 发布新帖子
 const publishNewPost = async (payload) => {
+  performanceMonitor.mark('publishPost-start')
   publishingPost.value = true
+  
   try {
     // 检查是否是缩略图模式
     if (payload.isThumbnail) {
@@ -131,11 +159,15 @@ const publishNewPost = async (payload) => {
       ElMessage.success('发布成功')
     }
     
-    // 重新加载帖子列表
+    // 清除缓存，重新加载帖子列表
+    deleteCache('posts_list')
     await loadPosts()
+    
+    performanceMonitor.measure('publishPost-success', 'publishPost-start')
   } catch (error) {
     console.error('发布失败:', error)
     ElMessage.error('发布失败，请重试')
+    performanceMonitor.measure('publishPost-error', 'publishPost-start')
   } finally {
     publishingPost.value = false
   }

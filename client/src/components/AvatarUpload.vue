@@ -62,7 +62,7 @@ import AvatarCropper from './AvatarCropper.vue'
 import { updateUserAvatar } from '../api/user.js'
 import { useUserStore } from '../store/user.js'
 import { parseAvatar } from '../utils/avatar'
-import { isValidImage, isValidImageSize } from '../utils/imageCompression'
+import { isValidImage, isValidImageSize, compressImage, getImageSize } from '../utils/imageCompression'
 
 const props = defineProps({
   avatar: {
@@ -102,8 +102,8 @@ const currentAvatar = computed(() => {
   return parsedAvatar
 })
 
-// 处理文件选择
-const handleFileChange = (file) => {
+// 处理文件选择（自动压缩）
+const handleFileChange = async (file) => {
   if (!props.editable) {
     ElMessage.warning('头像不可编辑')
     return
@@ -115,23 +115,48 @@ const handleFileChange = (file) => {
     return
   }
   
-  // 验证文件大小（限制为2MB）
-  if (!isValidImageSize(file.raw, 2)) {
-    ElMessage.error('图片大小不能超过 2MB!')
-    return
-  }
-
-  // 显示裁剪对话框
+  // 移除文件大小限制，让用户不用担心大小
+  console.log('原始文件大小:', (file.raw.size / 1024).toFixed(2), 'KB')
+  
+  // 显示处理进度
+  const loadingMessage = ElMessage({
+    message: '正在处理图片...',
+    type: 'info',
+    duration: 0
+  })
+  
   const reader = new FileReader()
-  reader.onload = (e) => {
-    console.log('文件读取完成，准备显示裁剪器')
-    tempImageUrl.value = e.target.result
-    showCropper.value = true
+  reader.onload = async (e) => {
+    try {
+      const originalSize = getImageSize(e.target.result)
+      console.log('原始图片大小:', originalSize.toFixed(2), 'KB')
+      
+      // 自动压缩图片（如果太大）
+      let processedImage = e.target.result
+      if (originalSize > 500) { // 如果大于500KB，进行压缩
+        processedImage = await compressImage(e.target.result, 400, 200)
+        const compressedSize = getImageSize(processedImage)
+        console.log('压缩后图片大小:', compressedSize.toFixed(2), 'KB')
+      }
+      
+      // 显示裁剪对话框
+      tempImageUrl.value = processedImage
+      showCropper.value = true
+      
+      loadingMessage.close()
+    } catch (error) {
+      console.error('图片处理失败:', error)
+      loadingMessage.close()
+      ElMessage.error('图片处理失败')
+    }
   }
+  
   reader.onerror = (error) => {
     console.error('文件读取失败:', error)
+    loadingMessage.close()
     ElMessage.error('文件读取失败')
   }
+  
   reader.readAsDataURL(file.raw)
 }
 

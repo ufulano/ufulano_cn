@@ -24,7 +24,7 @@
     <!-- 帖子列表 -->
     <section v-else class="post-list-section">
       <VirtualPostList 
-        :items="posts" 
+        :items="filteredPosts" 
         :item-height="300"
         :buffer-size="3"
         class="virtual-post-list"
@@ -70,13 +70,46 @@ const props = defineProps({
   error: {
     type: Boolean,
     default: false
+  },
+  // 筛选模式：'all' | 'user' | 'following'
+  filterMode: {
+    type: String,
+    default: 'all'
+  },
+  // 当前用户ID（用于筛选用户自己的帖子）
+  currentUserId: {
+    type: [String, Number],
+    default: null
+  }
+})
+
+// 筛选帖子
+const filteredPosts = computed(() => {
+  if (!props.posts || props.posts.length === 0) {
+    return []
+  }
+  
+  switch (props.filterMode) {
+    case 'user':
+      // 只显示当前用户的帖子
+      return props.posts.filter(post => 
+        post.user_id == props.currentUserId || 
+        post.userId == props.currentUserId
+      )
+    case 'following':
+      // 显示关注用户的帖子（暂时返回所有帖子）
+      return props.posts
+    case 'all':
+    default:
+      // 显示所有帖子
+      return props.posts
   }
 })
 
 // 监听posts变化，优化性能
 import { watch } from 'vue'
-watch(() => props.posts, (newPosts) => {
-  console.log('PostStream - 收到帖子数据:', newPosts.length, '条')
+watch(() => filteredPosts.value, (newPosts) => {
+  console.log('PostStream - 筛选后帖子数据:', newPosts.length, '条')
   
   // 预加载图片
   if (newPosts.length > 0) {
