@@ -11,4 +11,9 @@ const app = createApp(App)
 app.use(ElementPlus)
 app.use(pinia)
 app.use(router)
+
+// 初始化用户状态
+const userStore = useUserStore()
+userStore.initFromStorage()
+
 app.mount('#app')
