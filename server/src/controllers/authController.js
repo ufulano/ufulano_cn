@@ -38,6 +38,8 @@ exports.login = async (req, res) => {
     };
 
     console.log('登录成功');
+    console.log('返回的用户数据:', userData);
+    console.log('返回的完整响应:', { token, user: userData });
     res.json({
         token,
         user: userData

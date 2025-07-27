@@ -16,8 +16,26 @@ service.interceptors.request.use(config => {
   console.log('请求参数:', config.params)
   console.log('请求数据:', config.data)
   
-  const token = localStorage.getItem('token')
-  console.log('localStorage中的token:', token ? '存在' : '不存在')
+  // 尝试从新的 userStore 格式获取 token
+  let token = null
+  try {
+    const userStoreData = localStorage.getItem('userStore')
+    if (userStoreData) {
+      const data = JSON.parse(userStoreData)
+      token = data.token
+      console.log('从 userStore 获取到 token:', token ? '存在' : '不存在')
+    }
+  } catch (error) {
+    console.log('解析 userStore 失败，尝试旧格式')
+  }
+  
+  // 如果新格式没有，尝试旧格式
+  if (!token) {
+    token = localStorage.getItem('token')
+    console.log('从旧格式获取到 token:', token ? '存在' : '不存在')
+  }
+  
+  console.log('最终使用的 token:', token ? '存在' : '不存在')
   
   if (token) {
     config.headers.Authorization = `Bearer ${token}`

@@ -65,11 +65,27 @@ const onSubmit = () => {
     if (!valid) return
     loading.value = true
     try {
+      console.log('=== 登录请求开始 ===')
+      console.log('登录表单数据:', form.value)
+      
       const res = await login(form.value)
+      console.log('=== 登录响应 ===')
+      console.log('完整响应:', res)
+      console.log('token:', res.token ? '存在' : '不存在')
+      console.log('user:', res.user)
+      
+      if (!res.user) {
+        console.error('❌ 后端没有返回用户数据！')
+        ElMessage.error('登录失败：服务器返回数据不完整')
+        return
+      }
+      
       userStore.setUser(res.token, res.user, form.value.remember)
+      console.log('✅ 用户数据已设置到 store')
       ElMessage.success('登录成功')
       router.push('/')
     } catch (e) {
+      console.error('登录失败:', e)
       ElMessage.error(e?.message || '登录失败')
     } finally {
       loading.value = false

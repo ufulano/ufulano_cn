@@ -48,15 +48,31 @@ export const useUserStore = defineStore('user', {
   actions: {
     // 设置用户数据
     setUser(token, user, rememberMe = false) {
-      console.log('设置用户数据:', { 
-        token: token ? '存在' : '不存在', 
-        user, 
-        rememberMe 
-      })
+      console.log('=== setUser 方法调用 ===')
+      console.log('传入的 token:', token ? '存在' : '不存在')
+      console.log('传入的 user:', user)
+      console.log('传入的 rememberMe:', rememberMe)
+      
+      if (!token) {
+        console.error('❌ token 为空！')
+        return
+      }
+      
+      if (!user) {
+        console.error('❌ user 数据为空！')
+        return
+      }
       
       this.token = token
       this.user = user
       this.rememberMe = rememberMe
+      
+      console.log('✅ 用户数据已设置到 store')
+      console.log('当前 store 状态:', {
+        token: this.token ? '存在' : '不存在',
+        user: this.user ? '存在' : '不存在',
+        isLoggedIn: this.isLoggedIn
+      })
       
       // 设置 token 过期时间
       if (token && rememberMe) {
