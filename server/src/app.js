@@ -47,13 +47,55 @@ app.use(express.static('client/public'));
 app.use(morgan('combined', { stream: accessLogStream }));
 
 // 5. 路由配置
+console.log('=== 配置路由 ===');
+
 // 使用用户认证路由
 app.use('/api', authRoutes);
+console.log('认证路由已配置: /api');
 
 // 使用帖子操作路由
 app.use('/api', postRoutes);
+console.log('帖子路由已配置: /api');
+
 app.use('/api/comments', commentRoutes);
+console.log('评论路由已配置: /api/comments');
+
 app.use('/api/likes', likeRoutes);
+console.log('点赞路由已配置: /api/likes');
+
+// 添加路由调试中间件
+app.use('/api/comments/*', (req, res, next) => {
+  console.log('=== 评论路由调试 ===');
+  console.log('请求方法:', req.method);
+  console.log('请求URL:', req.url);
+  console.log('请求路径:', req.path);
+  console.log('请求参数:', req.params);
+  next();
+});
+
+// 添加 404 处理
+app.use('/api/*', (req, res) => {
+  console.log('=== 404 错误 ===');
+  console.log('未找到路由:', req.method, req.url);
+  res.status(404).json({
+    message: 'API 路由未找到',
+    path: req.url,
+    method: req.method
+  });
+});
+
+// 添加全局错误处理
+app.use((err, req, res, next) => {
+  console.error('=== 全局错误处理 ===');
+  console.error('错误:', err);
+  console.error('请求URL:', req.url);
+  console.error('请求方法:', req.method);
+  
+  res.status(500).json({
+    message: '服务器内部错误',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
 
 // 6. 数据库同步
 // 引入 Sequelize 模型

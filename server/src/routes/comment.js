@@ -4,6 +4,12 @@ const router = express.Router();
 const authenticateToken = require('../middleware/authMiddleware');
 const { createComment, getComment } = require('../controllers/commentController');
 
+// 测试路由
+router.get('/test', (req, res) => {
+  console.log('=== 评论测试路由被调用 ===');
+  res.json({ message: '评论路由工作正常' });
+});
+
 /**
  * @swagger
  * /api/comments/{postId}:

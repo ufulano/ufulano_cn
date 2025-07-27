@@ -48,6 +48,7 @@
         <p>user: {{ userStore.user ? '存在' : '不存在' }}</p>
         <p>initialized: {{ userStore.initialized }}</p>
         <el-button @click="testLogin">测试登录状态</el-button>
+        <el-button @click="forceReload" type="danger" size="small">强制重新加载</el-button>
       </section>
       
       <!-- 新建帖子卡片 -->
@@ -327,22 +328,34 @@ const handleRepost = (post) => {
   ElMessage.success('转发成功')
 }
 
-// 测试登录状态
-const testLogin = () => {
-  console.log('=== 测试登录状态 ===')
-  console.log('userStore.isLoggedIn:', userStore.isLoggedIn)
-  console.log('userStore.token:', userStore.token)
-  console.log('userStore.user:', userStore.user)
-  console.log('userStore.initialized:', userStore.initialized)
-  
-  // 尝试重新初始化
-  userStore.initFromStorage()
-  
-  // 验证和修复用户数据
-  const isValid = userStore.validateAndFixUserData()
-  
-  ElMessage.info(`登录状态: ${userStore.isLoggedIn ? '已登录' : '未登录'}, 数据验证: ${isValid ? '通过' : '失败'}`)
-}
+            // 测试登录状态
+            const testLogin = () => {
+              console.log('=== 测试登录状态 ===')
+              console.log('userStore.isLoggedIn:', userStore.isLoggedIn)
+              console.log('userStore.token:', userStore.token)
+              console.log('userStore.user:', userStore.user)
+              console.log('userStore.initialized:', userStore.initialized)
+              
+              // 检查 localStorage 原始数据
+              console.log('=== localStorage 原始数据 ===')
+              console.log('userStore:', localStorage.getItem('userStore'))
+              console.log('token:', localStorage.getItem('token'))
+              console.log('user:', localStorage.getItem('user'))
+              
+              // 尝试重新初始化
+              userStore.initFromStorage()
+              
+              // 验证和修复用户数据
+              const isValid = userStore.validateAndFixUserData()
+              
+              ElMessage.info(`登录状态: ${userStore.isLoggedIn ? '已登录' : '未登录'}, 数据验证: ${isValid ? '通过' : '失败'}`)
+            }
+            
+            // 强制重新加载
+            const forceReload = () => {
+              const success = userStore.forceReload()
+              ElMessage.info(`强制重新加载: ${success ? '成功' : '失败'}`)
+            }
 
 // 新建帖子相关方法
 const onNewPostImageChange = (file) => {

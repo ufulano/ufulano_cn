@@ -150,28 +150,35 @@ export const useUserStore = defineStore('user', {
         // 首先尝试加载新格式的数据
         const dataStr = localStorage.getItem('userStore')
         if (dataStr) {
-          const data = JSON.parse(dataStr)
-          
-          // 检查数据完整性
-          if (!data.token || !data.user) {
-            console.log('新格式 localStorage 数据不完整，尝试旧格式')
-          } else {
-            // 检查 token 是否过期
-            if (data.tokenExpiry && new Date() > new Date(data.tokenExpiry)) {
-              console.log('localStorage 中的 token 已过期，清除')
-              this.clearStorage()
-              return false
+          try {
+            const data = JSON.parse(dataStr)
+            console.log('解析新格式数据:', data)
+            
+            // 检查数据完整性
+            if (!data.token || !data.user) {
+              console.log('新格式 localStorage 数据不完整，尝试旧格式')
+            } else {
+              // 检查 token 是否过期
+              if (data.tokenExpiry && new Date() > new Date(data.tokenExpiry)) {
+                console.log('localStorage 中的 token 已过期，清除')
+                this.clearStorage()
+                return false
+              }
+              
+              // 恢复数据
+              this.token = data.token
+              this.user = data.user
+              this.rememberMe = data.rememberMe || false
+              this.tokenExpiry = data.tokenExpiry ? new Date(data.tokenExpiry) : null
+              this.lastActivity = data.lastActivity ? new Date(data.lastActivity) : null
+              
+              console.log('从新格式 localStorage 恢复用户数据成功')
+              console.log('恢复的 token:', this.token ? '存在' : '不存在')
+              console.log('恢复的 user:', this.user)
+              return true
             }
-            
-            // 恢复数据
-            this.token = data.token
-            this.user = data.user
-            this.rememberMe = data.rememberMe || false
-            this.tokenExpiry = data.tokenExpiry ? new Date(data.tokenExpiry) : null
-            this.lastActivity = data.lastActivity ? new Date(data.lastActivity) : null
-            
-            console.log('从新格式 localStorage 恢复用户数据成功')
-            return true
+          } catch (parseError) {
+            console.error('解析新格式数据失败:', parseError)
           }
         }
         
@@ -179,9 +186,12 @@ export const useUserStore = defineStore('user', {
         const oldToken = localStorage.getItem('token')
         const oldUserStr = localStorage.getItem('user')
         
+        console.log('检查旧格式数据:', { oldToken: oldToken ? '存在' : '不存在', oldUserStr })
+        
         if (oldToken && oldUserStr) {
           try {
             const oldUser = JSON.parse(oldUserStr)
+            console.log('解析旧格式用户数据:', oldUser)
             
             if (oldUser && typeof oldUser === 'object') {
               this.token = oldToken
@@ -194,11 +204,17 @@ export const useUserStore = defineStore('user', {
               this.saveToStorage()
               
               console.log('从旧格式 localStorage 恢复用户数据成功，已迁移到新格式')
+              console.log('恢复的 token:', this.token ? '存在' : '不存在')
+              console.log('恢复的 user:', this.user)
               return true
+            } else {
+              console.log('旧格式用户数据无效:', oldUser)
             }
           } catch (parseError) {
             console.error('解析旧格式用户数据失败:', parseError)
           }
+        } else {
+          console.log('旧格式数据不完整:', { oldToken: !!oldToken, oldUserStr: !!oldUserStr })
         }
         
         console.log('localStorage 中无有效用户数据')
@@ -296,6 +312,34 @@ export const useUserStore = defineStore('user', {
       
       console.log('用户数据验证通过')
       return true
+    },
+    
+    // 强制重新加载用户数据
+    forceReload() {
+      console.log('=== 强制重新加载用户数据 ===')
+      
+      // 清除当前状态
+      this.token = ''
+      this.user = null
+      this.rememberMe = false
+      this.tokenExpiry = null
+      this.lastActivity = null
+      
+      // 重新加载
+      const loaded = this.loadFromStorage()
+      
+      if (loaded) {
+        console.log('强制重新加载成功')
+        console.log('当前状态:', {
+          token: this.token ? '存在' : '不存在',
+          user: this.user ? '存在' : '不存在',
+          isLoggedIn: this.isLoggedIn
+        })
+      } else {
+        console.log('强制重新加载失败')
+      }
+      
+      return loaded
     }
   }
 }) 

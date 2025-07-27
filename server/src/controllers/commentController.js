@@ -1,4 +1,4 @@
-const { Comment, User } = require('../models');
+const { Comment, User } = require('../models/index');
 
 // 格式化评论时间
 const formatCommentTime = (date) => {
@@ -25,10 +25,34 @@ exports.getComment = async (req, res) => {
     console.log('postId:', postId);
     console.log('req.params:', req.params);
     console.log('req.url:', req.url);
+    console.log('Comment 模型:', typeof Comment);
+    console.log('User 模型:', typeof User);
+    
+    // 检查数据库连接
+    const { sequelize } = require('../models/index');
+    try {
+      await sequelize.authenticate();
+      console.log('数据库连接正常');
+    } catch (dbError) {
+      console.error('数据库连接失败:', dbError);
+      return res.status(500).json({
+        message: '数据库连接失败',
+        error: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+      });
+    }
+
+    // 验证 postId
+    if (!postId || isNaN(parseInt(postId))) {
+      return res.status(400).json({
+        message: '无效的帖子ID'
+      });
+    }
 
     // 查询评论，包含用户信息
+    console.log('开始查询评论，post_id:', parseInt(postId));
+    
     const comments = await Comment.findAll({
-      where: { post_id: postId },
+      where: { post_id: parseInt(postId) },
       include: [
         {
           model: User,
@@ -40,6 +64,11 @@ exports.getComment = async (req, res) => {
     });
 
     console.log(`找到 ${comments.length} 条评论`);
+    console.log('评论数据:', comments.map(c => ({
+      id: c.comment_id,
+      content: c.comment_content,
+      user: c.user?.username
+    })));
 
     // 格式化评论数据
     const formattedComments = comments.map(comment => ({
@@ -59,6 +88,7 @@ exports.getComment = async (req, res) => {
     res.json(formattedComments);
   } catch (err) {
     console.error('获取评论失败:', err);
+    console.error('错误堆栈:', err.stack);
     res.status(500).json({
       message: '获取评论失败',
       error: process.env.NODE_ENV === 'development' ? err.message : undefined
@@ -95,12 +125,20 @@ exports.createComment = async (req, res) => {
     }
 
     // 创建评论
+    console.log('准备创建评论:', {
+      user_id: userId,
+      post_id: postId,
+      content: content.trim()
+    });
+    
     const comment = await Comment.create({
       user_id: userId,
       post_id: postId,
       comment_content: content.trim(),
       comment_time: new Date()
     });
+    
+    console.log('评论创建成功:', comment.comment_id);
 
     // 获取刚创建的评论，包含用户信息
     const newComment = await Comment.findByPk(comment.comment_id, {
