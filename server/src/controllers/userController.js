@@ -23,6 +23,26 @@ exports.updateUserAvatar = async (req, res) => {
       });
     }
 
+    // 验证图片大小（限制为2MB）
+    const base64Data = avatar_url.split(',')[1];
+    const sizeInBytes = Math.ceil((base64Data.length * 3) / 4);
+    const sizeInMB = sizeInBytes / (1024 * 1024);
+    
+    if (sizeInMB > 2) {
+      return res.status(400).json({
+        message: '头像大小不能超过2MB'
+      });
+    }
+
+    // 验证图片格式
+    const allowedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    const format = avatar_url.match(/data:(image\/[^;]+)/);
+    if (!format || !allowedFormats.includes(format[1])) {
+      return res.status(400).json({
+        message: '只支持JPG、PNG、GIF格式的图片'
+      });
+    }
+
     // 更新用户头像
     const user = await User.findByPk(userId);
     if (!user) {

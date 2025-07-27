@@ -7,6 +7,7 @@
           :src="parseAvatar(avatar)" 
           :alt="username"
           class="post-avatar-img"
+          style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;"
         />
         <el-avatar 
           v-else
@@ -40,6 +41,7 @@
         :preview-src-list="images"
         :initial-index="index"
         preview-teleported
+        :style="{ maxWidth: '100%', maxHeight: '400px', objectFit: 'cover' }"
       />
     </div>
     
@@ -63,7 +65,7 @@
     
     <!-- 转发输入区 -->
     <div v-if="showRepostBar" class="repost-bar">
-      <el-avatar :src="avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'" size="small" class="comment-avatar" />
+      <el-avatar :src="avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'" size="small" class="comment-avatar" style="width: 32px; height: 32px;" />
       <el-input v-model="repostText" placeholder="说点什么..." class="repost-input" clearable />
       <el-popover placement="top" width="220" trigger="click">
         <template #reference>
@@ -82,7 +84,7 @@
     
     <!-- 评论输入区 -->
     <div v-if="showCommentBar" class="comment-bar">
-      <el-avatar :src="avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'" size="small" class="comment-avatar" />
+      <el-avatar :src="avatar || 'https://via.placeholder.com/100x100/CCCCCC/FFFFFF?text=头像'" size="small" class="comment-avatar" style="width: 32px; height: 32px;" />
       <el-input v-model="commentText" placeholder="发布你的评论" class="comment-input" clearable />
       <el-popover placement="top" width="220" trigger="click">
         <template #reference>
@@ -102,7 +104,7 @@
     <!-- 评论列表 -->
     <div v-if="comments.length" class="comment-list">
       <div v-for="c in comments" :key="c.id" class="comment-item">
-        <el-avatar :src="parseAvatar(c.user?.avatar || c.avatar)" size="small" class="comment-avatar" />
+        <el-avatar :src="parseAvatar(c.user?.avatar || c.avatar)" size="small" class="comment-avatar" style="width: 32px; height: 32px;" />
         <div class="comment-content">
           <span class="comment-username">{{ c.user?.username || c.username }}</span>
           <span class="comment-time">{{ c.time }}</span>
@@ -311,6 +313,23 @@ onMounted(() => {
   border: 2px solid var(--color-gray-light);
   transition: all 0.3s ease;
   cursor: pointer;
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.post-avatar-img {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 2px solid var(--color-gray-light);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.comment-avatar {
+  width: 32px !important;
+  height: 32px !important;
 }
 
 .post-header .el-avatar:hover {
@@ -396,11 +415,13 @@ onMounted(() => {
 .post-image {
   width: 100%;
   height: 200px;
+  max-height: 400px;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   object-fit: cover;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .post-image:hover {
@@ -610,6 +631,11 @@ onMounted(() => {
   .post-header .el-avatar {
     width: 40px !important;
     height: 40px !important;
+  }
+  
+  .comment-avatar {
+    width: 28px !important;
+    height: 28px !important;
   }
 }
 </style> 

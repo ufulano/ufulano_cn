@@ -103,17 +103,48 @@ exports.createPost = async (req, res) => {
             (Array.isArray(topics) ? topics.join(',') : String(topics)) 
             : '';
 
-            // 验证 Base64 数据是否有效（可选）
+            // 验证 Base64 数据是否有效
         function isValidBase64Image(base64Image) {
             if (!base64Image) return false;
             const base64Regex = /^data:image\/(jpeg|png|gif|bmp);base64,/;
             return base64Regex.test(base64Image);
         }
+
+        // 验证图片大小（限制为5MB）
+        function validateImageSize(base64Image) {
+            const base64Data = base64Image.split(',')[1];
+            const sizeInBytes = Math.ceil((base64Data.length * 3) / 4);
+            const sizeInMB = sizeInBytes / (1024 * 1024);
+            return sizeInMB <= 5; // 限制5MB
+        }
+
+        // 验证图片格式
+        function validateImageFormat(base64Image) {
+            const allowedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            const format = base64Image.match(/data:(image\/[^;]+)/);
+            return format && allowedFormats.includes(format[1]);
+        }
     
-        // 验证所有图片数据是否有效
-        for (const image of images) {
+        // 验证所有图片数据
+        for (let i = 0; i < images.length; i++) {
+            const image = images[i];
+            
             if (!isValidBase64Image(image)) {
-                return res.status(400).json({ error: '无效的图片数据' });
+                return res.status(400).json({ 
+                    error: `第${i + 1}张图片格式无效` 
+                });
+            }
+            
+            if (!validateImageSize(image)) {
+                return res.status(400).json({ 
+                    error: `第${i + 1}张图片大小不能超过5MB` 
+                });
+            }
+            
+            if (!validateImageFormat(image)) {
+                return res.status(400).json({ 
+                    error: `第${i + 1}张图片格式不支持，只支持JPG、PNG、GIF格式` 
+                });
             }
         }
             

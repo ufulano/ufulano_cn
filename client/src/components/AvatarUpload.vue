@@ -108,12 +108,15 @@ const handleFileChange = (file) => {
     return
   }
   
-  // 验证文件类型和大小
-  const isImage = file.raw.type.startsWith('image/')
+  // 验证文件类型
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+  const isImage = allowedTypes.includes(file.raw.type)
+  
+  // 验证文件大小（限制为2MB）
   const isLt2M = file.raw.size / 1024 / 1024 < 2
 
   if (!isImage) {
-    ElMessage.error('只能上传图片文件!')
+    ElMessage.error('只能上传JPG、PNG、GIF格式的图片文件!')
     return
   }
   if (!isLt2M) {
