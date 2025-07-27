@@ -210,11 +210,12 @@ exports.createPost = async (req, res) => {
         console.log('visibilityValue:', visibilityValue);
 
         // 创建新帖子
+        let post;
         try {
-            const post = await Post.create(postData);
+            post = await Post.create(postData);
             console.info('帖子创建成功:', post.toJSON());
             console.log('创建后的帖子数据:', post.toJSON());
-            res.status(201).json(post);
+            return res.status(201).json(post);
         } catch (createError) {
             console.error('Post.create() 失败:', createError);
             console.error('创建错误详情:', createError.message);
@@ -238,10 +239,6 @@ exports.createPost = async (req, res) => {
             
             throw createError; // 重新抛出错误，让外层catch处理
         }
-
-        console.info('帖子创建成功:', post.toJSON());
-        console.log('创建后的帖子数据:', post.toJSON());
-        res.status(201).json(post);
     } catch (err) {
         console.error('创建帖子时发生错误:', err);
         console.error('错误堆栈:', err.stack);
