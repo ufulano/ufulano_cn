@@ -81,12 +81,31 @@ exports.createPost = async (req, res) => {
         console.info('当前用户信息:', req.user);
 
         const { content, images, topics, visibility } = req.body;
-        const userId = req.user.userId;
+        const userId = parseInt(req.user.userId, 10); // 确保是数字类型
         
         console.log('=== 用户信息调试 ===');
         console.log('req.user:', req.user);
         console.log('userId:', userId);
         console.log('userId类型:', typeof userId);
+
+        // 验证用户是否存在
+        if (!userId) {
+            console.error('用户ID为空');
+            return res.status(400).json({ message: '用户ID无效' });
+        }
+
+        // 检查用户是否存在于数据库中
+        try {
+            const userExists = await User.findByPk(userId);
+            if (!userExists) {
+                console.error('用户不存在，ID:', userId);
+                return res.status(400).json({ message: '用户不存在' });
+            }
+            console.log('用户验证成功:', userExists.username);
+        } catch (userError) {
+            console.error('验证用户时出错:', userError);
+            return res.status(500).json({ message: '用户验证失败' });
+        }
 
         if (!content) {
             console.warn('内容为空，无法发布推文');
@@ -163,10 +182,21 @@ exports.createPost = async (req, res) => {
             
         
                 // 创建新帖子（添加调试日志）
+        // 清理和验证数据
+        const cleanContent = content ? content.trim() : '';
+        const cleanImages = images && images.length > 0 ? images : [];
+        const cleanImageUrl = JSON.stringify(cleanImages);
+        
+        // 检查数据长度
+        if (cleanImageUrl.length > 65535) { // TEXT字段的最大长度
+            console.error('图片数据过长:', cleanImageUrl.length);
+            return res.status(400).json({ message: '图片数据过长，请减少图片数量或压缩图片' });
+        }
+        
         const postData = {
           user_id: userId,
-          content,
-          image_url: JSON.stringify(images), // 重点检查这个值
+          content: cleanContent,
+          image_url: cleanImageUrl,
           topics: topicsString,
           visibility: visibilityValue
         };
@@ -174,9 +204,40 @@ exports.createPost = async (req, res) => {
         console.log('准备创建的帖子数据:', postData);
         console.log('用户ID类型:', typeof userId, '值:', userId);
         console.log('图片数据长度:', images ? images.length : 0);
+        console.log('image_url内容:', JSON.stringify(images));
+        console.log('content长度:', content ? content.length : 0);
+        console.log('topicsString:', topicsString);
+        console.log('visibilityValue:', visibilityValue);
 
         // 创建新帖子
-        const post = await Post.create(postData);
+        try {
+            const post = await Post.create(postData);
+            console.info('帖子创建成功:', post.toJSON());
+            console.log('创建后的帖子数据:', post.toJSON());
+            res.status(201).json(post);
+        } catch (createError) {
+            console.error('Post.create() 失败:', createError);
+            console.error('创建错误详情:', createError.message);
+            console.error('尝试创建的数据:', postData);
+            
+            // 检查是否是外键约束错误
+            if (createError.name === 'SequelizeForeignKeyConstraintError') {
+                return res.status(400).json({
+                    message: '用户不存在',
+                    error: '用户ID无效'
+                });
+            }
+            
+            // 检查是否是数据类型错误
+            if (createError.name === 'SequelizeValidationError') {
+                return res.status(400).json({
+                    message: '数据格式错误',
+                    error: createError.message
+                });
+            }
+            
+            throw createError; // 重新抛出错误，让外层catch处理
+        }
 
         console.info('帖子创建成功:', post.toJSON());
         console.log('创建后的帖子数据:', post.toJSON());
