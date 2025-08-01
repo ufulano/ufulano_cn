@@ -1,171 +1,222 @@
-<!--
- * 首页组件
- * 
- * 功能特性：
- * - 帖子流展示：显示用户关注的动态和推荐内容
- * - 发布新帖子：快速发布文字、图片、视频内容
- * - 内容过滤：支持按类型、时间、热度等筛选
- * - 无限滚动：高性能的虚拟滚动列表
- * - 实时更新：支持实时刷新和推送
- * 
- * 页面结构：
- * - 顶部：应用头部导航
- * - 左侧：用户侧边栏
- * - 主内容：帖子流和新帖子卡片
- * - 右侧：搜索栏和推荐内容
- * 
- * 技术实现：
- * - 虚拟滚动：使用VirtualPostList组件优化性能
- * - 状态管理：与用户store和帖子store集成
- * - 响应式设计：支持移动端和桌面端
- * - 性能优化：懒加载、缓存、防抖等
- -->
 <template>
+  <!-- 首页组件 - 社交平台主页面 -->
   <div class="home-root">
-    <!-- 应用头部 -->
     <AppHeader />
-    
-    <div class="home-container">
-      <!-- 左侧用户侧边栏 -->
-      <UserSidebar />
+    <main class="home-main">
+      <!-- 搜索栏 -->
+      <SearchBar 
+        :loading="searchLoading" 
+        @search="handleSearch" 
+      />
       
-      <!-- 主内容区域 -->
-      <main class="home-main">
-        <!-- 新帖子发布卡片 -->
-        <NewPostCard @post-created="handlePostCreated" />
-        
-        <!-- 帖子过滤器 -->
-        <PostFilter 
-          v-model:filter="currentFilter"
-          @filter-changed="handleFilterChanged"
-        />
-        
-        <!-- 帖子流列表 -->
-        <PostStream 
-          :filter="currentFilter"
-          :key="streamKey"
-          @post-updated="handlePostUpdated"
-        />
-      </main>
+      <!-- 新建帖子卡片 -->
+      <NewPostCard 
+        v-if="userStore.isLoggedIn"
+        :avatar="userStore.avatar"
+        :publishing="publishingPost"
+        @publish="publishNewPost"
+      />
       
-      <!-- 右侧搜索栏 -->
-      <SearchBar class="home-search" />
-    </div>
+      <!-- 帖子流 -->
+      <PostStream 
+        :posts="pagedPosts"
+        :loading="loading"
+        :error="error"
+        filter-mode="all"
+        :current-user-id="null"
+        @like="handleLike"
+        @comment="handleComment"
+        @repost="handleRepost"
+        @reload="loadPosts"
+      />
+    </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+/**
+ * Home 组件 - 首页
+ * 功能：社交平台主页面，包含搜索、发帖、帖子流等功能
+ * 特性：响应式布局、性能监控、智能缓存、无限滚动
+ */
+
+import { ref, computed, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import AppHeader from '../components/AppHeader.vue'
-import UserSidebar from '../components/UserSidebar.vue'
-import NewPostCard from '../components/NewPostCard.vue'
-import PostFilter from '../components/PostFilter.vue'
-import PostStream from '../components/PostStream.vue'
 import SearchBar from '../components/SearchBar.vue'
+import NewPostCard from '../components/NewPostCard.vue'
+import PostStream from '../components/PostStream.vue'
+import { fetchPosts, createPost } from '../api/post'
 import { useUserStore } from '../store/user'
+import { getCache, setCache, deleteCache, getCacheStats } from '../utils/cacheManager'
+import { PerformanceMonitor } from '../utils/performance'
 
-// 获取路由实例和用户store
-const router = useRouter()
-const userStore = useUserStore()
+// 状态管理
+const userStore = useUserStore()        // 用户状态管理
+const posts = ref([])                   // 帖子数据
+const loading = ref(false)              // 加载状态
+const error = ref(false)                // 错误状态
+const searchLoading = ref(false)        // 搜索加载状态
+const publishingPost = ref(false)        // 发布帖子状态
+const page = ref(1)                     // 当前页码
+const pageSize = 20                     // 每页显示数量
 
-// 响应式状态管理
-const currentFilter = ref('all')    // 当前过滤器类型
-const streamKey = ref(0)            // 帖子流组件key，用于强制刷新
+// 性能监控实例
+const performanceMonitor = new PerformanceMonitor()
 
-/**
- * 处理帖子创建事件
- * 
- * @param {Object} post - 新创建的帖子对象
- */
-const handlePostCreated = (post) => {
-  console.log('新帖子已创建:', post)
-  // 刷新帖子流
-  streamKey.value++
+// 过滤帖子（搜索功能）
+const filteredPosts = computed(() => {
+  return posts.value || []
+})
+
+// 分页帖子数据
+const pagedPosts = computed(() => filteredPosts.value.slice(0, page.value * pageSize))
+
+// 滚动加载更多
+const handleScroll = (e) => {
+  const el = e.target
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+    if (pagedPosts.value.length < filteredPosts.value.length) {
+      page.value++
+    }
+  }
 }
 
-/**
- * 处理过滤器变更事件
- * 
- * @param {string} filter - 新的过滤器类型
- */
-const handleFilterChanged = (filter) => {
-  console.log('过滤器已变更:', filter)
-  currentFilter.value = filter
-}
-
-/**
- * 处理帖子更新事件
- * 
- * @param {Object} post - 更新后的帖子对象
- */
-const handlePostUpdated = (post) => {
-  console.log('帖子已更新:', post)
-}
-
-// 组件挂载时的初始化逻辑
-onMounted(() => {
-  // 检查用户登录状态
-  if (!userStore.isLoggedIn) {
-    router.push('/login')
+// 加载帖子数据（带缓存）
+const loadPosts = async () => {
+  performanceMonitor.mark('loadPosts-start')
+  
+  // 检查缓存
+  const cacheKey = 'posts_list'
+  const cachedPosts = getCache(cacheKey)
+  if (cachedPosts) {
+    posts.value = cachedPosts
+    performanceMonitor.measure('loadPosts-cache', 'loadPosts-start')
     return
   }
   
-  console.log('首页组件已挂载')
+  loading.value = true
+  error.value = false
+  
+  try {
+    const response = await fetchPosts()
+    
+    let postData = []
+    if (Array.isArray(response)) {
+      postData = response
+    } else if (response && response.data) {
+      postData = response.data
+    }
+    
+    posts.value = postData
+    
+    // 缓存数据（5分钟）
+    setCache(cacheKey, postData, 5 * 60 * 1000)
+    
+    performanceMonitor.measure('loadPosts-success', 'loadPosts-start')
+  } catch (e) {
+    error.value = true
+    ElMessage.error(`加载失败: ${e.message || '请检查网络连接'}`)
+    performanceMonitor.measure('loadPosts-error', 'loadPosts-start')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 搜索处理
+const handleSearch = async (searchTerm) => {
+  if (!searchTerm.trim()) {
+    await loadPosts()
+    return
+  }
+  
+  searchLoading.value = true
+  try {
+    // TODO: 实现搜索功能，暂时使用本地过滤
+    await loadPosts()
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+// 点赞处理
+const handleLike = (post) => {
+  // TODO: 调用点赞API
+  ElMessage.success('点赞成功')
+}
+
+// 评论处理
+const handleComment = (post) => {
+  // TODO: 跳转到详情页或展开评论框
+}
+
+// 转发处理
+const handleRepost = (post) => {
+  // TODO: 调用转发API
+  ElMessage.success('转发成功')
+}
+
+// 发布新帖子
+const publishNewPost = async (payload) => {
+  performanceMonitor.mark('publishPost-start')
+  publishingPost.value = true
+  
+  try {
+    // 检查是否是缩略图模式
+    if (payload.isThumbnail) {
+      ElMessage.info('正在发布...')
+    }
+    
+    await createPost(payload)
+    
+    if (payload.isThumbnail) {
+      ElMessage.success('发布成功！图片正在后台处理...')
+    } else {
+      ElMessage.success('发布成功')
+    }
+    
+    // 清除缓存，重新加载帖子列表
+    deleteCache('posts_list')
+    await loadPosts()
+    
+    performanceMonitor.measure('publishPost-success', 'publishPost-start')
+  } catch (error) {
+    ElMessage.error('发布失败，请重试')
+    performanceMonitor.measure('publishPost-error', 'publishPost-start')
+  } finally {
+    publishingPost.value = false
+  }
+
+}
+
+onMounted(() => {
+  loadPosts()
+  const container = document.querySelector('.virtual-post-list')
+  if (container) {
+    container.addEventListener('scroll', handleScroll)
+  }
 })
 </script>
 
 <style scoped>
-/* 首页根容器 */
 .home-root {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-gray-light);
+  overflow-x: hidden;
+  box-sizing: border-box;
   min-height: 100vh;
+}
+
+.home-main {
+  flex: 1 1 0;
+  width: 100vw;
   background: var(--color-gray-light);
   display: flex;
   flex-direction: column;
-}
-
-/* 首页主容器 */
-.home-container {
-  display: flex;
-  max-width: 1200px;
-  margin: 80px auto 0;
-  gap: 24px;
-  padding: 0 20px;
-  flex: 1;
-}
-
-/* 主内容区域 */
-.home-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  max-width: 600px;
-}
-
-/* 搜索栏样式 */
-.home-search {
-  width: 300px;
-  position: sticky;
-  top: 100px;
-  height: fit-content;
-}
-
-/* 响应式设计 */
-@media (max-width: 1024px) {
-  .home-search {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .home-container {
-    flex-direction: column;
-    padding: 0 16px;
-  }
-  
-  .home-main {
-    max-width: none;
-  }
+  align-items: center;
+  padding: 32px 0 24px 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 </style> 
