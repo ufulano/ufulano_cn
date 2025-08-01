@@ -74,8 +74,10 @@ const getItemOffset = (index) => {
   let offset = 0
   for (let i = 0; i < index; i++) {
     const item = props.items[i]
-    if (item) {
+    if (item && typeof item === 'object' && 'id' in item) {
       offset += itemHeights.value.get(item.id) || props.estimatedItemHeight
+    } else {
+      offset += props.estimatedItemHeight
     }
   }
   return offset
@@ -141,10 +143,12 @@ const offsetY = computed(() => {
 // 可见的项目
 const visibleItems = computed(() => {
   const { start, end } = visibleRange.value
-  return props.items.slice(start, end).map((item, index) => ({
-    ...item,
-    index: start + index
-  }))
+  return props.items.slice(start, end)
+    .filter(item => item && typeof item === 'object' && 'id' in item)
+    .map((item, index) => ({
+      ...item,
+      index: start + index
+    }))
 })
 
 // 滚动处理

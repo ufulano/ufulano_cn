@@ -124,9 +124,8 @@ const filteredPosts = computed(() => {
       console.log('PostStream - 全部筛选结果:', result.length, '条')
       break
   }
-  
-  console.log('PostStream - 最终筛选结果:', result)
-  return result
+  // 过滤掉无效项
+  return result.filter(item => item && typeof item === 'object' && 'id' in item)
 })
 
 // 监听posts变化，优化性能
