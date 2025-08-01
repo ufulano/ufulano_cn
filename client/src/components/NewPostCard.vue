@@ -87,11 +87,17 @@
             type="primary" 
             @click="handlePublish"
             :loading="publishing"
-            :disabled="!content.trim()"
+            :disabled="!content.trim() || error"
             class="new-post-publish-btn"
           >
             发布
           </el-button>
+          
+          <!-- 错误提示 -->
+          <div v-if="error && errorMessage" class="new-post-error">
+            <el-icon><Warning /></el-icon>
+            <span>{{ errorMessage }}</span>
+          </div>
         </div>
       </div>
     </el-card>
@@ -115,6 +121,14 @@ const props = defineProps({
   publishing: {
     type: Boolean,
     default: false
+  },
+  error: {
+    type: Boolean,
+    default: false
+  },
+  errorMessage: {
+    type: String,
+    default: ''
   }
 })
 
@@ -286,7 +300,7 @@ watch(content, (newValue) => {
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 24px;
-  background-color: aliceblue;
+  background-color:var(--color-white);
 }
 
 .new-post-card {

@@ -75,8 +75,9 @@ const getItemOffset = (index) => {
   let offset = 0;
   for (let i = 0; i < index; i++) {
     const item = props.items[i];
-    if (item && typeof item === 'object' && 'id' in item) {
-      offset += itemHeights.value.get(item.id) || props.estimatedItemHeight;
+    if (item && typeof item === 'object') {
+      const itemId = item.id || item._id || i;
+      offset += itemHeights.value.get(itemId) || props.estimatedItemHeight;
     } else {
       offset += props.estimatedItemHeight;
     }
@@ -88,8 +89,13 @@ const getItemOffset = (index) => {
 const totalHeight = computed(() => {
   if (!props.items || !Array.isArray(props.items)) return 0;
   let total = 0
-  props.items.forEach(item => {
-    total += itemHeights.value.get(item.id) || props.estimatedItemHeight
+  props.items.forEach((item, index) => {
+    if (item && typeof item === 'object') {
+      const itemId = item.id || item._id || index;
+      total += itemHeights.value.get(itemId) || props.estimatedItemHeight
+    } else {
+      total += props.estimatedItemHeight
+    }
   })
   return total
 })

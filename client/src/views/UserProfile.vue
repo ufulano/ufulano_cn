@@ -101,13 +101,26 @@
                 <div class="content-list">
                   <!-- 调试信息 -->
                   <div style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; font-size: 12px;">
-                    <p>调试信息:</p>
+                    <p><strong>调试信息:</strong></p>
                     <p>帖子数量: {{ posts.length }}</p>
                     <p>加载状态: {{ loading }}</p>
                     <p>错误状态: {{ error }}</p>
                     <p>用户ID: {{ route.params.id || userStore.userId }}</p>
+                    <p>用户Store状态: {{ userStore.user ? '已登录' : '未登录' }}</p>
+                    <p>路由参数: {{ JSON.stringify(route.params) }}</p>
                     <p>帖子数据示例: {{ posts.length > 0 ? JSON.stringify(posts[0], null, 2) : '无数据' }}</p>
-                    <p>所有帖子ID: {{ posts.map(p => p?.id).join(', ') }}</p>
+                    <p>所有帖子ID: {{ posts.map(p => p?.id || p?._id || '无ID').join(', ') }}</p>
+                    <p>帖子类型检查: {{ posts.map(p => typeof p).join(', ') }}</p>
+                  </div>
+                  
+                  <!-- 调试按钮 -->
+                  <div style="margin-bottom: 10px; text-align: center;">
+                    <el-button @click="loadUserPosts" :loading="loading" type="primary" size="small">
+                      重新加载数据
+                    </el-button>
+                    <el-button @click="debugPosts" type="info" size="small" style="margin-left: 10px;">
+                      调试数据
+                    </el-button>
                   </div>
                   
                   <PostStream 
@@ -264,13 +277,13 @@ const loadUserPosts = async () => {
       let rawPosts = response.posts || response.data || []
       console.log('原始帖子数据:', rawPosts)
       
-      // 过滤掉无效的帖子（没有id的）
-      posts.value = rawPosts.filter(post => post && typeof post === 'object' && 'id' in post)
+      // 过滤掉无效的帖子，但放宽条件
+      posts.value = rawPosts.filter(post => post && typeof post === 'object')
       console.log('过滤后的有效帖子:', posts.value)
       
       // 如果有无效数据，记录警告
       if (rawPosts.length !== posts.value.length) {
-        console.warn('发现无效帖子数据:', rawPosts.filter(post => !post || typeof post !== 'object' || !('id' in post)))
+        console.warn('发现无效帖子数据:', rawPosts.filter(post => !post || typeof post !== 'object'))
       }
     } else {
       // 如果没有用户ID，获取所有动态
@@ -279,13 +292,13 @@ const loadUserPosts = async () => {
       let rawPosts = Array.isArray(response) ? response : (response.data || [])
       console.log('原始所有帖子数据:', rawPosts)
       
-      // 过滤掉无效的帖子
-      posts.value = rawPosts.filter(post => post && typeof post === 'object' && 'id' in post)
+      // 过滤掉无效的帖子，但放宽条件
+      posts.value = rawPosts.filter(post => post && typeof post === 'object')
       console.log('过滤后的有效帖子:', posts.value)
       
       // 如果有无效数据，记录警告
       if (rawPosts.length !== posts.value.length) {
-        console.warn('发现无效帖子数据:', rawPosts.filter(post => !post || typeof post !== 'object' || !('id' in post)))
+        console.warn('发现无效帖子数据:', rawPosts.filter(post => !post || typeof post !== 'object'))
       }
     }
     
@@ -339,6 +352,24 @@ const handleRepost = (post) => {
   }
   console.log('转发帖子:', post.id)
   ElMessage.success('转发成功')
+}
+
+/**
+ * 调试帖子数据
+ */
+const debugPosts = () => {
+  console.log('=== 调试帖子数据 ===')
+  console.log('当前用户ID:', route.params.id || userStore.userId)
+  console.log('用户Store:', userStore.user)
+  console.log('帖子数量:', posts.value.length)
+  console.log('加载状态:', loading.value)
+  console.log('错误状态:', error.value)
+  console.log('帖子数据:', posts.value)
+  console.log('路由参数:', route.params)
+  console.log('==================')
+  
+  // 显示调试信息
+  ElMessage.info(`帖子数量: ${posts.value.length}, 加载状态: ${loading.value}, 错误状态: ${error.value}`)
 }
 
 // 组件挂载时加载用户动态

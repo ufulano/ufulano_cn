@@ -12,12 +12,28 @@
       <el-empty description="加载失败，请重试" :image-size="120">
         <el-button type="primary" @click="$emit('reload')">重新加载</el-button>
       </el-empty>
+      <!-- 错误详情 -->
+      <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; margin-top: 10px; border-radius: 4px;">
+        <p style="margin: 0; color: #856404;"><strong>错误详情:</strong></p>
+        <p style="margin: 5px 0; color: #856404;">帖子数据: {{ posts.length }} 条</p>
+        <p style="margin: 5px 0; color: #856404;">筛选模式: {{ filterMode }}</p>
+        <p style="margin: 5px 0; color: #856404;">当前用户ID: {{ currentUserId }}</p>
+      </div>
     </section>
     <!-- 空状态 -->
     <section v-else-if="posts.length === 0" class="empty-section">
       <el-empty description="暂无内容" :image-size="120">
         <el-button type="primary" @click="$router.push('/post/new')">发布第一条动态</el-button>
       </el-empty>
+      <!-- 空状态详情 -->
+      <div style="background: #e3f2fd; border: 1px solid #bbdefb; padding: 10px; margin-top: 10px; border-radius: 4px;">
+        <p style="margin: 0; color: #1976d2;"><strong>状态详情:</strong></p>
+        <p style="margin: 5px 0; color: #1976d2;">原始帖子数量: {{ posts.length }}</p>
+        <p style="margin: 5px 0; color: #1976d2;">筛选模式: {{ filterMode }}</p>
+        <p style="margin: 5px 0; color: #1976d2;">当前用户ID: {{ currentUserId }}</p>
+        <p style="margin: 5px 0; color: #1976d2;">加载状态: {{ loading }}</p>
+        <p style="margin: 5px 0; color: #1976d2;">错误状态: {{ error }}</p>
+      </div>
     </section>
     
     <!-- 帖子列表 -->
@@ -30,19 +46,19 @@
         ref="virtualListRef"
       >
         <template #default="{ item: post }">
-          <template v-if="post && typeof post === 'object' && 'id' in post">
+          <template v-if="post && typeof post === 'object'">
             <PostCard
-              :key="post.id"
-              :post-id="post.id"
-              :avatar="parseAvatar(post.avatar)"
-              :username="post.username || '未知用户'"
-              :time="formatTime(post.createdAt || post.time)"
-              :content="post.content"
-              :images="post.images || []"
-              :like-count="Number(post.likes || post.like_count || 0)"
-              :comment-count="Number(post.comments || post.comment_count || 0)"
-              :repost-count="Number(post.reposts || post.repost_count || 0)"
-              :read-count="Number(post.read_count || 0)"
+              :key="post.id || post._id || Math.random()"
+              :post-id="post.id || post._id"
+              :avatar="parseAvatar(post.avatar || post.avatar_url)"
+              :username="post.username || post.user?.username || post.author || '未知用户'"
+              :time="formatTime(post.createdAt || post.created_at || post.time || post.timestamp)"
+              :content="post.content || post.text || post.message"
+              :images="post.images || post.image_urls || []"
+              :like-count="Number(post.likes || post.like_count || post.likes_count || 0)"
+              :comment-count="Number(post.comments || post.comment_count || post.comments_count || 0)"
+              :repost-count="Number(post.reposts || post.repost_count || post.reposts_count || 0)"
+              :read-count="Number(post.read_count || post.views || 0)"
               :is-liked="false"
               @like="handleLike(post)"
               @comment="handleComment(post)"
@@ -50,7 +66,9 @@
             />
           </template>
           <template v-else>
-            <div style="color: red; font-size: 12px;">无效帖子数据，已跳过</div>
+            <div style="color: red; font-size: 12px; padding: 20px; text-align: center;">
+              无效帖子数据: {{ JSON.stringify(post) }}
+            </div>
           </template>
         </template>
       </VirtualPostList>
@@ -96,15 +114,26 @@ const props = defineProps({
 
 // 筛选帖子
 const filteredPosts = computed(() => {
-  // 先过滤掉无效项
-  const safePosts = (props.posts || []).filter(item => item && typeof item === 'object' && 'id' in item);
+  console.log('原始帖子数据:', props.posts);
+  
+  // 先过滤掉无效项，但放宽条件
+  const safePosts = (props.posts || []).filter(item => {
+    const isValid = item && typeof item === 'object';
+    if (!isValid) {
+      console.warn('发现无效帖子项:', item);
+    }
+    return isValid;
+  });
+  
+  console.log('过滤后的安全帖子:', safePosts);
 
   let result = [];
   switch (props.filterMode) {
     case 'user':
       result = safePosts.filter(post => {
-        const postUserId = post.user_id || post.userId;
+        const postUserId = post.user_id || post.userId || post.user?.id;
         const currentUserId = props.currentUserId;
+        console.log('用户筛选:', { postUserId, currentUserId, match: postUserId == currentUserId });
         return postUserId == currentUserId;
       });
       break;
@@ -116,8 +145,9 @@ const filteredPosts = computed(() => {
       result = safePosts;
       break;
   }
-  // 再过滤一次，确保万无一失
-  return result.filter(item => item && typeof item === 'object' && 'id' in item);
+  
+  console.log('最终筛选结果:', result);
+  return result;
 });
 
 // 监控 posts 数据源，发现无效项时 log 警告
