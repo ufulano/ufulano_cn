@@ -23,7 +23,7 @@
     <!-- 帖子列表 -->
     <section v-else class="post-list-section">
       <VirtualPostList 
-        :items="filteredPosts" 
+        :items="pagedPosts" 
         :estimated-item-height="600"
         :buffer-size="3"
         class="virtual-post-list"
@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import PostCard from './PostCard.vue'
 import VirtualPostList from './VirtualPostList.vue'
@@ -125,8 +125,6 @@ watch(() => props.posts, (val) => {
 
 // 监听posts变化，优化性能
 watch(() => filteredPosts.value, (newPosts) => {
-  console.log('PostStream - 筛选后帖子数据:', newPosts.length, '条')
-  
   // 预加载图片
   if (newPosts.length > 0) {
     const imageUrls = newPosts
@@ -148,6 +146,27 @@ watch(() => filteredPosts.value, (newPosts) => {
     }
   })
 }, { immediate: true })
+
+const page = ref(1)
+const pageSize = 20
+const pagedPosts = computed(() => filteredPosts.value.slice(0, page.value * pageSize))
+
+// 无限滚动监听
+const handleScroll = (e) => {
+  const el = e.target
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+    if (pagedPosts.value.length < filteredPosts.value.length) {
+      page.value++
+    }
+  }
+}
+
+onMounted(() => {
+  const container = document.querySelector('.virtual-post-list')
+  if (container) {
+    container.addEventListener('scroll', handleScroll)
+  }
+})
 
 const emit = defineEmits(['like', 'comment', 'repost', 'reload'])
 

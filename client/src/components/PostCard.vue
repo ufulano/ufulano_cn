@@ -46,6 +46,7 @@
           :initial-index="index"
           preview-teleported
           :style="{ maxWidth: '100%', maxHeight: '400px', objectFit: 'cover' }"
+          lazy
         />
         <div v-if="isThumbnail(img)" class="image-overlay">
           <el-icon><PictureFilled /></el-icon>
@@ -181,8 +182,8 @@ const imageIntersectionObserver = ref(null)
 const toggleCommentBar = () => {
   if (!showCommentBar.value) showRepostBar.value = false
   showCommentBar.value = !showCommentBar.value
-  if (showCommentBar.value) {
-    emit('comment', props.postId)
+  if (showCommentBar.value && comments.value.length === 0) {
+    loadComments()
   }
 }
 
@@ -340,7 +341,6 @@ const loadComments = async () => {
 // 组件挂载时设置图片懒加载
 onMounted(() => {
   setupImageLazyLoading()
-  loadComments()
 })
 
 // 组件卸载时清理Observer
@@ -365,9 +365,6 @@ const handleMore = () => {
   emit('more', props.postId)
 }
 
-onMounted(() => {
-  loadComments()
-})
 </script>
 
 <style scoped>

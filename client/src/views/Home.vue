@@ -18,7 +18,7 @@
       
       <!-- 帖子流 -->
       <PostStream 
-        :posts="filteredPosts"
+        :posts="pagedPosts"
         :loading="loading"
         :error="error"
         filter-mode="all"
@@ -50,6 +50,8 @@ const loading = ref(false)
 const error = ref(false)
 const searchLoading = ref(false)
 const publishingPost = ref(false)
+const page = ref(1)
+const pageSize = 20
 
 // 性能监控
 const performanceMonitor = new PerformanceMonitor()
@@ -64,6 +66,17 @@ const filteredPosts = computed(() => {
   }
   return posts.value || []
 })
+
+const pagedPosts = computed(() => filteredPosts.value.slice(0, page.value * pageSize))
+
+const handleScroll = (e) => {
+  const el = e.target
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+    if (pagedPosts.value.length < filteredPosts.value.length) {
+      page.value++
+    }
+  }
+}
 
 // 加载帖子（带缓存）
 const loadPosts = async () => {
@@ -182,6 +195,10 @@ const publishNewPost = async (payload) => {
 
 onMounted(() => {
   loadPosts()
+  const container = document.querySelector('.virtual-post-list')
+  if (container) {
+    container.addEventListener('scroll', handleScroll)
+  }
 })
 </script>
 
