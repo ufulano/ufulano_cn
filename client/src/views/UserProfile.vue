@@ -342,6 +342,29 @@ const handleRepost = (post) => {
   ElMessage.success('转发成功')
 }
 
+/**
+ * 调试用户帖子数据
+ */
+const debugUserPosts = () => {
+  console.log('=== 用户帖子调试 ===')
+  console.log('当前用户ID:', route.params.id || userStore.userId)
+  console.log('用户Store:', userStore.user)
+  console.log('帖子数量:', posts.value.length)
+  console.log('加载状态:', loading.value)
+  console.log('错误状态:', error.value)
+  console.log('帖子数据:', posts.value)
+  console.log('路由参数:', route.params)
+  
+  // 显示调试信息
+  ElMessage.info(`帖子数量: ${posts.value.length}, 加载状态: ${loading.value}, 错误状态: ${error.value}`)
+  
+  // 如果帖子数量为0，尝试重新加载
+  if (posts.value.length === 0) {
+    ElMessage.warning('没有帖子数据，尝试重新加载...')
+    loadUserPosts()
+  }
+}
+
 
 
 // 组件挂载时加载用户动态

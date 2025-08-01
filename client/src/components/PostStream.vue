@@ -22,7 +22,7 @@
     </section>
     
     <!-- 空状态 -->
-    <section v-else-if="filteredPosts.length === 0" class="empty-section">
+    <section v-else-if="posts.length === 0" class="empty-section">
       <el-empty description="暂无内容" :image-size="120">
         <el-button type="primary" @click="$router.push('/post/new')">发布第一条动态</el-button>
       </el-empty>
@@ -42,15 +42,9 @@
       <!-- 调试信息 -->
       <div style="background: #e8f5e8; border: 1px solid #4caf50; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
         <p style="margin: 0; color: #2e7d32;"><strong>渲染信息:</strong></p>
-        <p style="margin: 5px 0; color: #2e7d32;">原始帖子数量: {{ posts.length }}</p>
-        <p style="margin: 5px 0; color: #2e7d32;">筛选后帖子数量: {{ filteredPosts.length }}</p>
+        <p style="margin: 5px 0; color: #2e7d32;">帖子数量: {{ posts.length }}</p>
         <p style="margin: 5px 0; color: #2e7d32;">显示帖子数量: {{ displayPosts.length }}</p>
         <p style="margin: 5px 0; color: #2e7d32;">当前页码: {{ currentPage }}</p>
-        <p style="margin: 5px 0; color: #2e7d32;">筛选模式: {{ filterMode }}</p>
-        <p style="margin: 5px 0; color: #2e7d32;">当前用户ID: {{ currentUserId }}</p>
-        <el-button @click="showAllPosts = !showAllPosts" size="small" style="margin-top: 5px;">
-          {{ showAllPosts ? '使用筛选' : '显示所有帖子' }}
-        </el-button>
       </div>
       
       <!-- 帖子列表 -->
@@ -92,7 +86,7 @@
       </div>
       
       <!-- 没有更多内容 -->
-      <div v-else-if="filteredPosts.length > 0" class="no-more">
+      <div v-else-if="posts.length > 0" class="no-more">
         <p>没有更多内容了</p>
       </div>
     </section>
@@ -100,7 +94,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import PostCard from './PostCard.vue'
 import { parseAvatar } from '../utils/avatar'
@@ -138,65 +132,17 @@ const emit = defineEmits(['like', 'comment', 'repost', 'reload'])
 // 分页状态
 const currentPage = ref(1)
 const loadingMore = ref(false)
-const showAllPosts = ref(false) // 调试：是否显示所有帖子
-
-// 筛选帖子
-const filteredPosts = computed(() => {
-  console.log('PostStream - 开始筛选帖子，原始数据:', props.posts)
-  console.log('PostStream - 原始数据长度:', props.posts?.length || 0)
-  
-  // 过滤掉无效项
-  const validPosts = (props.posts || []).filter(item => {
-    const isValid = item && typeof item === 'object'
-    if (!isValid) {
-      console.warn('PostStream - 发现无效帖子项:', item)
-    }
-    return isValid
-  })
-  
-  console.log('PostStream - 有效帖子数量:', validPosts.length)
-  
-  let result = []
-  switch (props.filterMode) {
-    case 'user':
-      result = validPosts.filter(post => {
-        const postUserId = post.user_id || post.userId || post.user?.id
-        const currentUserId = props.currentUserId
-        console.log('PostStream - 用户筛选:', { 
-          postUserId, 
-          currentUserId, 
-          match: postUserId == currentUserId,
-          post: post
-        })
-        return postUserId == currentUserId
-      })
-      break
-    case 'following':
-      result = validPosts
-      break
-    case 'all':
-    default:
-      result = validPosts
-      break
-  }
-  
-  console.log('PostStream - 筛选后帖子数量:', result.length)
-  console.log('PostStream - 筛选后帖子:', result)
-  return result
-})
 
 // 当前显示的帖子
 const displayPosts = computed(() => {
-  const postsToShow = showAllPosts.value ? (props.posts || []) : filteredPosts.value
   const start = 0
   const end = currentPage.value * props.pageSize
-  return postsToShow.slice(start, end)
+  return (props.posts || []).slice(start, end)
 })
 
 // 是否还有更多帖子
 const hasMorePosts = computed(() => {
-  const postsToShow = showAllPosts.value ? (props.posts || []) : filteredPosts.value
-  return displayPosts.value.length < postsToShow.length
+  return displayPosts.value.length < (props.posts || []).length
 })
 
 // 获取帖子唯一键
@@ -307,7 +253,7 @@ const handleRepost = (post) => {
 }
 
 // 监听帖子变化，预加载图片
-watch(() => filteredPosts.value, (newPosts) => {
+watch(() => props.posts, (newPosts) => {
   if (newPosts.length > 0) {
     const imageUrls = newPosts
       .flatMap(post => getPostImages(post))
@@ -322,14 +268,14 @@ watch(() => filteredPosts.value, (newPosts) => {
 }, { immediate: true })
 
 // 监听筛选模式变化，重置分页
-watch(() => props.filterMode, () => {
-  currentPage.value = 1
-})
+// watch(() => props.filterMode, () => {
+//   currentPage.value = 1
+// })
 
 // 监听用户ID变化，重置分页
-watch(() => props.currentUserId, () => {
-  currentPage.value = 1
-})
+// watch(() => props.currentUserId, () => {
+//   currentPage.value = 1
+// })
 </script>
 
 <style scoped>
