@@ -106,6 +106,9 @@
                     <p>加载状态: {{ loading }}</p>
                     <p>错误状态: {{ error }}</p>
                     <p>用户ID: {{ route.params.id || userStore.userId }}</p>
+                    <el-button @click="debugUserPosts" type="info" size="small" style="margin-top: 5px;">
+                      调试帖子数据
+                    </el-button>
                   </div>
                   
                                      <PostStream 
