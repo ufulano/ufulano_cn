@@ -24,9 +24,10 @@
     <section v-else class="post-list-section">
       <VirtualPostList 
         :items="filteredPosts" 
-        :item-height="300"
+        :estimated-item-height="400"
         :buffer-size="3"
         class="virtual-post-list"
+        ref="virtualListRef"
       >
         <template #default="{ item: post }">
           <PostCard
@@ -53,13 +54,15 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import PostCard from './PostCard.vue'
 import VirtualPostList from './VirtualPostList.vue'
 import { parseAvatar } from '../utils/avatar'
 import { preloadImages, clearImageCache } from '../utils/imageLoader'
 import { debounce, throttle } from '../utils/performance'
+
+const virtualListRef = ref(null)
 
 const props = defineProps({
   posts: {
@@ -143,6 +146,13 @@ watch(() => filteredPosts.value, (newPosts) => {
     // 清理缓存
     clearImageCache(50)
   }
+  
+  // 更新虚拟列表高度
+  nextTick(() => {
+    if (virtualListRef.value) {
+      virtualListRef.value.updateAllItemHeights()
+    }
+  })
 }, { immediate: true })
 
 const emit = defineEmits(['like', 'comment', 'repost', 'reload'])

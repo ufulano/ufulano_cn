@@ -55,10 +55,6 @@
     </div>
     
     <div class="post-actions" style="display: flex !important; visibility: visible !important;">
-      <!-- 调试信息 -->
-      <div style="position: absolute; top: -20px; left: 0; font-size: 10px; color: red; background: yellow; padding: 2px;">
-        调试: likeCount={{ likeCount }}, commentCount={{ commentCount }}, repostCount={{ repostCount }}
-      </div>
       <div class="action-btn" :class="{active:showRepostBar}" @click="toggleRepostBar">
         <el-icon><Share /></el-icon> 
         <span>转发</span>
@@ -156,16 +152,6 @@ const props = defineProps({
     type: Boolean,
     default: false
   }
-})
-
-// 添加调试信息
-console.log('PostCard 组件接收到的 props:', {
-  postId: props.postId,
-  username: props.username,
-  likeCount: props.likeCount,
-  commentCount: props.commentCount,
-  repostCount: props.repostCount,
-  isLiked: props.isLiked
 })
 
 const emit = defineEmits(['like', 'comment', 'repost', 'content-click', 'more'])
