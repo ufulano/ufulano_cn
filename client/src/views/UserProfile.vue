@@ -99,6 +99,15 @@
                 </div>
                 <!-- 动态流组件 -->
                 <div class="content-list">
+                  <!-- 调试信息 -->
+                  <div style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; font-size: 12px;">
+                    <p>调试信息:</p>
+                    <p>帖子数量: {{ posts.length }}</p>
+                    <p>加载状态: {{ loading }}</p>
+                    <p>错误状态: {{ error }}</p>
+                    <p>用户ID: {{ route.params.id || userStore.userId }}</p>
+                  </div>
+                  
                   <PostStream 
                     v-if="posts && posts.length > 0"
                     :posts="posts"
@@ -194,6 +203,14 @@ const posts = ref([])             // 用户动态列表
 const loading = ref(false)        // 加载状态
 const error = ref(false)          // 错误状态
 
+// 调试：检查API函数是否存在
+console.log('API函数检查:', {
+  fetchPosts: typeof fetchPosts,
+  getUserPosts: typeof getUserPosts,
+  userStore: userStore,
+  route: route
+})
+
 // 计算属性：获取用户信息
 const userInfo = computed(() => {
   return userStore.user || {  // 如果store中没有用户数据，返回默认值
@@ -241,15 +258,20 @@ const loadUserPosts = async () => {
     // 获取当前用户ID
     const userId = route.params.id || userStore.userId
     console.log('加载用户帖子，用户ID:', userId)
+    console.log('当前路由参数:', route.params)
+    console.log('用户Store状态:', userStore.user)
     
     if (userId) {
       // 使用专门的用户动态API
       const response = await getUserPosts(userId)
+      console.log('API响应原始数据:', response)
       // 后端返回格式: { posts: [...], pagination: {...} }
       let rawPosts = response.posts || response.data || []
+      console.log('原始帖子数据:', rawPosts)
       
       // 过滤掉无效的帖子（没有id的）
       posts.value = rawPosts.filter(post => post && typeof post === 'object' && 'id' in post)
+      console.log('过滤后的有效帖子:', posts.value)
       
       // 如果有无效数据，记录警告
       if (rawPosts.length !== posts.value.length) {
@@ -258,10 +280,13 @@ const loadUserPosts = async () => {
     } else {
       // 如果没有用户ID，获取所有动态
       const response = await fetchPosts()
+      console.log('获取所有帖子响应:', response)
       let rawPosts = Array.isArray(response) ? response : (response.data || [])
+      console.log('原始所有帖子数据:', rawPosts)
       
       // 过滤掉无效的帖子
       posts.value = rawPosts.filter(post => post && typeof post === 'object' && 'id' in post)
+      console.log('过滤后的有效帖子:', posts.value)
       
       // 如果有无效数据，记录警告
       if (rawPosts.length !== posts.value.length) {
@@ -269,13 +294,17 @@ const loadUserPosts = async () => {
       }
     }
     
-    console.log('用户帖子加载成功:', posts.value.length, '条')
+    console.log('最终帖子数据:', posts.value)
+    console.log('帖子数量:', posts.value.length)
+    console.log('加载状态:', loading.value)
+    console.log('错误状态:', error.value)
   } catch (err) {
     console.error('加载用户帖子失败:', err)
     error.value = true
     ElMessage.error('加载失败')
   } finally {
     loading.value = false  // 结束加载
+    console.log('加载完成，最终状态:', { posts: posts.value.length, loading: loading.value, error: error.value })
   }
 }
 
