@@ -1,9 +1,12 @@
 <template>
+  <!-- 用户个人主页根容器 -->
   <div class="user-profile-root">
+    <!-- 顶部导航栏组件 -->
     <AppHeader />
     
+    <!-- 用户个人主页内容容器 -->
     <div class="user-profile-container">
-      <!-- 左侧导航栏 -->
+      <!-- 左侧用户侧边栏 -->
       <UserSidebar />
 
       <!-- 主内容区域 -->
@@ -18,20 +21,24 @@
 
         <!-- 用户信息卡片 -->
         <div class="user-info-card">
-          <!-- 横幅图片 -->
+          <!-- 用户横幅图片 -->
           <div class="user-banner">
             <img src="https://picsum.photos/800/200" alt="用户横幅" />
           </div>
           
-          <!-- 用户基本信息 -->
+          <!-- 用户基本信息区域 -->
           <div class="user-info">
+            <!-- 用户头像 -->
             <div class="user-avatar">
               <el-avatar :size="80" :src="parseAvatar(userInfo.avatar_url)" />
             </div>
             
+            <!-- 用户详细信息 -->
             <div class="user-details">
+              <!-- 用户名/昵称 -->
               <h2 class="username">{{ userInfo.nickname || userInfo.username || '用户名' }}</h2>
               
+              <!-- 用户统计数据 -->
               <div class="user-stats">
                 <span class="stat-item">
                   <strong>{{ userInfo.fans_count || 0 }}</strong> 粉丝
@@ -44,10 +51,12 @@
                 </span>
               </div>
               
+              <!-- 用户个人简介 -->
               <div class="user-bio">
                 {{ userInfo.bio || '这个人很懒，什么都没有留下...' }}
               </div>
               
+              <!-- 用户地理位置 -->
               <div class="user-location">
                 <el-icon><Location /></el-icon>
                 <span>IP属地: {{ userInfo.location || '未知' }}</span>
@@ -56,9 +65,11 @@
           </div>
         </div>
 
-        <!-- 内容标签页 -->
+        <!-- 内容标签页区域 -->
         <div class="content-tabs">
+          <!-- Element Plus 标签页组件 -->
           <el-tabs v-model="contentTab" class="user-tabs">
+            <!-- 精选内容标签页 -->
             <el-tab-pane label="精选" name="featured">
               <div class="tab-content">
                 <div class="content-header">
@@ -75,6 +86,7 @@
               </div>
             </el-tab-pane>
             
+            <!-- 用户动态标签页 -->
             <el-tab-pane label="动态" name="posts">
               <div class="tab-content">
                 <div class="content-header">
@@ -85,22 +97,27 @@
                     style="width: 200px;"
                   />
                 </div>
+                <!-- 动态流组件 -->
                 <div class="content-list">
+
+                  
                   <PostStream 
                     :posts="posts"
                     :loading="loading"
                     :error="error"
-                    filter-mode="all"
-                    :current-user-id="null"
+                    filter-mode="user"
+                    :current-user-id="route.params.id || userStore.userId"
                     @like="handleLike"
                     @comment="handleComment"
                     @repost="handleRepost"
                     @reload="loadUserPosts"
+                    style="height: calc(100vh - 400px); min-height: 500px;"
                   />
                 </div>
               </div>
             </el-tab-pane>
             
+            <!-- 视频内容标签页 -->
             <el-tab-pane label="视频" name="videos">
               <div class="tab-content">
                 <div class="content-header">
@@ -112,6 +129,7 @@
               </div>
             </el-tab-pane>
             
+            <!-- 相册内容标签页 -->
             <el-tab-pane label="相册" name="albums">
               <div class="tab-content">
                 <div class="content-header">
@@ -130,9 +148,12 @@
 </template>
 
 <script setup>
+// Vue 相关导入
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+
+// Element Plus 图标导入
 import { 
   User, 
   UserFilled, 
@@ -143,29 +164,34 @@ import {
   Location,
   Search
 } from '@element-plus/icons-vue'
+
+// 组件导入
 import AppHeader from '../components/AppHeader.vue'
 import PostCard from '../components/PostCard.vue'
 import PostStream from '../components/PostStream.vue'
 import UserSidebar from '../components/UserSidebar.vue'
+
+// 状态管理和工具函数导入
 import { useUserStore } from '../store/user'
 import { fetchPosts } from '../api/post'
 import { getUserPosts } from '../api/user'
 import { parseAvatar } from '../utils/avatar'
 
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
+// 路由相关初始化
+const route = useRoute()  // 获取当前路由信息
+const router = useRouter()  // 获取路由实例
+const userStore = useUserStore()  // 获取用户状态管理
 
-// 响应式数据
-const activeTab = ref('profile')
-const contentTab = ref('posts')
-const posts = ref([])
-const loading = ref(false)
-const error = ref(false)
+// 响应式数据定义
+const activeTab = ref('profile')  // 当前活动标签页
+const contentTab = ref('posts')   // 内容标签页默认选中
+const posts = ref([])             // 用户动态列表
+const loading = ref(false)        // 加载状态
+const error = ref(false)          // 错误状态
 
-// 用户信息
+// 计算属性：获取用户信息
 const userInfo = computed(() => {
-  return userStore.user || {
+  return userStore.user || {  // 如果store中没有用户数据，返回默认值
     username: '用户名',
     nickname: '昵称',
     avatar_url: '',
@@ -177,7 +203,11 @@ const userInfo = computed(() => {
   }
 })
 
-// 格式化时间
+/**
+ * 格式化时间显示
+ * @param {string} timeStr - 时间字符串
+ * @returns {string} 格式化后的时间
+ */
 const formatTime = (timeStr) => {
   if (!timeStr) return ''
   const date = new Date(timeStr)
@@ -196,22 +226,24 @@ const formatTime = (timeStr) => {
   return date.toLocaleDateString('zh-CN')
 }
 
-// 加载用户帖子
+/**
+ * 加载用户动态
+ */
 const loadUserPosts = async () => {
-  loading.value = true
-  error.value = false
+  loading.value = true  // 开始加载
+  error.value = false   // 重置错误状态
   try {
     // 获取当前用户ID
     const userId = route.params.id || userStore.userId
     console.log('加载用户帖子，用户ID:', userId)
     
     if (userId) {
-      // 使用专门的用户帖子API
+      // 使用专门的用户动态API
       const response = await getUserPosts(userId)
       // 后端返回格式: { posts: [...], pagination: {...} }
       posts.value = response.posts || response.data || []
     } else {
-      // 如果没有用户ID，获取所有帖子
+      // 如果没有用户ID，获取所有动态
       const response = await fetchPosts()
       posts.value = Array.isArray(response) ? response : (response.data || [])
     }
@@ -222,215 +254,244 @@ const loadUserPosts = async () => {
     error.value = true
     ElMessage.error('加载失败')
   } finally {
-    loading.value = false
+    loading.value = false  // 结束加载
   }
 }
 
-// 事件处理
+/**
+ * 处理点赞事件
+ * @param {Object} post - 被点赞的动态对象
+ */
 const handleLike = (post) => {
   console.log('点赞帖子:', post.id)
   ElMessage.success('点赞成功')
 }
 
+/**
+ * 处理评论事件
+ * @param {Object} post - 被评论的动态对象
+ */
 const handleComment = (post) => {
   console.log('评论帖子:', post.id)
 }
 
+/**
+ * 处理转发事件
+ * @param {Object} post - 被转发的动态对象
+ */
 const handleRepost = (post) => {
   console.log('转发帖子:', post.id)
   ElMessage.success('转发成功')
 }
 
+// 组件挂载时加载用户动态
 onMounted(() => {
   loadUserPosts()
 })
 </script>
 
 <style scoped>
+/* 用户个人主页根样式 */
 .user-profile-root {
-  min-height: 100vh;
-  background: var(--color-gray-light);
+  min-height: 100vh;  /* 最小高度为视口高度 */
+  background: var(--color-gray-light);  /* 背景色 */
   display: flex;
-  flex-direction: column;
+  flex-direction: column;  /* 垂直布局 */
 }
 
+/* 用户内容容器样式 */
 .user-profile-container {
   display: flex;
-  max-width: 1200px;
-  margin: 80px auto 0;
-  gap: 24px;
-  padding: 0 20px;
-  flex: 1;
+  max-width: 1200px;  /* 最大宽度 */
+  margin: 80px auto 0;  /* 上边距80px，水平居中 */
+  gap: 24px;  /* 子元素间距 */
+  padding: 0 20px;  /* 左右内边距 */
+  flex: 1;  /* 填充剩余空间 */
 }
 
-
-
-/* 主内容区域 */
+/* 主内容区域样式 */
 .user-main {
-  flex: 1;
+  flex: 1;  /* 填充剩余空间 */
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  flex-direction: column;  /* 垂直布局 */
+  gap: 20px;  /* 子元素间距 */
 }
 
+/* 返回按钮样式 */
 .back-button {
-  margin-bottom: 8px;
+  margin-bottom: 8px;  /* 下边距 */
 }
 
 .back-button .el-button {
-  color: var(--color-gray);
-  font-size: 14px;
+  color: var(--color-gray);  /* 文字颜色 */
+  font-size: 14px;  /* 字体大小 */
 }
 
 .back-button .el-button:hover {
-  color: var(--color-blue);
+  color: var(--color-blue);  /* 悬停颜色 */
 }
 
-/* 用户信息卡片 */
+/* 用户信息卡片样式 */
 .user-info-card {
-  background: var(--color-white);
-  border-radius: 12px;
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
+  background: var(--color-white);  /* 背景色 */
+  border-radius: 12px;  /* 圆角 */
+  box-shadow: var(--shadow-card);  /* 阴影效果 */
+  overflow: hidden;  /* 隐藏溢出内容 */
 }
 
+/* 用户横幅样式 */
 .user-banner {
-  height: 200px;
-  overflow: hidden;
-  position: relative;
+  height: 200px;  /* 固定高度 */
+  overflow: hidden;  /* 隐藏溢出内容 */
+  position: relative;  /* 相对定位 */
 }
 
 .user-banner img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100%;  /* 宽度100% */
+  height: 100%;  /* 高度100% */
+  object-fit: cover;  /* 图片填充方式 */
 }
 
+/* 用户信息区域样式 */
 .user-info {
-  padding: 0 24px 24px;
-  position: relative;
+  padding: 0 24px 24px;  /* 内边距 */
+  position: relative;  /* 相对定位 */
 }
 
+/* 用户头像样式 */
 .user-avatar {
-  position: absolute;
-  top: -40px;
-  left: 24px;
-  border: 4px solid var(--color-white);
-  border-radius: 50%;
-  box-shadow: var(--shadow-card);
+  position: absolute;  /* 绝对定位 */
+  top: -40px;  /* 向上偏移 */
+  left: 24px;  /* 左边距 */
+  border: 4px solid var(--color-white);  /* 白色边框 */
+  border-radius: 50%;  /* 圆形 */
+  box-shadow: var(--shadow-card);  /* 阴影效果 */
 }
 
+/* 用户详细信息样式 */
 .user-details {
-  margin-top: 60px;
+  margin-top: 60px;  /* 上边距 */
 }
 
+/* 用户名样式 */
 .username {
-  margin: 0 0 12px 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--color-gray-dark);
+  margin: 0 0 12px 0;  /* 外边距 */
+  font-size: 24px;  /* 字体大小 */
+  font-weight: 600;  /* 字体粗细 */
+  color: var(--color-gray-dark);  /* 文字颜色 */
 }
 
+/* 用户统计数据样式 */
 .user-stats {
   display: flex;
-  gap: 24px;
-  margin-bottom: 16px;
+  gap: 24px;  /* 子元素间距 */
+  margin-bottom: 16px;  /* 下边距 */
 }
 
 .stat-item {
-  color: var(--color-gray);
-  font-size: 14px;
+  color: var(--color-gray);  /* 文字颜色 */
+  font-size: 14px;  /* 字体大小 */
 }
 
 .stat-item strong {
-  color: var(--color-gray-dark);
-  font-weight: 600;
+  color: var(--color-gray-dark);  /* 强调文字颜色 */
+  font-weight: 600;  /* 字体粗细 */
 }
 
+/* 用户个人简介样式 */
 .user-bio {
-  color: var(--color-gray);
-  font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 12px;
+  color: var(--color-gray);  /* 文字颜色 */
+  font-size: 14px;  /* 字体大小 */
+  line-height: 1.5;  /* 行高 */
+  margin-bottom: 12px;  /* 下边距 */
 }
 
+/* 用户位置信息样式 */
 .user-location {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--color-gray);
-  font-size: 12px;
+  align-items: center;  /* 垂直居中 */
+  gap: 6px;  /* 子元素间距 */
+  color: var(--color-gray);  /* 文字颜色 */
+  font-size: 12px;  /* 字体大小 */
 }
 
-/* 内容标签页 */
+/* 内容标签页样式 */
 .content-tabs {
-  background: var(--color-white);
-  border-radius: 12px;
-  box-shadow: var(--shadow-card);
-  padding: 24px;
+  background: var(--color-white);  /* 背景色 */
+  border-radius: 12px;  /* 圆角 */
+  box-shadow: var(--shadow-card);  /* 阴影效果 */
+  padding: 24px;  /* 内边距 */
 }
 
+/* 标签页头部样式 */
 .user-tabs :deep(.el-tabs__header) {
-  margin-bottom: 24px;
+  margin-bottom: 24px;  /* 下边距 */
 }
 
+/* 标签页项样式 */
 .user-tabs :deep(.el-tabs__item) {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--color-gray);
+  font-size: 16px;  /* 字体大小 */
+  font-weight: 500;  /* 字体粗细 */
+  color: var(--color-gray);  /* 文字颜色 */
 }
 
+/* 活动标签页项样式 */
 .user-tabs :deep(.el-tabs__item.is-active) {
-  color: var(--color-blue);
+  color: var(--color-blue);  /* 活动状态颜色 */
 }
 
+/* 活动标签页指示条样式 */
 .user-tabs :deep(.el-tabs__active-bar) {
-  background-color: var(--color-blue);
+  background-color: var(--color-blue);  /* 背景色 */
 }
 
+/* 内容头部样式 */
 .content-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-gray-light);
+  justify-content: space-between;  /* 两端对齐 */
+  align-items: center;  /* 垂直居中 */
+  margin-bottom: 20px;  /* 下边距 */
+  padding-bottom: 16px;  /* 下内边距 */
+  border-bottom: 1px solid var(--color-gray-light);  /* 底部边框 */
 }
 
 .content-header h3 {
-  margin: 0;
-  color: var(--color-gray-dark);
-  font-size: 18px;
-  font-weight: 600;
+  margin: 0;  /* 清除默认外边距 */
+  color: var(--color-gray-dark);  /* 文字颜色 */
+  font-size: 18px;  /* 字体大小 */
+  font-weight: 600;  /* 字体粗细 */
 }
 
+/* 内容列表样式 */
 .content-list {
-  min-height: 200px;
+  min-height: 500px;  /* 最小高度 */
+  height: calc(100vh - 400px);  /* 动态高度 */
+  overflow: hidden;  /* 防止溢出 */
 }
 
 .content-list p {
-  text-align: center;
-  color: var(--color-gray);
-  font-size: 14px;
-  margin: 40px 0;
+  text-align: center;  /* 文字居中 */
+  color: var(--color-gray);  /* 文字颜色 */
+  font-size: 14px;  /* 字体大小 */
+  margin: 40px 0;  /* 外边距 */
 }
 
-/* 响应式设计 */
+/* 响应式设计 - 移动端适配 */
 @media (max-width: 768px) {
   .user-profile-container {
-    flex-direction: column;
-    padding: 0 16px;
+    flex-direction: column;  /* 垂直布局 */
+    padding: 0 16px;  /* 左右内边距 */
   }
   
   .user-stats {
-    flex-wrap: wrap;
-    gap: 16px;
+    flex-wrap: wrap;  /* 允许换行 */
+    gap: 16px;  /* 子元素间距 */
   }
   
   .content-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
+    flex-direction: column;  /* 垂直布局 */
+    gap: 12px;  /* 子元素间距 */
+    align-items: flex-start;  /* 左对齐 */
   }
 }
-</style> 
+</style>

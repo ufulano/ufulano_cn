@@ -24,7 +24,7 @@
     <section v-else class="post-list-section">
       <VirtualPostList 
         :items="filteredPosts" 
-        :estimated-item-height="400"
+        :estimated-item-height="600"
         :buffer-size="3"
         class="virtual-post-list"
         ref="virtualListRef"
@@ -216,7 +216,8 @@ const handleRepost = (post) => {
   margin-top: 12px;
   margin-left: auto;
   margin-right: auto;
-  height: calc(100vh - 200px);
+  height: 100%;  /* 使用父容器的高度 */
+  min-height: 500px;  /* 最小高度 */
   overflow: hidden;
 }
 
