@@ -31,7 +31,8 @@
     
     <div class="post-content" @click="handleContentClick">{{ content }}</div>
     
-    <div v-if="images && images.length" class="post-images" :data-count="images.length">
+    <!-- 暂时隐藏图片区域，优先保证文字内容渲染 -->
+    <!-- <div v-if="images && images.length" class="post-images" :data-count="images.length">
       <div 
         v-for="(img, index) in compressedImages" 
         :key="index" 
@@ -53,7 +54,7 @@
           <span>点击查看大图</span>
         </div>
       </div>
-    </div>
+    </div> -->
     
     <div class="post-actions" style="display: flex !important; visibility: visible !important;">
       <div class="action-btn" :class="{active:showRepostBar}" @click="toggleRepostBar">
@@ -85,9 +86,10 @@
           <span v-for="emoji in emojiList" :key="emoji" class="emoji-item" @click="insertRepostEmoji(emoji)">{{ emoji }}</span>
         </div>
       </el-popover>
-      <el-upload :show-file-list="false" :auto-upload="false" :on-change="onRepostImageChange">
+      <!-- 暂时隐藏图片上传按钮 -->
+      <!-- <el-upload :show-file-list="false" :auto-upload="false" :on-change="onRepostImageChange">
         <el-button class="comment-icon-btn"><el-icon><PictureFilled /></el-icon></el-button>
-      </el-upload>
+      </el-upload> -->
       <el-checkbox v-model="repostAlsoComment" class="comment-repost">同时评论</el-checkbox>
       <el-button type="primary" class="comment-publish" @click="onPublishRepost" :loading="repostLoading">转发</el-button>
     </div>
@@ -104,9 +106,10 @@
           <span v-for="emoji in emojiList" :key="emoji" class="emoji-item" @click="insertCommentEmoji(emoji)">{{ emoji }}</span>
         </div>
       </el-popover>
-      <el-upload :show-file-list="false" :auto-upload="false" :on-change="onImageChange">
+      <!-- 暂时隐藏图片上传按钮 -->
+      <!-- <el-upload :show-file-list="false" :auto-upload="false" :on-change="onImageChange">
         <el-button class="comment-icon-btn"><el-icon><PictureFilled /></el-icon></el-button>
-      </el-upload>
+      </el-upload> -->
       <el-checkbox v-model="repostChecked" class="comment-repost">同时转发</el-checkbox>
       <el-button type="primary" class="comment-publish" @click="onPublishComment" :loading="commentLoading">评论</el-button>
     </div>
@@ -134,7 +137,7 @@ import { Share, ChatLineSquare, Star, PictureFilled, ChatDotRound } from '@eleme
 import AvatarUpload from './AvatarUpload.vue'
 import { fetchComments, addComment } from '../api/comment'
 import { parseAvatar } from '../utils/avatar'
-import { lazyLoadImage, preloadImages } from '../utils/imageLoader'
+// import { lazyLoadImage, preloadImages } from '../utils/imageLoader'
 
 const props = defineProps({
   avatar: String,
@@ -171,60 +174,93 @@ const emojiList = [
 ]
 
 const comments = ref([])
-const fullImages = ref([]) // 存储原图
-const loadedFullImages = ref(new Set()) // 记录已加载的原图
+// const fullImages = ref([]) // 存储原图 - 暂时禁用
+// const loadedFullImages = ref(new Set()) // 记录已加载的原图 - 暂时禁用
 
-// 图片压缩函数
-const compressImage = (src, maxWidth = 300, maxHeight = 200) => {
-  return new Promise((resolve) => {
-    const img = new Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      
-      let { width, height } = img
-      
-      // 计算压缩比例
-      if (width > maxWidth) {
-        height = (height * maxWidth) / width
-        width = maxWidth
-      }
-      if (height > maxHeight) {
-        width = (width * maxHeight) / height
-        height = maxHeight
-      }
-      
-      canvas.width = width
-      canvas.height = height
-      
-      ctx.drawImage(img, 0, 0, width, height)
-      
-      // 压缩为JPEG格式，质量0.6
-      const compressedSrc = canvas.toDataURL('image/jpeg', 0.6)
-      resolve(compressedSrc)
-    }
-    img.onerror = () => resolve(src) // 如果加载失败，返回原图
-    img.src = src
-  })
-}
+// 图片压缩函数 - 暂时禁用
+// const compressImage = (src, maxWidth = 300, maxHeight = 200) => {
+//   return new Promise((resolve) => {
+//     const img = new Image()
+//     img.onload = () => {
+//       const canvas = document.createElement('canvas')
+//       const ctx = canvas.getContext('2d')
+//       
+//       let { width, height } = img
+//       
+//       // 计算压缩比例
+//       if (width > maxWidth) {
+//         height = (height * maxWidth) / width
+//         width = maxWidth
+//       }
+//       if (height > maxHeight) {
+//         width = (width * maxHeight) / height
+//         height = maxHeight
+//       }
+//       
+//       canvas.width = width
+//       canvas.height = height
+//       
+//       ctx.drawImage(img, 0, 0, width, height)
+//       
+//       // 压缩为JPEG格式，质量0.6
+//       const compressedSrc = canvas.toDataURL('image/jpeg', 0.6)
+//       resolve(compressedSrc)
+//     }
+//     img.onerror = () => resolve(src) // 如果加载失败，返回原图
+//     img.src = src
+//   })
+// }
 
-// 压缩后的图片列表
-const compressedImages = ref([])
+// 压缩后的图片列表 - 暂时禁用
+// const compressedImages = ref([])
 
-// 监听images变化，自动压缩
-watch(() => props.images, async (newImages) => {
-  if (newImages && newImages.length > 0) {
-    compressedImages.value = []
-    for (const img of newImages) {
-      const compressed = await compressImage(img)
-      compressedImages.value.push(compressed)
-    }
-  }
-}, { immediate: true })
+// 监听images变化，自动压缩 - 暂时禁用
+// watch(() => props.images, async (newImages) => {
+//   if (newImages && newImages.length > 0) {
+//     compressedImages.value = []
+//     for (const img of newImages) {
+//       const compressed = await compressImage(img)
+//       compressedImages.value.push(compressed)
+//     }
+//   }
+// }, { immediate: true })
 
-// 图片懒加载状态
-const imageLoadingStates = ref(new Map())
-const imageIntersectionObserver = ref(null)
+// 图片懒加载状态 - 暂时禁用
+// const imageLoadingStates = ref(new Map())
+// const imageIntersectionObserver = ref(null)
+
+// 图片懒加载 - 暂时禁用
+// const setupImageLazyLoading = () => {
+//   if (!props.images || props.images.length === 0) return
+//   
+//   // 预加载第一张图片
+//   if (props.images[0]) {
+//     lazyLoadImage(props.images[0], () => {
+//       console.log('第一张图片预加载完成')
+//     })
+//   }
+//   
+//   // 设置Intersection Observer
+//   if ('IntersectionObserver' in window) {
+//     imageIntersectionObserver.value = new IntersectionObserver((entries) => {
+//       entries.forEach(entry => {
+//         if (entry.isIntersecting) {
+//           const imgIndex = parseInt(entry.target.dataset.index)
+//           const imgSrc = props.images[imgIndex]
+//           
+//           if (imgSrc && !imageLoadingStates.value.get(imgIndex)) {
+//             imageLoadingStates.value.set(imgIndex, 'loading')
+//             lazyLoadImage(imgSrc, () => {
+//               imageLoadingStates.value.set(imgIndex, 'loaded')
+//             })
+//           }
+//         }
+//       })
+//     }, {
+//       rootMargin: '50px' // 提前50px开始加载
+//     })
+//   }
+// }
 
 // 切换评论栏
 const toggleCommentBar = () => {
@@ -255,83 +291,83 @@ const insertRepostEmoji = (emoji) => {
 }
 
 
-// 判断是否为缩略图
-const isThumbnail = (imgSrc) => {
-  // 通过图片大小或URL特征判断是否为缩略图
-  if (!imgSrc) return false
-  const sizeKB = (imgSrc.length * 3) / 4 / 1024
-  return sizeKB < 50 // 小于50KB认为是缩略图
-}
+// 判断是否为缩略图 - 暂时禁用
+// const isThumbnail = (imgSrc) => {
+//   // 通过图片大小或URL特征判断是否为缩略图
+//   if (!imgSrc) return false
+//   const sizeKB = (imgSrc.length * 3) / 4 / 1024
+//   return sizeKB < 50 // 小于50KB认为是缩略图
+// }
 
-// 加载完整图片用于预览
-const loadFullImage = async (index) => {
-  if (!props.images || !props.images[index]) return
-  
-  const originalImage = props.images[index]
-  
-  // 如果原图还没加载过，先加载
-  if (!loadedFullImages.value.has(originalImage)) {
-    try {
-      // 预加载原图
-      await new Promise((resolve, reject) => {
-        const img = new Image()
-        img.onload = resolve
-        img.onerror = reject
-        img.src = originalImage
-      })
-      loadedFullImages.value.add(originalImage)
-    } catch (error) {
-      console.warn('原图加载失败:', originalImage)
-    }
-  }
-  
-  // 更新预览列表
-  fullImages.value = props.images
-}
+// 加载完整图片用于预览 - 暂时禁用
+// const loadFullImage = async (index) => {
+//   if (!props.images || !props.images[index]) return
+//   
+//   const originalImage = props.images[index]
+//   
+//   // 如果原图还没加载过，先加载
+//   if (!loadedFullImages.value.has(originalImage)) {
+//     try {
+//       // 预加载原图
+//       await new Promise((resolve, reject) => {
+//         const img = new Image()
+//         img.onload = resolve
+//         img.onerror = reject
+//         img.src = originalImage
+//       })
+//       loadedFullImages.value.add(originalImage)
+//     } catch (error) {
+//       console.warn('原图加载失败:', originalImage)
+//     }
+//   }
+//   
+//   // 更新预览列表
+//   fullImages.value = props.images
+// }
 
-// 图片懒加载
-const setupImageLazyLoading = () => {
-  if (!props.images || props.images.length === 0) return
-  
-  // 预加载第一张图片
-  if (props.images[0]) {
-    lazyLoadImage(props.images[0], () => {
-      console.log('第一张图片预加载完成')
-    })
-  }
-  
-  // 设置Intersection Observer
-  if ('IntersectionObserver' in window) {
-    imageIntersectionObserver.value = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const imgIndex = parseInt(entry.target.dataset.index)
-          const imgSrc = props.images[imgIndex]
-          
-          if (imgSrc && !imageLoadingStates.value.get(imgIndex)) {
-            imageLoadingStates.value.set(imgIndex, 'loading')
-            lazyLoadImage(imgSrc, () => {
-              imageLoadingStates.value.set(imgIndex, 'loaded')
-            })
-          }
-        }
-      })
-    }, {
-      rootMargin: '50px' // 提前50px开始加载
-    })
-  }
-}
+// 图片懒加载 - 暂时禁用
+// const setupImageLazyLoading = () => {
+//   if (!props.images || props.images.length === 0) return
+//   
+//   // 预加载第一张图片
+//   if (props.images[0]) {
+//     lazyLoadImage(props.images[0], () => {
+//       console.log('第一张图片预加载完成')
+//     })
+//   }
+//   
+//   // 设置Intersection Observer
+//   if ('IntersectionObserver' in window) {
+//     imageIntersectionObserver.value = new IntersectionObserver((entries) => {
+//       entries.forEach(entry => {
+//         if (entry.isIntersecting) {
+//           const imgIndex = parseInt(entry.target.dataset.index)
+//           const imgSrc = props.images[imgIndex]
+//           
+//           if (imgSrc && !imageLoadingStates.value.get(imgIndex)) {
+//             imageLoadingStates.value.set(imgIndex, 'loading')
+//             lazyLoadImage(imgSrc, () => {
+//               imageLoadingStates.value.set(imgIndex, 'loaded')
+//             })
+//           }
+//         }
+//       })
+//     }, {
+//       rootMargin: '50px' // 提前50px开始加载
+//     })
+//   }
+// }
 
-// 处理图片上传
-const onImageChange = (file) => {
-  // TODO: 处理评论图片上传
-  ElMessage.info('图片上传功能开发中...')
-}
+// 处理图片上传 - 暂时禁用
+// const onImageChange = (file) => {
+//   // TODO: 处理评论图片上传
+//   ElMessage.info('图片上传功能开发中...')
+// }
 
-const onRepostImageChange = (file) => {
-  // TODO: 处理转发图片上传
-  ElMessage.info('图片上传功能开发中...')
-}
+// const onRepostImageChange = (file) => {
+//   // TODO: 处理转发图片上传
+//   ElMessage.info('图片上传功能开发中...')
+// }
 
 // 发布评论
 const onPublishComment = async () => {
@@ -395,14 +431,14 @@ const loadComments = async () => {
 
 // 组件挂载时设置图片懒加载
 onMounted(() => {
-  setupImageLazyLoading()
+  // setupImageLazyLoading()
 })
 
 // 组件卸载时清理Observer
 onUnmounted(() => {
-  if (imageIntersectionObserver.value) {
-    imageIntersectionObserver.value.disconnect()
-  }
+  // if (imageIntersectionObserver.value) {
+  //   imageIntersectionObserver.value.disconnect()
+  // }
 })
 
 // 处理点赞
@@ -525,7 +561,8 @@ const handleMore = () => {
   color: var(--color-blue-dark);
 }
 
-.post-images {
+/* 图片相关样式 - 暂时禁用 */
+/* .post-images {
   display: grid;
   gap: 8px;
   margin-bottom: 16px;
@@ -570,7 +607,7 @@ const handleMore = () => {
 }
 
 /* 针对不同数量图片的高度优化 */
-.post-images[data-count="1"] .post-image {
+/* .post-images[data-count="1"] .post-image {
   height: 80px;
 }
 
@@ -584,7 +621,7 @@ const handleMore = () => {
 
 .post-images[data-count="4"] .post-image {
   height: 40px;
-}
+} */
 
 .post-actions {
   display: flex !important;
@@ -764,13 +801,13 @@ const handleMore = () => {
     gap: 8px;
   }
   
-  .post-images {
+  /* .post-images {
     grid-template-columns: 1fr !important;
   }
   
   .post-images .post-image {
     height: 200px !important;
-  }
+  } */
   
   .post-header .el-avatar {
     width: 40px !important;
@@ -783,8 +820,8 @@ const handleMore = () => {
   }
 }
 
-/* 图片覆盖层样式 */
-.post-image-wrapper {
+/* 图片覆盖层样式 - 暂时禁用 */
+/* .post-image-wrapper {
   position: relative;
   cursor: pointer;
   overflow: hidden;
@@ -815,5 +852,5 @@ const handleMore = () => {
 
 .post-image-wrapper:hover .image-overlay {
   opacity: 1;
-}
+} */
 </style> 
