@@ -257,13 +257,24 @@ watch(() => props.posts, (newPosts) => {
   if (newPosts.length > 0) {
     const imageUrls = newPosts
       .flatMap(post => getPostImages(post))
-      .filter(img => img && img.startsWith('data:image/'))
+      .filter(img => img && (img.startsWith('data:image/') || img.startsWith('http')))
     
     if (imageUrls.length > 0) {
-      preloadImages(imageUrls.slice(0, 10))
+      // 优先预加载前5张图片
+      const priorityImages = imageUrls.slice(0, 5)
+      preloadCriticalImages(priorityImages)
+      
+      // 异步预加载其余图片
+      setTimeout(() => {
+        const remainingImages = imageUrls.slice(5, 15)
+        if (remainingImages.length > 0) {
+          preloadImages(remainingImages, { maxConcurrent: 3 })
+        }
+      }, 100)
     }
     
-    clearImageCache(50)
+    // 智能清理缓存
+    clearImageCache(30)
   }
 }, { immediate: true })
 
@@ -286,18 +297,18 @@ watch(() => props.posts, (newPosts) => {
 .loading-section,
 .error-section,
 .empty-section {
-  width: 60%;
-  max-width: 900px;
+  width: 100%;
+  max-width: none;
   margin: 32px auto;
   text-align: center;
 }
 
 .post-list-section {
-  width: 60%;
-  max-width: 900px;
-  margin-top: 12px;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
+  max-width: none;
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .post-list {
@@ -329,8 +340,7 @@ watch(() => props.posts, (newPosts) => {
   .error-section,
   .empty-section,
   .post-list-section {
-    max-width: 98vw;
-    width: 98vw;
+    width: 100%;
     padding: 8px;
   }
 }

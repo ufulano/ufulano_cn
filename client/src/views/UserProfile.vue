@@ -111,18 +111,16 @@
                     </el-button>
                   </div>
                   
-                                     <PostStream 
-                     :posts="posts"
-                     :loading="loading"
-                     :error="error"
-                     filter-mode="user"
-                     :current-user-id="route.params.id || userStore.userId"
-                     :page-size="10"
-                     @like="handleLike"
-                     @comment="handleComment"
-                     @repost="handleRepost"
-                     @reload="loadUserPosts"
-                   />
+                  <PostStream 
+                    :posts="posts"
+                    :loading="loading"
+                    :error="error"
+                    :page-size="10"
+                    @like="handleLike"
+                    @comment="handleComment"
+                    @repost="handleRepost"
+                    @reload="loadUserPosts"
+                  />
                 </div>
               </div>
             </el-tab-pane>
@@ -549,7 +547,8 @@ onMounted(() => {
 .content-list {
   min-height: 500px;  /* 最小高度 */
   height: calc(100vh - 400px);  /* 动态高度 */
-  overflow: hidden;  /* 防止溢出 */
+  overflow-y: auto;  /* 允许垂直滚动 */
+  overflow-x: hidden;  /* 防止水平滚动 */
 }
 
 .loading-placeholder,
