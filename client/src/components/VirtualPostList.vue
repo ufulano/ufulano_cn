@@ -10,10 +10,10 @@
     >
       <div 
         v-for="item in visibleItems" 
-        :key="item.id"
+        :key="item.id || item._id || item.index"
         class="virtual-list-item"
-        :ref="el => setItemRef(el, item.id)"
-        :data-item-id="item.id"
+        :ref="el => setItemRef(el, item.id || item._id || item.index)"
+        :data-item-id="item.id || item._id || item.index"
       >
         <slot :item="item" :index="item.index"></slot>
       </div>
@@ -118,11 +118,12 @@ const findStartIndex = (scrollTop) => {
   let offset = 0;
   for (let i = 0; i < props.items.length; i++) {
     const item = props.items[i];
-    if (!item || typeof item !== 'object' || !('id' in item)) {
+    if (!item || typeof item !== 'object') {
       offset += props.estimatedItemHeight;
       continue;
     }
-    const itemHeight = itemHeights.value.get(item.id) || props.estimatedItemHeight;
+    const itemId = item.id || item._id || i;
+    const itemHeight = itemHeights.value.get(itemId) || props.estimatedItemHeight;
     if (offset + itemHeight > scrollTop) {
       return i;
     }
@@ -138,8 +139,9 @@ const findEndIndex = (startIndex, containerHeight) => {
   let offset = getItemOffset(startIndex);
   while (index < props.items.length && offset < scrollTop.value + containerHeight) {
     const item = props.items[index];
-    if (item && typeof item === 'object' && 'id' in item) {
-      offset += itemHeights.value.get(item.id) || props.estimatedItemHeight;
+    if (item && typeof item === 'object') {
+      const itemId = item.id || item._id || index;
+      offset += itemHeights.value.get(itemId) || props.estimatedItemHeight;
     } else {
       offset += props.estimatedItemHeight;
     }
@@ -157,12 +159,18 @@ const offsetY = computed(() => {
 const visibleItems = computed(() => {
   if (!props.items || !Array.isArray(props.items)) return [];
   const { start, end } = visibleRange.value;
-  return props.items.slice(start, end)
-    .filter(item => item && typeof item === 'object' && 'id' in item)
-    .map((item, index) => ({
-      ...item,
-      index: start + index
-    }));
+  console.log('VirtualPostList - 可见范围:', { start, end, totalItems: props.items.length });
+  
+  const slicedItems = props.items.slice(start, end);
+  console.log('VirtualPostList - 切片后的项目:', slicedItems);
+  
+  const filteredItems = slicedItems.filter(item => item && typeof item === 'object');
+  console.log('VirtualPostList - 过滤后的项目:', filteredItems);
+  
+  return filteredItems.map((item, index) => ({
+    ...item,
+    index: start + index
+  }));
 });
 
 // 滚动处理

@@ -38,7 +38,42 @@
     
     <!-- 帖子列表 -->
     <section v-else class="post-list-section">
+      <!-- 调试信息 -->
+      <div style="background: #e8f5e8; border: 1px solid #4caf50; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
+        <p style="margin: 0; color: #2e7d32;"><strong>渲染调试:</strong></p>
+        <p style="margin: 5px 0; color: #2e7d32;">筛选后帖子数量: {{ filteredPosts.length }}</p>
+        <p style="margin: 5px 0; color: #2e7d32;">分页后帖子数量: {{ pagedPosts.length }}</p>
+        <p style="margin: 5px 0; color: #2e7d32;">虚拟列表启用: {{ useVirtualList }}</p>
+        <el-button @click="useVirtualList = !useVirtualList" size="small" style="margin-top: 5px;">
+          {{ useVirtualList ? '切换到简单模式' : '切换到虚拟列表' }}
+        </el-button>
+      </div>
+      
+      <!-- 简单列表模式（调试用） -->
+      <div v-if="!useVirtualList" class="simple-post-list">
+        <div v-for="(post, index) in filteredPosts" :key="post.id || post._id || index" class="post-item">
+          <PostCard
+            :post-id="post.id || post._id"
+            :avatar="parseAvatar(post.avatar || post.avatar_url)"
+            :username="post.username || post.user?.username || post.author || '未知用户'"
+            :time="formatTime(post.createdAt || post.created_at || post.time || post.timestamp)"
+            :content="post.content || post.text || post.message"
+            :images="post.images || post.image_urls || []"
+            :like-count="Number(post.likes || post.like_count || post.likes_count || 0)"
+            :comment-count="Number(post.comments || post.comment_count || post.comments_count || 0)"
+            :repost-count="Number(post.reposts || post.repost_count || post.reposts_count || 0)"
+            :read-count="Number(post.read_count || post.views || 0)"
+            :is-liked="false"
+            @like="handleLike(post)"
+            @comment="handleComment(post)"
+            @repost="handleRepost(post)"
+          />
+        </div>
+      </div>
+      
+      <!-- 虚拟列表模式 -->
       <VirtualPostList 
+        v-else
         :items="pagedPosts" 
         :estimated-item-height="600"
         :buffer-size="3"
@@ -185,6 +220,9 @@ const page = ref(1)
 const pageSize = 20
 const pagedPosts = computed(() => filteredPosts.value.slice(0, page.value * pageSize))
 
+// 调试模式：是否使用虚拟列表
+const useVirtualList = ref(false) // 暂时关闭虚拟列表，使用简单模式
+
 // 无限滚动监听
 const handleScroll = (e) => {
   const el = e.target
@@ -270,6 +308,14 @@ const handleRepost = (post) => {
 
 .virtual-post-list {
   height: 100%;
+}
+
+.simple-post-list {
+  width: 100%;
+}
+
+.post-item {
+  margin-bottom: 16px;
 }
 
 /* 优化渲染性能 */
