@@ -13,7 +13,6 @@
         <el-button type="primary" @click="$emit('reload')">重新加载</el-button>
       </el-empty>
     </section>
-    
     <!-- 空状态 -->
     <section v-else-if="posts.length === 0" class="empty-section">
       <el-empty description="暂无内容" :image-size="120">
@@ -38,10 +37,11 @@
             :time="formatTime(post.createdAt || post.time)"
             :content="post.content"
             :images="post.images || []"
-            :like-count="post.likes || post.like_count || 0"
-            :comment-count="post.comments || post.comment_count || 0"
-            :repost-count="post.reposts || post.repost_count || 0"
-            :read-count="post.read_count || 0"
+            :like-count="Number(post.likes || post.like_count || 0)"
+            :comment-count="Number(post.comments || post.comment_count || 0)"
+            :repost-count="Number(post.reposts || post.repost_count || 0)"
+            :read-count="Number(post.read_count || 0)"
+            :is-liked="false"
             @like="handleLike(post)"
             @comment="handleComment(post)"
             @repost="handleRepost(post)"

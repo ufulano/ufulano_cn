@@ -54,7 +54,11 @@
       </div>
     </div>
     
-    <div class="post-actions">
+    <div class="post-actions" style="display: flex !important; visibility: visible !important;">
+      <!-- 调试信息 -->
+      <div style="position: absolute; top: -20px; left: 0; font-size: 10px; color: red; background: yellow; padding: 2px;">
+        调试: likeCount={{ likeCount }}, commentCount={{ commentCount }}, repostCount={{ repostCount }}
+      </div>
       <div class="action-btn" :class="{active:showRepostBar}" @click="toggleRepostBar">
         <el-icon><Share /></el-icon> 
         <span>转发</span>
@@ -154,6 +158,16 @@ const props = defineProps({
   }
 })
 
+// 添加调试信息
+console.log('PostCard 组件接收到的 props:', {
+  postId: props.postId,
+  username: props.username,
+  likeCount: props.likeCount,
+  commentCount: props.commentCount,
+  repostCount: props.repostCount,
+  isLiked: props.isLiked
+})
+
 const emit = defineEmits(['like', 'comment', 'repost', 'content-click', 'more'])
 
 const commentText = ref('')
@@ -204,7 +218,6 @@ const insertCommentEmoji = (emoji) => {
 const insertRepostEmoji = (emoji) => {
   repostText.value += emoji
 }
-
 
 
 // 判断是否为缩略图
@@ -536,10 +549,14 @@ onMounted(() => {
 }
 
 .post-actions {
-  display: flex;
+  display: flex !important;
   justify-content: space-around;
   border-top: 1px solid #f0f0f0;
   padding-top: 16px;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 10 !important;
 }
 
 .action-btn {

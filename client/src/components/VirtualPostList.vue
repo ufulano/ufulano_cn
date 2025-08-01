@@ -69,10 +69,15 @@ const offsetY = computed(() => {
 // 可见的项目
 const visibleItems = computed(() => {
   const { start, end } = visibleRange.value
-  return props.items.slice(start, end).map((item, index) => ({
+  const items = props.items.slice(start, end).map((item, index) => ({
     ...item,
     index: start + index
   }))
+  
+  // 添加调试信息
+  console.log('VirtualPostList - 可见项目数量:', items.length, '总项目数:', props.items.length)
+  
+  return items
 })
 
 // 滚动处理
