@@ -46,6 +46,11 @@
         <p style="margin: 5px 0; color: #2e7d32;">筛选后帖子数量: {{ filteredPosts.length }}</p>
         <p style="margin: 5px 0; color: #2e7d32;">显示帖子数量: {{ displayPosts.length }}</p>
         <p style="margin: 5px 0; color: #2e7d32;">当前页码: {{ currentPage }}</p>
+        <p style="margin: 5px 0; color: #2e7d32;">筛选模式: {{ filterMode }}</p>
+        <p style="margin: 5px 0; color: #2e7d32;">当前用户ID: {{ currentUserId }}</p>
+        <el-button @click="showAllPosts = !showAllPosts" size="small" style="margin-top: 5px;">
+          {{ showAllPosts ? '使用筛选' : '显示所有帖子' }}
+        </el-button>
       </div>
       
       <!-- 帖子列表 -->
@@ -133,21 +138,23 @@ const emit = defineEmits(['like', 'comment', 'repost', 'reload'])
 // 分页状态
 const currentPage = ref(1)
 const loadingMore = ref(false)
+const showAllPosts = ref(false) // 调试：是否显示所有帖子
 
 // 筛选帖子
 const filteredPosts = computed(() => {
-  console.log('开始筛选帖子，原始数据:', props.posts)
+  console.log('PostStream - 开始筛选帖子，原始数据:', props.posts)
+  console.log('PostStream - 原始数据长度:', props.posts?.length || 0)
   
   // 过滤掉无效项
   const validPosts = (props.posts || []).filter(item => {
     const isValid = item && typeof item === 'object'
     if (!isValid) {
-      console.warn('发现无效帖子项:', item)
+      console.warn('PostStream - 发现无效帖子项:', item)
     }
     return isValid
   })
   
-  console.log('有效帖子数量:', validPosts.length)
+  console.log('PostStream - 有效帖子数量:', validPosts.length)
   
   let result = []
   switch (props.filterMode) {
@@ -155,7 +162,12 @@ const filteredPosts = computed(() => {
       result = validPosts.filter(post => {
         const postUserId = post.user_id || post.userId || post.user?.id
         const currentUserId = props.currentUserId
-        console.log('用户筛选:', { postUserId, currentUserId, match: postUserId == currentUserId })
+        console.log('PostStream - 用户筛选:', { 
+          postUserId, 
+          currentUserId, 
+          match: postUserId == currentUserId,
+          post: post
+        })
         return postUserId == currentUserId
       })
       break
@@ -168,20 +180,23 @@ const filteredPosts = computed(() => {
       break
   }
   
-  console.log('筛选后帖子数量:', result.length)
+  console.log('PostStream - 筛选后帖子数量:', result.length)
+  console.log('PostStream - 筛选后帖子:', result)
   return result
 })
 
 // 当前显示的帖子
 const displayPosts = computed(() => {
+  const postsToShow = showAllPosts.value ? (props.posts || []) : filteredPosts.value
   const start = 0
   const end = currentPage.value * props.pageSize
-  return filteredPosts.value.slice(start, end)
+  return postsToShow.slice(start, end)
 })
 
 // 是否还有更多帖子
 const hasMorePosts = computed(() => {
-  return displayPosts.value.length < filteredPosts.value.length
+  const postsToShow = showAllPosts.value ? (props.posts || []) : filteredPosts.value
+  return displayPosts.value.length < postsToShow.length
 })
 
 // 获取帖子唯一键

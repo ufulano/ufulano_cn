@@ -108,18 +108,18 @@
                     <p>用户ID: {{ route.params.id || userStore.userId }}</p>
                   </div>
                   
-                  <PostStream 
-                    :posts="posts"
-                    :loading="loading"
-                    :error="error"
-                    filter-mode="user"
-                    :current-user-id="route.params.id || userStore.userId"
-                    @like="handleLike"
-                    @comment="handleComment"
-                    @repost="handleRepost"
-                    @reload="loadUserPosts"
-                    style="height: calc(100vh - 400px); min-height: 500px;"
-                  />
+                                     <PostStream 
+                     :posts="posts"
+                     :loading="loading"
+                     :error="error"
+                     filter-mode="user"
+                     :current-user-id="route.params.id || userStore.userId"
+                     :page-size="10"
+                     @like="handleLike"
+                     @comment="handleComment"
+                     @repost="handleRepost"
+                     @reload="loadUserPosts"
+                   />
                 </div>
               </div>
             </el-tab-pane>
