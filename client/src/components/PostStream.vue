@@ -31,6 +31,7 @@
       >
         <template #default="{ item: post }">
           <PostCard
+            v-if="post && typeof post === 'object' && 'id' in post"
             :key="post.id"
             :post-id="post.id"
             :avatar="parseAvatar(post.avatar)"
@@ -91,42 +92,36 @@ const props = defineProps({
 
 // 筛选帖子
 const filteredPosts = computed(() => {
-  console.log('PostStream - 接收到的帖子数据:', props.posts)
-  console.log('PostStream - 筛选模式:', props.filterMode)
-  console.log('PostStream - 当前用户ID:', props.currentUserId)
-  
-  if (!props.posts || props.posts.length === 0) {
-    console.log('PostStream - 没有帖子数据')
-    return []
-  }
-  
-  let result = []
+  // 先过滤掉无效项
+  const safePosts = (props.posts || []).filter(item => item && typeof item === 'object' && 'id' in item);
+
+  let result = [];
   switch (props.filterMode) {
     case 'user':
-      // 只显示当前用户的帖子
-      result = props.posts.filter(post => {
-        const postUserId = post.user_id || post.userId
-        const currentUserId = props.currentUserId
-        console.log('筛选比较:', { postUserId, currentUserId, match: postUserId == currentUserId })
-        return postUserId == currentUserId
-      })
-      console.log('PostStream - 用户筛选结果:', result.length, '条')
-      break
+      result = safePosts.filter(post => {
+        const postUserId = post.user_id || post.userId;
+        const currentUserId = props.currentUserId;
+        return postUserId == currentUserId;
+      });
+      break;
     case 'following':
-      // 显示关注用户的帖子（暂时返回所有帖子）
-      result = props.posts
-      console.log('PostStream - 关注筛选结果:', result.length, '条')
-      break
+      result = safePosts;
+      break;
     case 'all':
     default:
-      // 显示所有帖子
-      result = props.posts
-      console.log('PostStream - 全部筛选结果:', result.length, '条')
-      break
+      result = safePosts;
+      break;
   }
-  // 过滤掉无效项
-  return result.filter(item => item && typeof item === 'object' && 'id' in item)
-})
+  // 再过滤一次，确保万无一失
+  return result.filter(item => item && typeof item === 'object' && 'id' in item);
+});
+
+// 监控 posts 数据源，发现无效项时 log 警告
+watch(() => props.posts, (val) => {
+  if (val && val.some(item => !item || typeof item !== 'object' || !('id' in item))) {
+    console.warn('发现无效项:', val.filter(item => !item || typeof item !== 'object' || !('id' in item)));
+  }
+});
 
 // 监听posts变化，优化性能
 watch(() => filteredPosts.value, (newPosts) => {
