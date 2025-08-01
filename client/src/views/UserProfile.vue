@@ -99,9 +99,8 @@
                 </div>
                 <!-- 动态流组件 -->
                 <div class="content-list">
-
-                  
                   <PostStream 
+                    v-if="posts && posts.length > 0"
                     :posts="posts"
                     :loading="loading"
                     :error="error"
@@ -113,6 +112,12 @@
                     @reload="loadUserPosts"
                     style="height: calc(100vh - 400px); min-height: 500px;"
                   />
+                  <div v-else-if="loading" class="loading-placeholder">
+                    <p>加载中...</p>
+                  </div>
+                  <div v-else class="empty-placeholder">
+                    <p>暂无动态内容</p>
+                  </div>
                 </div>
               </div>
             </el-tab-pane>
@@ -241,11 +246,27 @@ const loadUserPosts = async () => {
       // 使用专门的用户动态API
       const response = await getUserPosts(userId)
       // 后端返回格式: { posts: [...], pagination: {...} }
-      posts.value = response.posts || response.data || []
+      let rawPosts = response.posts || response.data || []
+      
+      // 过滤掉无效的帖子（没有id的）
+      posts.value = rawPosts.filter(post => post && typeof post === 'object' && 'id' in post)
+      
+      // 如果有无效数据，记录警告
+      if (rawPosts.length !== posts.value.length) {
+        console.warn('发现无效帖子数据:', rawPosts.filter(post => !post || typeof post !== 'object' || !('id' in post)))
+      }
     } else {
       // 如果没有用户ID，获取所有动态
       const response = await fetchPosts()
-      posts.value = Array.isArray(response) ? response : (response.data || [])
+      let rawPosts = Array.isArray(response) ? response : (response.data || [])
+      
+      // 过滤掉无效的帖子
+      posts.value = rawPosts.filter(post => post && typeof post === 'object' && 'id' in post)
+      
+      // 如果有无效数据，记录警告
+      if (rawPosts.length !== posts.value.length) {
+        console.warn('发现无效帖子数据:', rawPosts.filter(post => !post || typeof post !== 'object' || !('id' in post)))
+      }
     }
     
     console.log('用户帖子加载成功:', posts.value.length, '条')
@@ -263,6 +284,10 @@ const loadUserPosts = async () => {
  * @param {Object} post - 被点赞的动态对象
  */
 const handleLike = (post) => {
+  if (!post || !post.id) {
+    console.warn('无效的帖子数据:', post)
+    return
+  }
   console.log('点赞帖子:', post.id)
   ElMessage.success('点赞成功')
 }
@@ -272,6 +297,10 @@ const handleLike = (post) => {
  * @param {Object} post - 被评论的动态对象
  */
 const handleComment = (post) => {
+  if (!post || !post.id) {
+    console.warn('无效的帖子数据:', post)
+    return
+  }
   console.log('评论帖子:', post.id)
 }
 
@@ -280,6 +309,10 @@ const handleComment = (post) => {
  * @param {Object} post - 被转发的动态对象
  */
 const handleRepost = (post) => {
+  if (!post || !post.id) {
+    console.warn('无效的帖子数据:', post)
+    return
+  }
   console.log('转发帖子:', post.id)
   ElMessage.success('转发成功')
 }
@@ -469,11 +502,19 @@ onMounted(() => {
   overflow: hidden;  /* 防止溢出 */
 }
 
+.loading-placeholder,
+.empty-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--color-gray);
+  font-size: 14px;
+}
+
 .content-list p {
-  text-align: center;  /* 文字居中 */
-  color: var(--color-gray);  /* 文字颜色 */
-  font-size: 14px;  /* 字体大小 */
-  margin: 40px 0;  /* 外边距 */
+  margin: 0;
+  color: var(--color-gray);
 }
 
 /* 响应式设计 - 移动端适配 */
