@@ -20,8 +20,9 @@
         <p style="margin: 5px 0; color: #856404;">当前用户ID: {{ currentUserId }}</p>
       </div>
     </section>
+    
     <!-- 空状态 -->
-    <section v-else-if="posts.length === 0" class="empty-section">
+    <section v-else-if="filteredPosts.length === 0" class="empty-section">
       <el-empty description="暂无内容" :image-size="120">
         <el-button type="primary" @click="$router.push('/post/new')">发布第一条动态</el-button>
       </el-empty>
@@ -40,29 +41,31 @@
     <section v-else class="post-list-section">
       <!-- 调试信息 -->
       <div style="background: #e8f5e8; border: 1px solid #4caf50; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
-        <p style="margin: 0; color: #2e7d32;"><strong>渲染调试:</strong></p>
+        <p style="margin: 0; color: #2e7d32;"><strong>渲染信息:</strong></p>
+        <p style="margin: 5px 0; color: #2e7d32;">原始帖子数量: {{ posts.length }}</p>
         <p style="margin: 5px 0; color: #2e7d32;">筛选后帖子数量: {{ filteredPosts.length }}</p>
-        <p style="margin: 5px 0; color: #2e7d32;">分页后帖子数量: {{ pagedPosts.length }}</p>
-        <p style="margin: 5px 0; color: #2e7d32;">虚拟列表启用: {{ useVirtualList }}</p>
-        <el-button @click="useVirtualList = !useVirtualList" size="small" style="margin-top: 5px;">
-          {{ useVirtualList ? '切换到简单模式' : '切换到虚拟列表' }}
-        </el-button>
+        <p style="margin: 5px 0; color: #2e7d32;">显示帖子数量: {{ displayPosts.length }}</p>
+        <p style="margin: 5px 0; color: #2e7d32;">当前页码: {{ currentPage }}</p>
       </div>
       
-      <!-- 简单列表模式（调试用） -->
-      <div v-if="!useVirtualList" class="simple-post-list">
-        <div v-for="(post, index) in filteredPosts" :key="post.id || post._id || index" class="post-item">
+      <!-- 帖子列表 -->
+      <div class="post-list">
+        <div 
+          v-for="(post, index) in displayPosts" 
+          :key="getPostKey(post, index)"
+          class="post-item"
+        >
           <PostCard
-            :post-id="post.id || post._id"
-            :avatar="parseAvatar(post.avatar || post.avatar_url)"
-            :username="post.username || post.user?.username || post.author || '未知用户'"
-            :time="formatTime(post.createdAt || post.created_at || post.time || post.timestamp)"
-            :content="post.content || post.text || post.message"
-            :images="post.images || post.image_urls || []"
-            :like-count="Number(post.likes || post.like_count || post.likes_count || 0)"
-            :comment-count="Number(post.comments || post.comment_count || post.comments_count || 0)"
-            :repost-count="Number(post.reposts || post.repost_count || post.reposts_count || 0)"
-            :read-count="Number(post.read_count || post.views || 0)"
+            :post-id="getPostId(post)"
+            :avatar="parseAvatar(getPostAvatar(post))"
+            :username="getPostUsername(post)"
+            :time="formatTime(getPostTime(post))"
+            :content="getPostContent(post)"
+            :images="getPostImages(post)"
+            :like-count="getPostLikeCount(post)"
+            :comment-count="getPostCommentCount(post)"
+            :repost-count="getPostRepostCount(post)"
+            :read-count="getPostReadCount(post)"
             :is-liked="false"
             @like="handleLike(post)"
             @comment="handleComment(post)"
@@ -71,56 +74,32 @@
         </div>
       </div>
       
-      <!-- 虚拟列表模式 -->
-      <VirtualPostList 
-        v-else
-        :items="pagedPosts" 
-        :estimated-item-height="600"
-        :buffer-size="3"
-        class="virtual-post-list"
-        ref="virtualListRef"
-      >
-        <template #default="{ item: post }">
-          <template v-if="post && typeof post === 'object'">
-            <PostCard
-              :key="post.id || post._id || Math.random()"
-              :post-id="post.id || post._id"
-              :avatar="parseAvatar(post.avatar || post.avatar_url)"
-              :username="post.username || post.user?.username || post.author || '未知用户'"
-              :time="formatTime(post.createdAt || post.created_at || post.time || post.timestamp)"
-              :content="post.content || post.text || post.message"
-              :images="post.images || post.image_urls || []"
-              :like-count="Number(post.likes || post.like_count || post.likes_count || 0)"
-              :comment-count="Number(post.comments || post.comment_count || post.comments_count || 0)"
-              :repost-count="Number(post.reposts || post.repost_count || post.reposts_count || 0)"
-              :read-count="Number(post.read_count || post.views || 0)"
-              :is-liked="false"
-              @like="handleLike(post)"
-              @comment="handleComment(post)"
-              @repost="handleRepost(post)"
-            />
-          </template>
-          <template v-else>
-            <div style="color: red; font-size: 12px; padding: 20px; text-align: center;">
-              无效帖子数据: {{ JSON.stringify(post) }}
-            </div>
-          </template>
-        </template>
-      </VirtualPostList>
+      <!-- 加载更多 -->
+      <div v-if="hasMorePosts" class="load-more">
+        <el-button 
+          @click="loadMore" 
+          :loading="loadingMore"
+          type="primary"
+          size="large"
+        >
+          加载更多
+        </el-button>
+      </div>
+      
+      <!-- 没有更多内容 -->
+      <div v-else-if="filteredPosts.length > 0" class="no-more">
+        <p>没有更多内容了</p>
+      </div>
     </section>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import PostCard from './PostCard.vue'
-import VirtualPostList from './VirtualPostList.vue'
 import { parseAvatar } from '../utils/avatar'
 import { preloadImages, clearImageCache } from '../utils/imageLoader'
-import { debounce, throttle } from '../utils/performance'
-
-const virtualListRef = ref(null)
 
 const props = defineProps({
   posts: {
@@ -135,112 +114,130 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  // 筛选模式：'all' | 'user' | 'following'
   filterMode: {
     type: String,
     default: 'all'
   },
-  // 当前用户ID（用于筛选用户自己的帖子）
   currentUserId: {
     type: [String, Number],
     default: null
-  }
-})
-
-// 筛选帖子
-const filteredPosts = computed(() => {
-  console.log('原始帖子数据:', props.posts);
-  
-  // 先过滤掉无效项，但放宽条件
-  const safePosts = (props.posts || []).filter(item => {
-    const isValid = item && typeof item === 'object';
-    if (!isValid) {
-      console.warn('发现无效帖子项:', item);
-    }
-    return isValid;
-  });
-  
-  console.log('过滤后的安全帖子:', safePosts);
-
-  let result = [];
-  switch (props.filterMode) {
-    case 'user':
-      result = safePosts.filter(post => {
-        const postUserId = post.user_id || post.userId || post.user?.id;
-        const currentUserId = props.currentUserId;
-        console.log('用户筛选:', { postUserId, currentUserId, match: postUserId == currentUserId });
-        return postUserId == currentUserId;
-      });
-      break;
-    case 'following':
-      result = safePosts;
-      break;
-    case 'all':
-    default:
-      result = safePosts;
-      break;
-  }
-  
-  console.log('最终筛选结果:', result);
-  return result;
-});
-
-// 监控 posts 数据源，发现无效项时 log 警告
-watch(() => props.posts, (val) => {
-  if (val && val.some(item => !item || typeof item !== 'object' || !('id' in item))) {
-    console.warn('发现无效项:', val.filter(item => !item || typeof item !== 'object' || !('id' in item)));
-  }
-});
-
-// 监听posts变化，优化性能
-watch(() => filteredPosts.value, (newPosts) => {
-  // 预加载图片
-  if (newPosts.length > 0) {
-    const imageUrls = newPosts
-      .flatMap(post => post.images || [])
-      .filter(img => img && img.startsWith('data:image/'))
-    
-    if (imageUrls.length > 0) {
-      preloadImages(imageUrls.slice(0, 10)) // 只预加载前10张图片
-    }
-    
-    // 清理缓存
-    clearImageCache(50)
-  }
-  
-  // 更新虚拟列表高度
-  nextTick(() => {
-    if (virtualListRef.value) {
-      virtualListRef.value.updateAllItemHeights()
-    }
-  })
-}, { immediate: true })
-
-const page = ref(1)
-const pageSize = 20
-const pagedPosts = computed(() => filteredPosts.value.slice(0, page.value * pageSize))
-
-// 调试模式：是否使用虚拟列表
-const useVirtualList = ref(false) // 暂时关闭虚拟列表，使用简单模式
-
-// 无限滚动监听
-const handleScroll = (e) => {
-  const el = e.target
-  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
-    if (pagedPosts.value.length < filteredPosts.value.length) {
-      page.value++
-    }
-  }
-}
-
-onMounted(() => {
-  const container = document.querySelector('.virtual-post-list')
-  if (container) {
-    container.addEventListener('scroll', handleScroll)
+  },
+  pageSize: {
+    type: Number,
+    default: 10
   }
 })
 
 const emit = defineEmits(['like', 'comment', 'repost', 'reload'])
+
+// 分页状态
+const currentPage = ref(1)
+const loadingMore = ref(false)
+
+// 筛选帖子
+const filteredPosts = computed(() => {
+  console.log('开始筛选帖子，原始数据:', props.posts)
+  
+  // 过滤掉无效项
+  const validPosts = (props.posts || []).filter(item => {
+    const isValid = item && typeof item === 'object'
+    if (!isValid) {
+      console.warn('发现无效帖子项:', item)
+    }
+    return isValid
+  })
+  
+  console.log('有效帖子数量:', validPosts.length)
+  
+  let result = []
+  switch (props.filterMode) {
+    case 'user':
+      result = validPosts.filter(post => {
+        const postUserId = post.user_id || post.userId || post.user?.id
+        const currentUserId = props.currentUserId
+        console.log('用户筛选:', { postUserId, currentUserId, match: postUserId == currentUserId })
+        return postUserId == currentUserId
+      })
+      break
+    case 'following':
+      result = validPosts
+      break
+    case 'all':
+    default:
+      result = validPosts
+      break
+  }
+  
+  console.log('筛选后帖子数量:', result.length)
+  return result
+})
+
+// 当前显示的帖子
+const displayPosts = computed(() => {
+  const start = 0
+  const end = currentPage.value * props.pageSize
+  return filteredPosts.value.slice(start, end)
+})
+
+// 是否还有更多帖子
+const hasMorePosts = computed(() => {
+  return displayPosts.value.length < filteredPosts.value.length
+})
+
+// 获取帖子唯一键
+const getPostKey = (post, index) => {
+  return post.id || post._id || `post-${index}`
+}
+
+// 获取帖子ID
+const getPostId = (post) => {
+  return post.id || post._id || ''
+}
+
+// 获取帖子头像
+const getPostAvatar = (post) => {
+  return post.avatar || post.avatar_url || post.user?.avatar || ''
+}
+
+// 获取帖子用户名
+const getPostUsername = (post) => {
+  return post.username || post.user?.username || post.author || '未知用户'
+}
+
+// 获取帖子时间
+const getPostTime = (post) => {
+  return post.createdAt || post.created_at || post.time || post.timestamp || ''
+}
+
+// 获取帖子内容
+const getPostContent = (post) => {
+  return post.content || post.text || post.message || ''
+}
+
+// 获取帖子图片
+const getPostImages = (post) => {
+  return post.images || post.image_urls || []
+}
+
+// 获取帖子点赞数
+const getPostLikeCount = (post) => {
+  return Number(post.likes || post.like_count || post.likes_count || 0)
+}
+
+// 获取帖子评论数
+const getPostCommentCount = (post) => {
+  return Number(post.comments || post.comment_count || post.comments_count || 0)
+}
+
+// 获取帖子转发数
+const getPostRepostCount = (post) => {
+  return Number(post.reposts || post.repost_count || post.reposts_count || 0)
+}
+
+// 获取帖子阅读数
+const getPostReadCount = (post) => {
+  return Number(post.read_count || post.views || 0)
+}
 
 // 格式化时间
 const formatTime = (timeStr) => {
@@ -261,6 +258,22 @@ const formatTime = (timeStr) => {
   return date.toLocaleDateString('zh-CN')
 }
 
+// 加载更多
+const loadMore = async () => {
+  loadingMore.value = true
+  try {
+    // 模拟加载延迟
+    await new Promise(resolve => setTimeout(resolve, 500))
+    currentPage.value++
+    console.log('加载更多，当前页码:', currentPage.value)
+  } catch (error) {
+    console.error('加载更多失败:', error)
+    ElMessage.error('加载失败')
+  } finally {
+    loadingMore.value = false
+  }
+}
+
 // 点赞处理
 const handleLike = (post) => {
   emit('like', post)
@@ -278,7 +291,30 @@ const handleRepost = (post) => {
   ElMessage.success('转发成功')
 }
 
+// 监听帖子变化，预加载图片
+watch(() => filteredPosts.value, (newPosts) => {
+  if (newPosts.length > 0) {
+    const imageUrls = newPosts
+      .flatMap(post => getPostImages(post))
+      .filter(img => img && img.startsWith('data:image/'))
+    
+    if (imageUrls.length > 0) {
+      preloadImages(imageUrls.slice(0, 10))
+    }
+    
+    clearImageCache(50)
+  }
+}, { immediate: true })
 
+// 监听筛选模式变化，重置分页
+watch(() => props.filterMode, () => {
+  currentPage.value = 1
+})
+
+// 监听用户ID变化，重置分页
+watch(() => props.currentUserId, () => {
+  currentPage.value = 1
+})
 </script>
 
 <style scoped>
@@ -301,33 +337,30 @@ const handleRepost = (post) => {
   margin-top: 12px;
   margin-left: auto;
   margin-right: auto;
-  height: 100%;  /* 使用父容器的高度 */
-  min-height: 500px;  /* 最小高度 */
-  overflow: hidden;
 }
 
-.virtual-post-list {
-  height: 100%;
-}
-
-.simple-post-list {
-  width: 100%;
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .post-item {
-  margin-bottom: 16px;
+  width: 100%;
 }
 
-/* 优化渲染性能 */
-.post-card {
-  will-change: transform;
-  contain: layout style paint;
+.load-more {
+  text-align: center;
+  margin-top: 24px;
+  padding: 20px 0;
 }
 
-/* 图片懒加载优化 */
-.post-image {
-  loading: lazy;
-  decoding: async;
+.no-more {
+  text-align: center;
+  margin-top: 24px;
+  padding: 20px 0;
+  color: var(--color-gray);
+  font-size: 14px;
 }
 
 @media (max-width: 1200px) {
