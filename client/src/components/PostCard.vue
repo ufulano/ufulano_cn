@@ -33,7 +33,7 @@
     
     <div v-if="images && images.length" class="post-images" :data-count="images.length">
       <div 
-        v-for="(img, index) in images" 
+        v-for="(img, index) in compressedImages" 
         :key="index" 
         class="post-image-wrapper"
         @click="loadFullImage(index)"
@@ -45,7 +45,7 @@
           :preview-src-list="fullImages"
           :initial-index="index"
           preview-teleported
-          :style="{ maxWidth: '100%', maxHeight: '400px', objectFit: 'cover' }"
+          :style="{ maxWidth: '100%', maxHeight: '100px', objectFit: 'cover' }"
           lazy
         />
         <div v-if="isThumbnail(img)" class="image-overlay">
@@ -128,7 +128,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Share, ChatLineSquare, Star, PictureFilled, ChatDotRound } from '@element-plus/icons-vue'
 import AvatarUpload from './AvatarUpload.vue'
@@ -174,6 +174,54 @@ const comments = ref([])
 const fullImages = ref([]) // 存储原图
 const loadedFullImages = ref(new Set()) // 记录已加载的原图
 
+// 图片压缩函数
+const compressImage = (src, maxWidth = 300, maxHeight = 200) => {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      
+      let { width, height } = img
+      
+      // 计算压缩比例
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width
+        width = maxWidth
+      }
+      if (height > maxHeight) {
+        width = (width * maxHeight) / height
+        height = maxHeight
+      }
+      
+      canvas.width = width
+      canvas.height = height
+      
+      ctx.drawImage(img, 0, 0, width, height)
+      
+      // 压缩为JPEG格式，质量0.6
+      const compressedSrc = canvas.toDataURL('image/jpeg', 0.6)
+      resolve(compressedSrc)
+    }
+    img.onerror = () => resolve(src) // 如果加载失败，返回原图
+    img.src = src
+  })
+}
+
+// 压缩后的图片列表
+const compressedImages = ref([])
+
+// 监听images变化，自动压缩
+watch(() => props.images, async (newImages) => {
+  if (newImages && newImages.length > 0) {
+    compressedImages.value = []
+    for (const img of newImages) {
+      const compressed = await compressImage(img)
+      compressedImages.value.push(compressed)
+    }
+  }
+}, { immediate: true })
+
 // 图片懒加载状态
 const imageLoadingStates = ref(new Map())
 const imageIntersectionObserver = ref(null)
@@ -215,23 +263,30 @@ const isThumbnail = (imgSrc) => {
   return sizeKB < 50 // 小于50KB认为是缩略图
 }
 
-// 加载原图
+// 加载完整图片用于预览
 const loadFullImage = async (index) => {
-  if (loadedFullImages.value.has(index)) {
-    return // 已经加载过了
+  if (!props.images || !props.images[index]) return
+  
+  const originalImage = props.images[index]
+  
+  // 如果原图还没加载过，先加载
+  if (!loadedFullImages.value.has(originalImage)) {
+    try {
+      // 预加载原图
+      await new Promise((resolve, reject) => {
+        const img = new Image()
+        img.onload = resolve
+        img.onerror = reject
+        img.src = originalImage
+      })
+      loadedFullImages.value.add(originalImage)
+    } catch (error) {
+      console.warn('原图加载失败:', originalImage)
+    }
   }
   
-  try {
-    // 这里应该从服务器获取原图
-    // 暂时使用当前图片作为原图
-    fullImages.value[index] = props.images[index]
-    loadedFullImages.value.add(index)
-    
-    ElMessage.success('原图加载成功')
-  } catch (error) {
-    console.error('加载原图失败:', error)
-    ElMessage.error('加载原图失败')
-  }
+  // 更新预览列表
+  fullImages.value = props.images
 }
 
 // 图片懒加载
@@ -499,36 +554,36 @@ const handleMore = () => {
 
 .post-image {
   width: 100%;
-  height: 200px;
-  max-height: 400px;
-  border-radius: 12px;
+  height: 60px;
+  max-height: 100px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
   object-fit: cover;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
 .post-image:hover {
   transform: scale(1.02);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 /* 针对不同数量图片的高度优化 */
 .post-images[data-count="1"] .post-image {
-  height: 300px;
+  height: 80px;
 }
 
 .post-images[data-count="2"] .post-image {
-  height: 180px;
+  height: 60px;
 }
 
 .post-images[data-count="3"] .post-image {
-  height: 150px;
+  height: 50px;
 }
 
 .post-images[data-count="4"] .post-image {
-  height: 140px;
+  height: 40px;
 }
 
 .post-actions {
