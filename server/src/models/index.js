@@ -1,3 +1,27 @@
+/**
+ * 数据模型索引文件
+ * 
+ * 功能特性：
+ * - 模型定义：所有数据模型的定义
+ * - 关联关系：模型之间的关联关系设置
+ * - 数据库连接：Sequelize实例配置
+ * - 模型导出：统一导出所有模型
+ * 
+ * 模型列表：
+ * - User：用户模型
+ * - Post：帖子模型
+ * - Comment：评论模型
+ * - Like：点赞模型
+ * 
+ * 关联关系：
+ * - User -> Post：一对多
+ * - User -> Comment：一对多
+ * - User -> Like：一对多
+ * - Post -> Comment：一对多
+ * - Post -> Like：一对多
+ * - Comment -> Comment：自关联（回复）
+ */
+
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 

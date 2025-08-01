@@ -1,6 +1,9 @@
 <template>
+  <!-- 帖子卡片组件 - 显示单个帖子的完整信息 -->
   <div class="post-card">
+    <!-- 帖子头部 - 用户信息和元数据 -->
     <div class="post-header">
+      <!-- 用户头像区域 -->
       <div class="post-avatar-wrapper">
         <img 
           v-if="parseAvatar(avatar) && parseAvatar(avatar).startsWith('data:image/')" 
@@ -16,31 +19,28 @@
           class="post-avatar"
         />
       </div>
+      <!-- 用户信息区域 -->
       <div class="post-userinfo">
         <div class="post-username">{{ username }}</div>
+        <!-- 帖子元数据 - 时间和来源 -->
         <div class="post-meta">
           <span class="post-time">{{ time }}</span>
           <span v-if="source" class="post-source">来自 {{ source }}</span>
         </div>
       </div>
+      <!-- 额外信息区域 - 阅读数和更多操作 -->
       <div class="post-extra">
         <el-tag size="small" v-if="readCount !== undefined" type="info">{{ readCount }} 阅读</el-tag>
         <el-icon style="margin-left:8px;cursor:pointer;" @click="handleMore"><ChatDotRound /></el-icon>
       </div>
     </div>
     
+    <!-- 帖子内容区域 -->
     <div class="post-content" @click="handleContentClick">{{ content }}</div>
     
-    <!-- 调试信息 -->
-    <div v-if="images && images.length" style="background: #f0f0f0; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;">
-      <p>调试信息 - 图片数量: {{ images.length }}</p>
-      <p>第一张图片: {{ images[0] ? images[0].substring(0, 50) + '...' : '无' }}</p>
-      <button @click="testImagePreload" style="background: #40BFFF; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
-        测试预加载
-      </button>
-    </div>
+
     
-    <!-- 图片显示区域 -->
+    <!-- 图片显示区域 - 支持多图布局 -->
     <div v-if="images && images.length" class="post-images" :data-count="images.length">
       <div 
         v-for="(img, index) in images" 
@@ -65,6 +65,7 @@
       </div>
     </div>
     
+    <!-- 帖子操作区域 - 转发、评论、点赞 -->
     <div class="post-actions" style="display: flex !important; visibility: visible !important;">
       <div class="action-btn" :class="{active:showRepostBar}" @click="toggleRepostBar">
         <el-icon><Share /></el-icon> 
@@ -83,7 +84,7 @@
       </div>
     </div>
     
-    <!-- 转发输入区 -->
+    <!-- 转发输入区域 -->
     <div v-if="showRepostBar" class="repost-bar">
       <el-avatar :src="avatar || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjQ0NDQ0NDIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuWbvueJhzwvdGV4dD4KPC9zdmc+Cg=='" size="small" class="comment-avatar" style="width: 32px; height: 32px;" />
       <el-input v-model="repostText" placeholder="说点什么..." class="repost-input" clearable />
@@ -103,7 +104,7 @@
       <el-button type="primary" class="comment-publish" @click="onPublishRepost" :loading="repostLoading">转发</el-button>
     </div>
     
-    <!-- 评论输入区 -->
+    <!-- 评论输入区域 -->
     <div v-if="showCommentBar" class="comment-bar">
       <el-avatar :src="avatar || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjQ0NDQ0NDIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuWbvueJhzwvdGV4dD4KPC9zdmc+Cg=='" size="small" class="comment-avatar" style="width: 32px; height: 32px;" />
       <el-input v-model="commentText" placeholder="发布你的评论" class="comment-input" clearable />
@@ -123,7 +124,7 @@
       <el-button type="primary" class="comment-publish" @click="onPublishComment" :loading="commentLoading">评论</el-button>
     </div>
     
-    <!-- 评论列表 -->
+    <!-- 评论列表区域 -->
     <div v-if="comments.length" class="comment-list">
       <div v-for="c in comments" :key="c.id" class="comment-item">
         <el-avatar :src="parseAvatar(c.user?.avatar || c.avatar)" size="small" class="comment-avatar" style="width: 32px; height: 32px;" />
@@ -140,6 +141,12 @@
 </template>
 
 <script setup>
+/**
+ * PostCard 组件 - 帖子卡片
+ * 功能：显示单个帖子的完整信息，包括用户信息、内容、图片、操作按钮等
+ * 支持：点赞、评论、转发、图片预览等功能
+ */
+
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Share, ChatLineSquare, Star, PictureFilled, ChatDotRound } from '@element-plus/icons-vue'
@@ -148,47 +155,47 @@ import { fetchComments, addComment } from '../api/comment'
 import { parseAvatar } from '../utils/avatar'
 import { lazyLoadImage, preloadImages } from '../utils/imageLoader'
 
+// 组件属性定义
 const props = defineProps({
-  avatar: String,
-  username: String,
-  time: String,
-  source: String,
-  content: String,
-  images: Array,
-  readCount: Number,
-  likeCount: Number,
-  commentCount: Number,
-  repostCount: Number,
-  active: String, // 'repost' | 'comment' | 'like'
-  postId: [String, Number],
-  isLiked: {
+  avatar: String,        // 用户头像
+  username: String,      // 用户名
+  time: String,          // 发布时间
+  source: String,        // 来源信息
+  content: String,       // 帖子内容
+  images: Array,         // 图片数组
+  readCount: Number,     // 阅读数
+  likeCount: Number,     // 点赞数
+  commentCount: Number,  // 评论数
+  repostCount: Number,   // 转发数
+  active: String,        // 当前激活的操作类型: 'repost' | 'comment' | 'like'
+  postId: [String, Number], // 帖子ID
+  isLiked: {            // 当前用户是否已点赞
     type: Boolean,
     default: false
   }
 })
 
-// 调试图片数据
-console.log('PostCard - 接收到的图片数据:', {
-  postId: props.postId,
-  images: props.images,
-  hasImages: props.images && props.images.length > 0
-})
 
+
+// 组件事件定义
 const emit = defineEmits(['like', 'comment', 'repost', 'content-click', 'more'])
 
-const commentText = ref('')
-const repostText = ref('')
-const repostChecked = ref(false)
-const showCommentBar = ref(false)
-const showRepostBar = ref(false)
-const repostAlsoComment = ref(false)
-const commentLoading = ref(false)
-const repostLoading = ref(false)
+// 响应式数据定义
+const commentText = ref('')        // 评论输入内容
+const repostText = ref('')         // 转发输入内容
+const repostChecked = ref(false)   // 是否同时转发
+const showCommentBar = ref(false)  // 是否显示评论栏
+const showRepostBar = ref(false)   // 是否显示转发栏
+const repostAlsoComment = ref(false) // 转发时是否同时评论
+const commentLoading = ref(false)  // 评论发布中状态
+const repostLoading = ref(false)   // 转发发布中状态
 
+// 表情符号列表
 const emojiList = [
   '😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😍','😘','😜','😎','😭','😡','👍','👏','🎉','❤️','🔥','🌈','🐱','🐶','🍉','🍔','⚽','🏀','🚗','✈️','🎵','💡','⭐'
 ]
 
+// 评论列表
 const comments = ref([])
 // const fullImages = ref([]) // 存储原图 - 暂时禁用
 // const loadedFullImages = ref(new Set()) // 记录已加载的原图 - 暂时禁用
@@ -466,16 +473,7 @@ const handleMore = () => {
   emit('more', props.postId)
 }
 
-// 测试图片预加载
-const testImagePreload = () => {
-  console.log('测试图片预加载:', props.images)
-  if (props.images && props.images.length > 0) {
-    preloadImages(props.images, { maxConcurrent: 3 })
-    ElMessage.success('开始预加载图片')
-  } else {
-    ElMessage.warning('没有图片可预加载')
-  }
-}
+
 
 </script>
 

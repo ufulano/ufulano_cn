@@ -1,3 +1,35 @@
+/**
+ * 帖子数据模型
+ * 
+ * 功能特性：
+ * - 帖子内容：文字、图片、视频内容存储
+ * - 互动统计：点赞、评论、转发数量
+ * - 隐私控制：帖子可见性设置
+ * - 软删除：支持帖子软删除
+ * - 关联关系：与用户、评论、点赞的关联
+ * 
+ * 数据字段：
+ * - post_id：帖子唯一标识
+ * - user_id：发布用户ID
+ * - content：帖子内容
+ * - image_url：图片URL（JSON格式）
+ * - video_url：视频URL
+ * - topics：话题标签
+ * - visibility：可见性设置
+ * - like_count：点赞数量
+ * - comment_count：评论数量
+ * - repost_count：转发数量
+ * - view_count：浏览数量
+ * - is_deleted：软删除标记
+ * - post_time：发布时间
+ * - update_time：更新时间
+ * 
+ * 关联关系：
+ * - 多对一：帖子属于用户
+ * - 一对多：帖子有多个评论
+ * - 一对多：帖子有多个点赞
+ */
+
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 

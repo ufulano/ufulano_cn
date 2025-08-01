@@ -1,3 +1,27 @@
+/**
+ * 点赞路由
+ * 
+ * 功能特性：
+ * - 点赞帖子：POST /likes/:postId
+ * - 取消点赞：DELETE /likes/:postId
+ * - 获取点赞：GET /likes/:postId
+ * - 点赞状态：GET /likes/:postId/status
+ * - 用户点赞：GET /likes/user/history
+ * - 批量点赞：GET /likes/batch
+ * 
+ * 中间件：
+ * - 身份验证：JWT令牌验证
+ * - 权限检查：点赞权限验证
+ * - 防重复：防止重复点赞
+ * - 输入验证：请求数据验证
+ * 
+ * 安全措施：
+ * - 身份验证：确保用户身份
+ * - 权限控制：防止越权操作
+ * - 防重复：防止重复点赞
+ * - 速率限制：防止恶意点赞
+ */
+
 const express = require('express');
 const router = express.Router();
 const { body, param } = require('express-validator');

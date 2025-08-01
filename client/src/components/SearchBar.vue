@@ -1,11 +1,15 @@
 <template>
+  <!-- 欢迎区域和搜索栏 -->
   <section class="welcome-section">
+    <!-- 网站标题 -->
     <h1 class="main-title">
       <span style="color:#222">Uf</span>
       <span style="color:#FFD600">ula</span>
       <span style="color:#222">no</span>
     </h1>
+    <!-- 副标题 -->
     <div class="main-subtitle">·大脑切片机·</div>
+    <!-- 搜索区域 -->
     <div class="main-search">
       <el-input 
         placeholder="想要找到什么有趣的？" 
@@ -22,24 +26,56 @@
 </template>
 
 <script setup>
+/**
+ * 搜索栏组件
+ * 
+ * 功能：
+ * - 显示网站标题和副标题
+ * - 提供搜索输入框
+ * - 支持实时搜索（防抖）
+ * - 支持回车键搜索
+ * - 显示搜索状态
+ * 
+ * 特性：
+ * - 响应式设计
+ * - 防抖搜索优化
+ * - 清空功能
+ * - 加载状态显示
+ */
+
 import { ref, watch } from 'vue'
 
+/**
+ * 组件属性定义
+ */
 const props = defineProps({
+  /** 搜索加载状态 */
   loading: {
     type: Boolean,
     default: false
   }
 })
 
+/**
+ * 组件事件定义
+ */
 const emit = defineEmits(['search'])
 
+/** 搜索输入值 */
 const searchValue = ref('')
 
+/**
+ * 处理搜索事件
+ * 触发搜索事件并传递搜索值
+ */
 const handleSearch = () => {
   emit('search', searchValue.value)
 }
 
-// 监听搜索值变化，实时搜索
+/**
+ * 监听搜索值变化，实时搜索
+ * 使用300ms防抖优化性能
+ */
 watch(searchValue, (newValue) => {
   emit('search', newValue)
 }, { debounce: 300 })

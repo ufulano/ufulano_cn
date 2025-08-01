@@ -1,10 +1,14 @@
 
 <template>
+  <!-- 应用头部导航栏 -->
   <header class="home-header">
+    <!-- 左侧Logo区域 -->
     <div class="header-left">
       <img src="../logo.png" alt="logo" class="logo-img" @click="$router.push('/')" style="cursor:pointer;" />
     </div>
+    <!-- 右侧导航区域 -->
     <nav class="header-nav">
+      <!-- 更多功能下拉菜单 -->
       <el-dropdown>
         <el-button class="more-btn" type="primary">
           More!!!<el-icon style="margin-left:4px;"><i class="el-icon-arrow-down" /></el-icon>
@@ -19,11 +23,14 @@
           </el-dropdown-menu>
         </template>
       </el-dropdown>
+      <!-- 导航链接 -->
       <router-link to="/community" class="nav-link nav-hide-on-mobile">社区</router-link>
       <router-link to="/" class="nav-link nav-hide-on-mobile">资源</router-link>
       <router-link to="/" class="nav-link nav-hide-on-mobile">联系</router-link>
       <router-link to="/" class="nav-link nav-hide-on-mobile">信箱</router-link>
+      <!-- 用户登录状态相关按钮 -->
       <template v-if="userStore.isLoggedIn">
+        <!-- 用户头像下拉菜单 -->
         <el-dropdown trigger="click">
           <span class="user-avatar-wrap">
             <AvatarUpload 
@@ -44,6 +51,7 @@
         </el-dropdown>
         <el-button class="login-btn" @click="onLogout">登出</el-button>
       </template>
+      <!-- 未登录状态显示登录注册按钮 -->
       <template v-else>
         <el-button class="login-btn" @click="$router.push('/login')">登录</el-button>
         <el-button class="register-btn" @click="$router.push('/register')">注册</el-button>
@@ -53,12 +61,36 @@
 </template>
 
 <script setup>
+/**
+ * 应用头部导航组件
+ * 
+ * 功能：
+ * - 显示网站Logo和导航链接
+ * - 用户登录状态管理
+ * - 用户头像和下拉菜单
+ * - 登录/注册/登出功能
+ * - 响应式导航设计
+ * 
+ * 特性：
+ * - 固定顶部定位
+ * - 响应式设计
+ * - 用户状态感知
+ * - 路由导航集成
+ */
+
 import { useUserStore } from '../store/user'
 import { useRouter } from 'vue-router'
 import AvatarUpload from './AvatarUpload.vue'
 import { parseAvatar } from '../utils/avatar'
+
+// 组件内部状态
 const userStore = useUserStore()
 const router = useRouter()
+
+/**
+ * 用户登出处理函数
+ * 清除用户状态并跳转到登录页面
+ */
 const onLogout = () => {
   userStore.logout()
   router.push('/login')

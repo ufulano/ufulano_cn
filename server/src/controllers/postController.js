@@ -1,3 +1,30 @@
+/**
+ * 帖子控制器
+ * 
+ * 功能特性：
+ * - 帖子管理：创建、获取、更新、删除帖子
+ * - 内容过滤：敏感内容检测和过滤
+ * - 图片处理：图片上传、压缩、裁剪
+ * - 分页查询：高性能的分页和排序
+ * - 搜索功能：全文搜索和标签搜索
+ * - 权限控制：帖子可见性和编辑权限
+ * 
+ * 数据处理：
+ * - 内容验证：防止XSS和恶意内容
+ * - 图片优化：自动压缩和格式转换
+ * - 缓存策略：热门帖子缓存机制
+ * - 数据统计：浏览量、互动数据统计
+ * 
+ * API端点：
+ * - POST /posts：创建帖子
+ * - GET /posts：获取帖子列表
+ * - GET /posts/:id：获取帖子详情
+ * - PUT /posts/:id：更新帖子
+ * - DELETE /posts/:id：删除帖子
+ * - GET /posts/search：搜索帖子
+ * - POST /posts/:id/view：记录浏览量
+ */
+
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const bcrypt = require('bcryptjs');

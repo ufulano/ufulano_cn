@@ -1,4 +1,5 @@
 <template>
+  <!-- 帖子流组件 - 显示帖子列表，支持分页和筛选 -->
   <div class="post-stream">
     <!-- 加载状态 -->
     <section v-if="loading" class="loading-section">
@@ -39,13 +40,7 @@
     
     <!-- 帖子列表 -->
     <section v-else class="post-list-section">
-      <!-- 调试信息 -->
-      <div style="background: #e8f5e8; border: 1px solid #4caf50; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
-        <p style="margin: 0; color: #2e7d32;"><strong>渲染信息:</strong></p>
-        <p style="margin: 5px 0; color: #2e7d32;">帖子数量: {{ posts.length }}</p>
-        <p style="margin: 5px 0; color: #2e7d32;">显示帖子数量: {{ displayPosts.length }}</p>
-        <p style="margin: 5px 0; color: #2e7d32;">当前页码: {{ currentPage }}</p>
-      </div>
+
       
       <!-- 帖子列表 -->
       <div class="post-list">
@@ -94,44 +89,52 @@
 </template>
 
 <script setup>
+/**
+ * PostStream 组件 - 帖子流
+ * 功能：显示帖子列表，支持分页加载、图片预加载、筛选等功能
+ * 特性：高性能图片预加载、智能缓存管理、响应式布局
+ */
+
 import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import PostCard from './PostCard.vue'
 import { parseAvatar } from '../utils/avatar'
 import { preloadImages, clearImageCache, preloadCriticalImages } from '../utils/imageLoader'
 
+// 组件属性定义
 const props = defineProps({
-  posts: {
+  posts: {              // 帖子数据数组
     type: Array,
     default: () => []
   },
-  loading: {
+  loading: {            // 加载状态
     type: Boolean,
     default: false
   },
-  error: {
+  error: {              // 错误状态
     type: Boolean,
     default: false
   },
-  filterMode: {
+  filterMode: {         // 筛选模式
     type: String,
     default: 'all'
   },
-  currentUserId: {
+  currentUserId: {      // 当前用户ID
     type: [String, Number],
     default: null
   },
-  pageSize: {
+  pageSize: {           // 每页显示数量
     type: Number,
     default: 10
   }
 })
 
+// 组件事件定义
 const emit = defineEmits(['like', 'comment', 'repost', 'reload'])
 
-// 分页状态
-const currentPage = ref(1)
-const loadingMore = ref(false)
+// 分页状态管理
+const currentPage = ref(1)      // 当前页码
+const loadingMore = ref(false)  // 加载更多状态
 
 // 当前显示的帖子
 const displayPosts = computed(() => {
@@ -177,13 +180,7 @@ const getPostContent = (post) => {
 
 // 获取帖子图片
 const getPostImages = (post) => {
-  const images = post.images || post.image_urls || []
-  console.log('PostStream - 帖子图片数据:', {
-    postId: post.id,
-    images: images,
-    hasImages: images.length > 0
-  })
-  return images
+  return post.images || post.image_urls || []
 }
 
 // 获取帖子点赞数
@@ -265,19 +262,15 @@ watch(() => props.posts, (newPosts) => {
       .flatMap(post => getPostImages(post))
       .filter(img => img && (img.startsWith('data:image/') || img.startsWith('http')))
     
-    console.log('发现图片URL:', imageUrls.length, '张')
-    
     if (imageUrls.length > 0) {
       // 优先预加载前5张图片
       const priorityImages = imageUrls.slice(0, 5)
-      console.log('预加载关键图片:', priorityImages)
       preloadCriticalImages(priorityImages)
       
       // 异步预加载其余图片
       setTimeout(() => {
         const remainingImages = imageUrls.slice(5, 15)
         if (remainingImages.length > 0) {
-          console.log('预加载其余图片:', remainingImages.length, '张')
           preloadImages(remainingImages, { maxConcurrent: 3 })
         }
       }, 200)

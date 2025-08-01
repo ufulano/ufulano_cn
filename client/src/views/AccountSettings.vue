@@ -1,3 +1,24 @@
+<!--
+ * 账号设置页面组件
+ * 
+ * 功能特性：
+ * - 基本信息管理：用户名、昵称、邮箱、个人简介
+ * - 头像上传：支持图片上传和剪裁功能
+ * - 密码修改：安全修改用户密码
+ * - 隐私设置：控制个人资料和动态的可见性
+ * - 表单验证：完整的输入验证和错误提示
+ * 
+ * 页面结构：
+ * - 左侧：用户侧边栏导航
+ * - 主内容：分卡片展示不同设置项
+ * - 对话框：头像上传和剪裁功能
+ * 
+ * 技术实现：
+ * - 响应式表单：使用Element Plus表单组件
+ * - 文件上传：集成头像上传组件
+ * - 状态管理：与用户store集成
+ * - 样式设计：现代化UI设计，支持响应式布局
+ -->
 <template>
   <div class="account-settings-root">
     <AppHeader />
@@ -14,7 +35,7 @@
         </div>
         
         <div class="settings-content">
-          <!-- 基本信息设置 -->
+          <!-- 基本信息设置卡片 -->
           <el-card class="settings-card">
             <template #header>
               <div class="card-header">
@@ -25,8 +46,9 @@
               </div>
             </template>
             
+            <!-- 基本信息表单 -->
             <el-form :model="basicForm" :rules="basicRules" ref="basicFormRef" label-width="100px">
-              <!-- 头像设置 -->
+              <!-- 头像设置区域 -->
               <el-form-item label="头像" prop="avatar">
                 <div class="avatar-section">
                   <AvatarUpload 
@@ -43,7 +65,7 @@
                 </div>
               </el-form-item>
               
-              <!-- 用户名 -->
+              <!-- 用户名输入 -->
               <el-form-item label="用户名" prop="username">
                 <el-input 
                   v-model="basicForm.username" 
@@ -53,7 +75,7 @@
                 />
               </el-form-item>
               
-              <!-- 昵称 -->
+              <!-- 昵称输入 -->
               <el-form-item label="昵称" prop="nickname">
                 <el-input 
                   v-model="basicForm.nickname" 
@@ -63,7 +85,7 @@
                 />
               </el-form-item>
               
-              <!-- 邮箱 -->
+              <!-- 邮箱输入 -->
               <el-form-item label="邮箱" prop="email">
                 <el-input 
                   v-model="basicForm.email" 
@@ -72,7 +94,7 @@
                 />
               </el-form-item>
               
-              <!-- 个人简介 -->
+              <!-- 个人简介输入 -->
               <el-form-item label="个人简介" prop="bio">
                 <el-input 
                   v-model="basicForm.bio" 
@@ -86,7 +108,7 @@
             </el-form>
           </el-card>
           
-          <!-- 密码设置 -->
+          <!-- 密码设置卡片 -->
           <el-card class="settings-card">
             <template #header>
               <div class="card-header">
@@ -97,6 +119,7 @@
               </div>
             </template>
             
+            <!-- 密码修改表单 -->
             <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-width="100px">
               <el-form-item label="当前密码" prop="currentPassword">
                 <el-input 
@@ -127,7 +150,7 @@
             </el-form>
           </el-card>
           
-          <!-- 隐私设置 -->
+          <!-- 隐私设置卡片 -->
           <el-card class="settings-card">
             <template #header>
               <div class="card-header">
@@ -138,6 +161,7 @@
               </div>
             </template>
             
+            <!-- 隐私设置表单 -->
             <el-form :model="privacyForm" label-width="120px">
               <el-form-item label="个人资料可见性">
                 <el-radio-group v-model="privacyForm.profileVisibility">
@@ -176,6 +200,7 @@
       :close-on-click-modal="false"
     >
       <div class="avatar-upload-content">
+        <!-- 文件选择区域 -->
         <div v-if="!avatarFile" class="upload-section">
           <el-upload
             ref="uploadRef"
@@ -193,6 +218,7 @@
           </el-upload>
         </div>
         
+        <!-- 图片剪裁区域 -->
         <div v-else class="crop-section">
           <AvatarCropper 
             :image-src="avatarPreview" 
@@ -229,48 +255,48 @@ import { parseAvatar } from '../utils/avatar'
 
 const userStore = useUserStore()
 
-// 响应式数据
-const saving = ref(false)
-const changingPassword = ref(false)
-const savingPrivacy = ref(false)
-const uploadingAvatar = ref(false)
-const showAvatarUpload = ref(false)
-const avatarFile = ref(null)
-const avatarPreview = ref('')
-const cropperRef = ref(null)
+// 响应式状态管理
+const saving = ref(false)                    // 基本信息保存状态
+const changingPassword = ref(false)           // 密码修改状态
+const savingPrivacy = ref(false)             // 隐私设置保存状态
+const uploadingAvatar = ref(false)           // 头像上传状态
+const showAvatarUpload = ref(false)          // 头像上传对话框显示状态
+const avatarFile = ref(null)                 // 头像文件对象
+const avatarPreview = ref('')                // 头像预览URL
+const cropperRef = ref(null)                 // 剪裁组件引用
 
 // 表单引用
-const basicFormRef = ref()
-const passwordFormRef = ref()
-const uploadRef = ref()
-const cropImageRef = ref()
-const cropOverlayRef = ref()
+const basicFormRef = ref()                   // 基本信息表单引用
+const passwordFormRef = ref()                // 密码表单引用
+const uploadRef = ref()                      // 上传组件引用
+const cropImageRef = ref()                   // 剪裁图片引用
+const cropOverlayRef = ref()                 // 剪裁遮罩引用
 
-// 基本信息表单
+// 基本信息表单数据
 const basicForm = reactive({
-  username: userStore.user?.username || '',
-  nickname: userStore.user?.nickname || '',
-  email: userStore.user?.email || '',
-  bio: userStore.user?.bio || '',
-  avatar: userStore.user?.avatar_url || ''
+  username: userStore.user?.username || '',    // 用户名
+  nickname: userStore.user?.nickname || '',    // 昵称
+  email: userStore.user?.email || '',          // 邮箱
+  bio: userStore.user?.bio || '',              // 个人简介
+  avatar: userStore.user?.avatar_url || ''     // 头像URL
 })
 
-// 密码表单
+// 密码修改表单数据
 const passwordForm = reactive({
-  currentPassword: '',
-  newPassword: '',
-  confirmPassword: ''
+  currentPassword: '',    // 当前密码
+  newPassword: '',        // 新密码
+  confirmPassword: ''     // 确认密码
 })
 
-// 隐私设置表单
+// 隐私设置表单数据
 const privacyForm = reactive({
-  profileVisibility: 'public',
-  postVisibility: 'public',
-  allowFollow: true,
-  allowMessage: true
+  profileVisibility: 'public',    // 个人资料可见性
+  postVisibility: 'public',       // 动态可见性
+  allowFollow: true,              // 允许关注
+  allowMessage: true              // 允许私信
 })
 
-// 表单验证规则
+// 基本信息表单验证规则
 const basicRules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -286,6 +312,7 @@ const basicRules = {
   ]
 }
 
+// 密码表单验证规则
 const passwordRules = {
   currentPassword: [
     { required: true, message: '请输入当前密码', trigger: 'blur' }
@@ -309,7 +336,15 @@ const passwordRules = {
   ]
 }
 
-// 保存基本信息
+/**
+ * 保存基本信息
+ * 
+ * 功能：
+ * - 验证表单数据
+ * - 调用API保存用户信息
+ * - 显示成功/失败提示
+ * - 更新本地用户数据
+ */
 const saveBasicInfo = async () => {
   try {
     await basicFormRef.value.validate()
@@ -327,7 +362,15 @@ const saveBasicInfo = async () => {
   }
 }
 
-// 保存密码
+/**
+ * 保存密码设置
+ * 
+ * 功能：
+ * - 验证密码表单
+ * - 调用API修改密码
+ * - 清空密码表单
+ * - 显示操作结果
+ */
 const savePassword = async () => {
   try {
     await passwordFormRef.value.validate()
@@ -350,7 +393,14 @@ const savePassword = async () => {
   }
 }
 
-// 保存隐私设置
+/**
+ * 保存隐私设置
+ * 
+ * 功能：
+ * - 调用API保存隐私设置
+ * - 更新本地隐私配置
+ * - 显示操作结果
+ */
 const savePrivacySettings = async () => {
   try {
     savingPrivacy.value = true
@@ -367,15 +417,25 @@ const savePrivacySettings = async () => {
   }
 }
 
-// 处理头像变更
+/**
+ * 处理头像变更事件
+ * 
+ * @param {string} newAvatarUrl - 新的头像URL
+ */
 const handleAvatarChanged = (newAvatarUrl) => {
   basicForm.avatar = newAvatarUrl
   console.log('头像已更新:', newAvatarUrl)
 }
 
-
-
-// 确认头像上传
+/**
+ * 确认头像上传
+ * 
+ * 功能：
+ * - 获取剪裁结果
+ * - 调用API上传头像
+ * - 更新本地头像数据
+ * - 清理临时数据
+ */
 const confirmAvatarUpload = async () => {
   if (!avatarFile.value) {
     ElMessage.warning('请先选择图片')
@@ -409,13 +469,20 @@ const confirmAvatarUpload = async () => {
   }
 }
 
-// 取消头像上传
+/**
+ * 取消头像上传
+ * 
+ * 功能：
+ * - 关闭上传对话框
+ * - 清理临时文件数据
+ */
 const cancelAvatarUpload = () => {
   showAvatarUpload.value = false
   avatarFile.value = null
   avatarPreview.value = ''
 }
 
+// 组件挂载时初始化数据
 onMounted(() => {
   // 初始化表单数据
   if (userStore.user) {
@@ -429,6 +496,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 账号设置页面根容器 */
 .account-settings-root {
   min-height: 100vh;
   background: var(--color-gray-light);
@@ -436,6 +504,7 @@ onMounted(() => {
   flex-direction: column;
 }
 
+/* 设置页面容器 */
 .settings-container {
   display: flex;
   max-width: 1200px;
@@ -445,6 +514,7 @@ onMounted(() => {
   flex: 1;
 }
 
+/* 主内容区域 */
 .settings-main {
   flex: 1;
   display: flex;
@@ -452,6 +522,7 @@ onMounted(() => {
   gap: 24px;
 }
 
+/* 页面标题区域 */
 .settings-header {
   background: var(--color-white);
   border-radius: 12px;
@@ -473,17 +544,20 @@ onMounted(() => {
   font-size: 16px;
 }
 
+/* 设置内容区域 */
 .settings-content {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
+/* 设置卡片样式 */
 .settings-card {
   border-radius: 12px;
   box-shadow: var(--shadow-card);
 }
 
+/* 卡片头部样式 */
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -497,7 +571,7 @@ onMounted(() => {
   font-weight: 600;
 }
 
-/* 头像设置样式 */
+/* 头像设置区域样式 */
 .avatar-section {
   display: flex;
   align-items: flex-start;

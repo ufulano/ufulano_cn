@@ -1,6 +1,33 @@
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 console.log('JWT_SECRET from .env:', process.env.JWT_SECRET);
+/**
+ * 主应用服务器文件
+ * 
+ * 功能特性：
+ * - Express服务器配置：中间件、路由、错误处理
+ * - 数据库连接：MySQL数据库连接和配置
+ * - 跨域处理：CORS配置和预检请求处理
+ * - 安全中间件：helmet、rate limiting等安全措施
+ * - 日志记录：访问日志和错误日志
+ * - API文档：Swagger API文档集成
+ * 
+ * 技术栈：
+ * - Express.js：Web应用框架
+ * - MySQL：关系型数据库
+ * - JWT：用户认证和授权
+ * - Multer：文件上传处理
+ * - Swagger：API文档生成
+ * 
+ * 中间件配置：
+ * - 静态文件服务
+ * - 请求体解析
+ * - 跨域处理
+ * - 安全头部
+ * - 访问日志
+ * - 错误处理
+ */
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');

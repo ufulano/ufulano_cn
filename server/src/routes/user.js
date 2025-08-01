@@ -1,4 +1,29 @@
 // user.js
+/**
+ * 用户路由
+ * 
+ * 功能特性：
+ * - 用户资料：GET /users/profile
+ * - 更新资料：PUT /users/profile
+ * - 修改密码：PUT /users/password
+ * - 上传头像：POST /users/avatar
+ * - 搜索用户：GET /users/search
+ * - 关注用户：POST /users/follow
+ * - 取消关注：DELETE /users/follow
+ * 
+ * 中间件：
+ * - 身份验证：JWT令牌验证
+ * - 权限检查：用户权限验证
+ * - 文件上传：头像文件处理
+ * - 输入验证：请求数据验证
+ * 
+ * 安全措施：
+ * - 身份验证：确保用户身份
+ * - 权限控制：防止越权访问
+ * - 文件验证：安全的文件上传
+ * - 数据验证：防止恶意数据
+ */
+
 const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../middleware/authMiddleware');

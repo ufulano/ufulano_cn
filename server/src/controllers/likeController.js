@@ -1,3 +1,28 @@
+/**
+ * 点赞控制器
+ * 
+ * 功能特性：
+ * - 点赞管理：点赞、取消点赞、获取点赞状态
+ * - 点赞统计：帖子点赞数量统计
+ * - 用户点赞：用户点赞历史记录
+ * - 实时更新：点赞状态实时同步
+ * - 权限控制：点赞权限验证
+ * - 防重复：防止重复点赞机制
+ * 
+ * 数据处理：
+ * - 数据验证：点赞数据完整性验证
+ * - 事务处理：确保数据一致性
+ * - 缓存策略：热门帖子点赞缓存
+ * - 性能优化：批量查询和更新
+ * 
+ * API端点：
+ * - POST /likes：创建点赞
+ * - DELETE /likes：取消点赞
+ * - GET /likes/post/:postId：获取帖子点赞
+ * - GET /likes/user/:userId：获取用户点赞
+ * - GET /likes/status：获取点赞状态
+ */
+
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const bcrypt = require('bcryptjs');

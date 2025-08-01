@@ -1,5 +1,7 @@
 <template>
+  <!-- 头像上传组件 -->
   <div class="avatar-upload">
+    <!-- 可编辑模式：显示上传按钮和裁剪功能 -->
     <el-upload
       v-if="editable"
       :auto-upload="false"
@@ -21,7 +23,7 @@
       </div>
     </el-upload>
     
-    <!-- 只显示头像，不可编辑 -->
+    <!-- 只读模式：仅显示头像，不可编辑 -->
     <div v-else class="avatar-display">
       <el-avatar 
         :src="currentAvatar" 
@@ -30,7 +32,7 @@
       />
     </div>
     
-    <!-- 头像裁剪对话框 -->
+    <!-- 头像裁剪对话框：用于裁剪和确认头像 -->
     <el-dialog 
       v-model="showCropper" 
       title="裁剪头像" 
@@ -55,6 +57,24 @@
 </template>
 
 <script setup>
+/**
+ * 头像上传组件
+ * 
+ * 功能：
+ * - 支持头像上传和预览
+ * - 图片压缩和优化
+ * - 头像裁剪功能
+ * - 可编辑和只读两种模式
+ * - 自动处理头像URL解析
+ * 
+ * 特性：
+ * - 响应式设计
+ * - 图片格式验证
+ * - 自动压缩大图片
+ * - 实时预览
+ * - 错误处理
+ */
+
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Camera } from '@element-plus/icons-vue'
@@ -64,33 +84,54 @@ import { useUserStore } from '../store/user.js'
 import { parseAvatar } from '../utils/avatar'
 import { isValidImage, isValidImageSize, compressImage, getImageSize } from '../utils/imageCompression'
 
+/**
+ * 组件属性定义
+ */
 const props = defineProps({
+  /** 头像URL */
   avatar: {
     type: String,
     default: ''
   },
+  /** 头像尺寸 */
   size: {
     type: [String, Number],
     default: 'large'
   },
+  /** 是否可编辑 */
   editable: {
     type: Boolean,
     default: false
   }
 })
 
+/**
+ * 组件事件定义
+ */
 const emit = defineEmits(['update:avatar', 'avatar-changed'])
 
+// 组件内部状态
 const userStore = useUserStore()
+/** 裁剪器引用 */
 const cropperRef = ref(null)
+/** 是否显示裁剪对话框 */
 const showCropper = ref(false)
+/** 临时图片URL */
 const tempImageUrl = ref('')
+/** 上传状态 */
 const uploading = ref(false)
 
-// 默认头像 - 使用简单的占位符
+/**
+ * 默认头像 - 使用简单的占位符SVG
+ * 当用户没有设置头像时显示
+ */
 const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjQ0NDQ0NDIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuWbvueJhzwvdGV4dD4KPC9zdmc+Cg=='
 
-// 当前头像
+/**
+ * 当前头像计算属性
+ * 优先使用props传入的头像，其次使用store中的头像
+ * 自动解析头像URL格式
+ */
 const currentAvatar = computed(() => {
   console.log('AvatarUpload - props.avatar:', props.avatar ? '存在' : '不存在')
   console.log('AvatarUpload - userStore.avatar:', userStore.avatar ? '存在' : '不存在')
@@ -102,7 +143,11 @@ const currentAvatar = computed(() => {
   return parsedAvatar
 })
 
-// 处理文件选择（自动压缩）
+/**
+ * 处理文件选择（自动压缩）
+ * 
+ * @param {Object} file - 选择的文件对象
+ */
 const handleFileChange = async (file) => {
   if (!props.editable) {
     ElMessage.warning('头像不可编辑')
@@ -160,13 +205,20 @@ const handleFileChange = async (file) => {
   reader.readAsDataURL(file.raw)
 }
 
-// 处理裁剪完成
+/**
+ * 处理裁剪完成事件
+ * 
+ * @param {string} croppedData - 裁剪后的图片数据
+ */
 const handleCropComplete = (croppedData) => {
   // 裁剪完成，可以在这里预览
   console.log('裁剪完成:', croppedData)
 }
 
-// 确认裁剪并上传
+/**
+ * 确认裁剪并上传头像
+ * 获取裁剪结果并调用API上传
+ */
 const confirmCrop = async () => {
   if (!cropperRef.value) {
     ElMessage.error('裁剪器未初始化')

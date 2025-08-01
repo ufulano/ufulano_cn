@@ -1,3 +1,25 @@
+/**
+ * 点赞数据模型
+ * 
+ * 功能特性：
+ * - 点赞记录：用户点赞记录存储
+ * - 用户关联：点赞用户信息
+ * - 帖子关联：被点赞的帖子
+ * - 时间记录：点赞时间记录
+ * - 防重复：防止重复点赞
+ * 
+ * 数据字段：
+ * - like_id：点赞唯一标识
+ * - user_id：点赞用户ID
+ * - post_id：被点赞帖子ID
+ * - like_time：点赞时间
+ * 
+ * 关联关系：
+ * - 多对一：点赞属于用户
+ * - 多对一：点赞属于帖子
+ * - 唯一约束：用户对同一帖子只能点赞一次
+ */
+
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 

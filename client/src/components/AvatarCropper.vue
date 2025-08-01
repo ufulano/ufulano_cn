@@ -1,6 +1,9 @@
 <template>
+  <!-- 头像裁剪组件 -->
   <div class="avatar-cropper">
+    <!-- 裁剪容器 -->
     <div class="cropper-container" ref="containerRef">
+      <!-- 待裁剪的图片 -->
       <img 
         :src="imageSrc" 
         ref="imageRef"
@@ -11,7 +14,7 @@
         @touchstart="startDrag"
       />
       
-      <!-- 剪裁框 -->
+      <!-- 圆形裁剪框 -->
       <div 
         class="crop-frame"
         :style="cropFrameStyle"
@@ -25,14 +28,15 @@
         <div class="resize-handle resize-handle-se"></div>
       </div>
       
-      <!-- 遮罩层 -->
+      <!-- 遮罩层：突出显示裁剪区域 -->
       <div class="crop-overlay">
         <div class="crop-hole" :style="cropHoleStyle"></div>
       </div>
     </div>
     
-    <!-- 控制面板 -->
+    <!-- 控制面板：缩放、旋转和操作按钮 -->
     <div class="cropper-controls">
+      <!-- 缩放控制组 -->
       <div class="control-group">
         <label>缩放</label>
         <el-slider 
@@ -46,6 +50,7 @@
         <span class="scale-value">{{ scale.toFixed(1) }}x</span>
       </div>
       
+      <!-- 旋转控制组 -->
       <div class="control-group">
         <label>旋转</label>
         <el-slider 
@@ -59,6 +64,7 @@
         <span class="rotation-value">{{ rotation }}°</span>
       </div>
       
+      <!-- 操作按钮组 -->
       <div class="control-buttons">
         <el-button @click="resetTransform">重置</el-button>
         <el-button @click="rotateLeft">向左旋转</el-button>
@@ -69,39 +75,77 @@
 </template>
 
 <script setup>
+/**
+ * 头像裁剪组件
+ * 
+ * 功能：
+ * - 圆形头像裁剪
+ * - 图片缩放和旋转
+ * - 拖拽调整裁剪位置
+ * - 实时预览裁剪效果
+ * - 导出裁剪结果
+ * 
+ * 特性：
+ * - 支持触摸和鼠标操作
+ * - 实时变换预览
+ * - Canvas导出
+ * - 响应式设计
+ */
+
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
+/**
+ * 组件属性定义
+ */
 const props = defineProps({
+  /** 要裁剪的图片URL */
   imageSrc: {
     type: String,
     required: true
   },
+  /** 裁剪框大小 */
   cropSize: {
     type: Number,
     default: 200
   }
 })
 
+/**
+ * 组件事件定义
+ */
 const emit = defineEmits(['crop'])
 
-// 响应式数据
+// 组件内部状态
+/** 容器DOM引用 */
 const containerRef = ref(null)
+/** 图片DOM引用 */
 const imageRef = ref(null)
+/** 缩放比例 */
 const scale = ref(1)
+/** 旋转角度 */
 const rotation = ref(0)
+/** 裁剪框位置 */
 const position = ref({ x: 0, y: 0 })
+/** 是否正在拖拽 */
 const isDragging = ref(false)
+/** 是否正在调整大小 */
 const isResizing = ref(false)
+/** 拖拽开始位置 */
 const dragStart = ref({ x: 0, y: 0 })
+/** 图片原始尺寸 */
 const imageSize = ref({ width: 0, height: 0 })
 
-// 计算样式
+/**
+ * 计算样式
+ */
+/** 裁剪框样式 */
 const cropFrameStyle = computed(() => ({
   transform: `translate(${position.value.x}px, ${position.value.y}px)`,
   width: `${props.cropSize}px`,
   height: `${props.cropSize}px`
 }))
 
+/** 裁剪孔样式 */
 const cropHoleStyle = computed(() => ({
   width: `${props.cropSize}px`,
   height: `${props.cropSize}px`,
@@ -109,7 +153,10 @@ const cropHoleStyle = computed(() => ({
   top: `${position.value.y}px`
 }))
 
-// 图片加载完成
+/**
+ * 图片加载完成处理
+ * 获取图片尺寸并居中裁剪框
+ */
 const onImageLoad = () => {
   const img = imageRef.value
   if (img) {
@@ -124,13 +171,20 @@ const onImageLoad = () => {
   }
 }
 
-// 图片加载错误
+/**
+ * 图片加载错误处理
+ * 
+ * @param {Event} error - 错误事件
+ */
 const onImageError = (error) => {
   console.error('图片加载失败:', error)
   console.error('图片源:', props.imageSrc)
 }
 
-// 居中剪裁框
+/**
+ * 居中剪裁框
+ * 将裁剪框定位到容器中心
+ */
 const centerCropFrame = () => {
   if (!containerRef.value) return
   
@@ -143,7 +197,10 @@ const centerCropFrame = () => {
   }
 }
 
-// 更新变换
+/**
+ * 更新图片变换
+ * 应用缩放和旋转变换到图片
+ */
 const updateTransform = () => {
   if (!imageRef.value) return
   
@@ -151,7 +208,10 @@ const updateTransform = () => {
   img.style.transform = `scale(${scale.value}) rotate(${rotation.value}deg)`
 }
 
-// 重置变换
+/**
+ * 重置变换
+ * 将缩放和旋转重置为默认值
+ */
 const resetTransform = () => {
   scale.value = 1
   rotation.value = 0
@@ -159,18 +219,28 @@ const resetTransform = () => {
   updateTransform()
 }
 
-// 旋转
+/**
+ * 向左旋转90度
+ */
 const rotateLeft = () => {
   rotation.value = (rotation.value - 90) % 360
   updateTransform()
 }
 
+/**
+ * 向右旋转90度
+ */
 const rotateRight = () => {
   rotation.value = (rotation.value + 90) % 360
   updateTransform()
 }
 
-// 拖拽开始
+/**
+ * 开始拖拽
+ * 处理鼠标/触摸拖拽开始事件
+ * 
+ * @param {Event} e - 事件对象
+ */
 const startDrag = (e) => {
   if (e.target.classList.contains('crop-frame') || e.target.classList.contains('resize-handle')) {
     return
@@ -186,7 +256,12 @@ const startDrag = (e) => {
   e.preventDefault()
 }
 
-// 调整大小开始
+/**
+ * 开始调整大小
+ * 处理裁剪框大小调整开始事件
+ * 
+ * @param {Event} e - 事件对象
+ */
 const startResize = (e) => {
   isResizing.value = true
   const point = getEventPoint(e)
@@ -199,7 +274,13 @@ const startResize = (e) => {
   e.stopPropagation()
 }
 
-// 获取事件坐标
+/**
+ * 获取事件坐标
+ * 将全局坐标转换为容器相对坐标
+ * 
+ * @param {Event} e - 事件对象
+ * @returns {Object} 相对坐标 {x, y}
+ */
 const getEventPoint = (e) => {
   const rect = containerRef.value.getBoundingClientRect()
   const clientX = e.touches ? e.touches[0].clientX : e.clientX
@@ -211,7 +292,12 @@ const getEventPoint = (e) => {
   }
 }
 
-// 鼠标/触摸移动
+/**
+ * 鼠标/触摸移动处理
+ * 处理拖拽和调整大小的移动事件
+ * 
+ * @param {Event} e - 事件对象
+ */
 const onMove = (e) => {
   if (!isDragging.value && !isResizing.value) return
   
@@ -230,7 +316,10 @@ const onMove = (e) => {
   e.preventDefault()
 }
 
-// 限制剪裁框范围
+/**
+ * 限制剪裁框范围
+ * 确保裁剪框不会超出容器边界
+ */
 const constrainCropFrame = () => {
   if (!containerRef.value) return
   
@@ -241,13 +330,21 @@ const constrainCropFrame = () => {
   position.value.y = Math.max(0, Math.min(position.value.y, containerRect.height - props.cropSize))
 }
 
-// 鼠标/触摸结束
+/**
+ * 鼠标/触摸结束处理
+ * 重置拖拽和调整大小状态
+ */
 const onEnd = () => {
   isDragging.value = false
   isResizing.value = false
 }
 
-// 获取剪裁结果
+/**
+ * 获取剪裁结果
+ * 使用Canvas将裁剪区域导出为base64图片数据
+ * 
+ * @returns {string|null} base64图片数据或null
+ */
 const getCropResult = () => {
   if (!imageRef.value || !containerRef.value) return null
   

@@ -1,6 +1,8 @@
 <template>
+  <!-- 新建帖子区域 -->
   <section class="new-post-section">
     <el-card class="new-post-card">
+      <!-- 帖子头部：头像和输入框 -->
       <div class="new-post-header">
         <AvatarUpload 
           :avatar="parseAvatar(avatar)" 
@@ -22,7 +24,7 @@
         </div>
       </div>
       
-      <!-- 图片预览 -->
+      <!-- 图片预览区域 -->
       <div v-if="images.length > 0" class="new-post-images" :data-count="images.length">
         <div 
           v-for="(img, index) in images" 
@@ -36,9 +38,11 @@
         </div>
       </div>
       
-      <!-- 新建帖子操作栏 -->
+      <!-- 新建帖子操作栏：工具和发布按钮 -->
       <div v-if="showActions" class="new-post-actions">
+        <!-- 左侧工具区域 -->
         <div class="new-post-tools">
+          <!-- 图片上传按钮 -->
           <el-upload
             :auto-upload="false"
             :show-file-list="false"
@@ -53,6 +57,7 @@
             </el-button>
           </el-upload>
           
+          <!-- 表情选择器 -->
           <el-popover placement="top" width="220" trigger="click">
             <template #reference>
               <el-button class="new-post-tool-btn">😀</el-button>
@@ -69,6 +74,7 @@
             </div>
           </el-popover>
           
+          <!-- 话题输入框 -->
           <el-input
             v-model="topics"
             placeholder="添加话题..."
@@ -77,12 +83,15 @@
           />
         </div>
         
+        <!-- 右侧发布区域 -->
         <div class="new-post-publish">
+          <!-- 可见性选择器 -->
           <el-select v-model="visibility" size="small" class="new-post-visibility">
             <el-option label="公开" value="public" />
             <el-option label="仅粉丝" value="follower" />
             <el-option label="仅自己" value="private" />
           </el-select>
+          <!-- 发布按钮 -->
           <el-button 
             type="primary" 
             @click="handlePublish"
@@ -105,6 +114,25 @@
 </template>
 
 <script setup>
+/**
+ * 新建帖子卡片组件
+ * 
+ * 功能：
+ * - 提供帖子内容输入界面
+ * - 支持图片上传和预览
+ * - 支持表情插入
+ * - 支持话题标签
+ * - 支持可见性设置
+ * - 图片压缩和优化处理
+ * 
+ * 特性：
+ * - 响应式设计，适配移动端
+ * - 图片处理队列，避免并发问题
+ * - 防抖处理，提升性能
+ * - 实时字数统计
+ * - 错误状态处理
+ */
+
 import { ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { PictureFilled, Close } from '@element-plus/icons-vue'
@@ -113,46 +141,71 @@ import { parseAvatar } from '../utils/avatar'
 import { compressImage, generateThumbnail, getImageSize, isValidImage, isValidImageSize } from '../utils/imageCompression'
 import { debounce, throttle, batchProcess, AsyncQueue } from '../utils/performance'
 
+/**
+ * 组件属性定义
+ */
 const props = defineProps({
+  /** 用户头像URL */
   avatar: {
     type: String,
     default: ''
   },
+  /** 发布状态，控制发布按钮loading */
   publishing: {
     type: Boolean,
     default: false
   },
+  /** 错误状态 */
   error: {
     type: Boolean,
     default: false
   },
+  /** 错误信息 */
   errorMessage: {
     type: String,
     default: ''
   }
 })
 
+/**
+ * 组件事件定义
+ */
 const emit = defineEmits(['publish'])
 
 // 组件内部状态
+/** 帖子内容 */
 const content = ref('')
-const images = ref([]) // 存储缩略图
-const originalImages = ref([]) // 存储原图
+/** 存储缩略图URL数组 */
+const images = ref([])
+/** 存储原图URL数组 */
+const originalImages = ref([])
+/** 话题标签 */
 const topics = ref('')
+/** 可见性设置 */
 const visibility = ref('public')
+/** 是否显示操作栏 */
 const showActions = ref(false)
-const uploadProgress = ref(0) // 上传进度
-const imageQueue = new AsyncQueue(2) // 图片处理队列，最多同时处理2张图片
+/** 上传进度 */
+const uploadProgress = ref(0)
+/** 图片处理队列，最多同时处理2张图片 */
+const imageQueue = new AsyncQueue(2)
 
-// 表情列表
+/**
+ * 表情列表
+ * 包含常用的表情符号，用于快速插入到帖子内容中
+ */
 const emojiList = [
   '😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😍','😘','😜','😎','😭','😡','👍','👏','🎉','❤️','🔥','🌈','🐱','🐶','🍉','🍔','⚽','🏀','🚗','✈️','🎵','💡','⭐'
 ]
 
-
-
-// 图片上传处理（使用队列和防抖）
+/**
+ * 图片上传处理函数（使用队列和防抖）
+ * 
+ * @param {Object} file - 上传的文件对象
+ * @returns {Promise<void>}
+ */
 const onImageChange = debounce(async (file) => {
+  // 检查图片数量限制
   if (images.value.length >= 4) {
     ElMessage.warning('最多只能上传4张图片')
     return
@@ -224,18 +277,29 @@ const onImageChange = debounce(async (file) => {
   })
 }, 300) // 300ms防抖
 
-// 移除图片
+/**
+ * 移除指定索引的图片
+ * 
+ * @param {number} index - 要移除的图片索引
+ */
 const removeImage = (index) => {
   images.value.splice(index, 1)
   originalImages.value.splice(index, 1)
 }
 
-// 插入表情
+/**
+ * 在内容中插入表情符号
+ * 
+ * @param {string} emoji - 要插入的表情符号
+ */
 const insertEmoji = (emoji) => {
   content.value += emoji
 }
 
-// 发布帖子
+/**
+ * 发布帖子处理函数
+ * 采用两步发布策略：先发布缩略图，再异步上传原图
+ */
 const handlePublish = async () => {
   if (!content.value.trim()) {
     ElMessage.warning('请输入内容')
@@ -283,13 +347,15 @@ const handlePublish = async () => {
   showActions.value = false
 }
 
-// 监听内容变化，自动显示操作栏
+/**
+ * 监听内容变化，自动显示操作栏
+ * 当用户开始输入内容时，自动显示发布相关的操作按钮
+ */
 watch(content, (newValue) => {
   if (newValue.trim() && !showActions.value) {
     showActions.value = true
   }
 })
-
 
 </script>
 

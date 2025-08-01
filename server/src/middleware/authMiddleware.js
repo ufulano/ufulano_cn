@@ -1,5 +1,27 @@
 // middleware/authMiddleware.js
 const path = require('path');
+/**
+ * 身份验证中间件
+ * 
+ * 功能特性：
+ * - JWT令牌验证：验证用户身份
+ * - 用户信息提取：从令牌中提取用户信息
+ * - 错误处理：统一的认证错误处理
+ * - 权限检查：基本的权限验证
+ * 
+ * 验证流程：
+ * - 检查Authorization头部
+ * - 验证JWT令牌有效性
+ * - 提取用户信息到req.user
+ * - 处理令牌过期和无效情况
+ * 
+ * 安全措施：
+ * - 令牌验证：确保令牌有效性
+ * - 错误处理：不暴露敏感信息
+ * - 权限控制：防止未授权访问
+ * - 日志记录：记录认证失败
+ */
+
 const jwt = require('jsonwebtoken');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 

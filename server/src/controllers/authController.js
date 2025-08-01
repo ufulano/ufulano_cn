@@ -1,5 +1,29 @@
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+/**
+ * 认证控制器
+ * 
+ * 功能特性：
+ * - 用户注册：用户名、邮箱、密码注册
+ * - 用户登录：用户名/邮箱登录验证
+ * - 密码加密：使用bcrypt进行密码哈希
+ * - JWT令牌：生成和验证JWT令牌
+ * - 输入验证：用户名、邮箱、密码格式验证
+ * - 错误处理：详细的错误信息和状态码
+ * 
+ * 安全措施：
+ * - 密码哈希：使用bcrypt进行安全哈希
+ * - 输入验证：防止SQL注入和XSS攻击
+ * - 错误信息：不暴露敏感信息
+ * - 令牌过期：JWT令牌自动过期机制
+ * 
+ * API端点：
+ * - POST /auth/register：用户注册
+ * - POST /auth/login：用户登录
+ * - POST /auth/logout：用户登出
+ * - GET /auth/verify：验证令牌
+ */
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');

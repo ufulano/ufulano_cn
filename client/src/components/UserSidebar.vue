@@ -1,10 +1,14 @@
 <template>
+  <!-- 用户侧边栏导航 -->
   <aside class="user-sidebar">
+    <!-- 侧边栏标题 -->
     <div class="sidebar-header">
       <h3>个人主页</h3>
     </div>
     
+    <!-- 导航菜单 -->
     <nav class="sidebar-nav">
+      <!-- 我的主页 -->
       <div 
         class="nav-item" 
         :class="{ active: activeTab === 'profile' }"
@@ -14,6 +18,7 @@
         <span>我的主页</span>
       </div>
       
+      <!-- 我的关注 -->
       <div 
         class="nav-item" 
         :class="{ active: activeTab === 'follow' }"
@@ -23,6 +28,7 @@
         <span>我的关注</span>
       </div>
       
+      <!-- 我的粉丝 -->
       <div 
         class="nav-item" 
         :class="{ active: activeTab === 'fans' }"
@@ -32,6 +38,7 @@
         <span>我的粉丝</span>
       </div>
       
+      <!-- 我的收藏 -->
       <div 
         class="nav-item" 
         :class="{ active: activeTab === 'favorites' }"
@@ -41,6 +48,7 @@
         <span>我的收藏</span>
       </div>
       
+      <!-- 我的赞 -->
       <div 
         class="nav-item" 
         :class="{ active: activeTab === 'likes' }"
@@ -50,6 +58,7 @@
         <span>我的赞</span>
       </div>
       
+      <!-- 创作者中心 -->
       <div 
         class="nav-item" 
         :class="{ active: activeTab === 'creator' }"
@@ -63,6 +72,22 @@
 </template>
 
 <script setup>
+/**
+ * 用户侧边栏组件
+ * 
+ * 功能：
+ * - 用户个人主页导航菜单
+ * - 显示用户相关功能入口
+ * - 根据当前路由高亮对应菜单项
+ * - 支持路由跳转
+ * 
+ * 特性：
+ * - 响应式设计
+ * - 粘性定位
+ * - 路由状态感知
+ * - 图标和文字组合
+ */
+
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { 
@@ -73,10 +98,14 @@ import {
   Setting
 } from '@element-plus/icons-vue'
 
+// 组件内部状态
 const route = useRoute()
 const router = useRouter()
 
-// 根据当前路由确定活动标签
+/**
+ * 根据当前路由确定活动标签
+ * 根据URL路径判断当前应该高亮哪个导航项
+ */
 const activeTab = computed(() => {
   const path = route.path
   if (path.includes('/follow')) return 'follow'
@@ -87,7 +116,12 @@ const activeTab = computed(() => {
   return 'profile'
 })
 
-// 处理导航点击
+/**
+ * 处理导航点击事件
+ * 根据点击的标签跳转到对应的路由
+ * 
+ * @param {string} tab - 点击的导航标签
+ */
 const handleNavClick = (tab) => {
   const userId = route.params.id || 1
   
