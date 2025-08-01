@@ -106,10 +106,11 @@
                     <p>加载状态: {{ loading }}</p>
                     <p>错误状态: {{ error }}</p>
                     <p>用户ID: {{ route.params.id || userStore.userId }}</p>
+                    <p>帖子数据示例: {{ posts.length > 0 ? JSON.stringify(posts[0], null, 2) : '无数据' }}</p>
+                    <p>所有帖子ID: {{ posts.map(p => p?.id).join(', ') }}</p>
                   </div>
                   
                   <PostStream 
-                    v-if="posts && posts.length > 0"
                     :posts="posts"
                     :loading="loading"
                     :error="error"
@@ -121,12 +122,6 @@
                     @reload="loadUserPosts"
                     style="height: calc(100vh - 400px); min-height: 500px;"
                   />
-                  <div v-else-if="loading" class="loading-placeholder">
-                    <p>加载中...</p>
-                  </div>
-                  <div v-else class="empty-placeholder">
-                    <p>暂无动态内容</p>
-                  </div>
                 </div>
               </div>
             </el-tab-pane>
