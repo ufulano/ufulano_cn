@@ -131,7 +131,7 @@ const findEndIndex = (startIndex, containerHeight) => {
   }
   
   return index
-})
+}
 
 // 计算偏移量
 const offsetY = computed(() => {
