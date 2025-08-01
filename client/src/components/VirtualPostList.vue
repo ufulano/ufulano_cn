@@ -71,20 +71,22 @@ const updateItemHeight = (itemId, element) => {
 
 // 获取item的累积高度
 const getItemOffset = (index) => {
-  let offset = 0
+  if (!props.items || !Array.isArray(props.items)) return 0;
+  let offset = 0;
   for (let i = 0; i < index; i++) {
-    const item = props.items[i]
+    const item = props.items[i];
     if (item && typeof item === 'object' && 'id' in item) {
-      offset += itemHeights.value.get(item.id) || props.estimatedItemHeight
+      offset += itemHeights.value.get(item.id) || props.estimatedItemHeight;
     } else {
-      offset += props.estimatedItemHeight
+      offset += props.estimatedItemHeight;
     }
   }
-  return offset
+  return offset;
 }
 
 // 计算总高度
 const totalHeight = computed(() => {
+  if (!props.items || !Array.isArray(props.items)) return 0;
   let total = 0
   props.items.forEach(item => {
     total += itemHeights.value.get(item.id) || props.estimatedItemHeight
@@ -105,34 +107,39 @@ const visibleRange = computed(() => {
 
 // 查找起始索引
 const findStartIndex = (scrollTop) => {
-  let index = 0
-  let offset = 0
-  
+  if (!props.items || !Array.isArray(props.items)) return 0;
+  let index = 0;
+  let offset = 0;
   for (let i = 0; i < props.items.length; i++) {
-    const item = props.items[i]
-    const itemHeight = itemHeights.value.get(item.id) || props.estimatedItemHeight
-    
-    if (offset + itemHeight > scrollTop) {
-      return i
+    const item = props.items[i];
+    if (!item || typeof item !== 'object' || !('id' in item)) {
+      offset += props.estimatedItemHeight;
+      continue;
     }
-    offset += itemHeight
+    const itemHeight = itemHeights.value.get(item.id) || props.estimatedItemHeight;
+    if (offset + itemHeight > scrollTop) {
+      return i;
+    }
+    offset += itemHeight;
   }
-  
-  return props.items.length - 1
+  return props.items.length - 1;
 }
 
 // 查找结束索引
 const findEndIndex = (startIndex, containerHeight) => {
-  let index = startIndex
-  let offset = getItemOffset(startIndex)
-  
+  if (!props.items || !Array.isArray(props.items)) return 0;
+  let index = startIndex;
+  let offset = getItemOffset(startIndex);
   while (index < props.items.length && offset < scrollTop.value + containerHeight) {
-    const item = props.items[index]
-    offset += itemHeights.value.get(item.id) || props.estimatedItemHeight
-    index++
+    const item = props.items[index];
+    if (item && typeof item === 'object' && 'id' in item) {
+      offset += itemHeights.value.get(item.id) || props.estimatedItemHeight;
+    } else {
+      offset += props.estimatedItemHeight;
+    }
+    index++;
   }
-  
-  return index
+  return index;
 }
 
 // 计算偏移量
@@ -142,14 +149,15 @@ const offsetY = computed(() => {
 
 // 可见的项目
 const visibleItems = computed(() => {
-  const { start, end } = visibleRange.value
+  if (!props.items || !Array.isArray(props.items)) return [];
+  const { start, end } = visibleRange.value;
   return props.items.slice(start, end)
     .filter(item => item && typeof item === 'object' && 'id' in item)
     .map((item, index) => ({
       ...item,
       index: start + index
-    }))
-})
+    }));
+});
 
 // 滚动处理
 const handleScroll = () => {
