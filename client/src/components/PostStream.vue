@@ -98,7 +98,7 @@ import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import PostCard from './PostCard.vue'
 import { parseAvatar } from '../utils/avatar'
-import { preloadImages, clearImageCache } from '../utils/imageLoader'
+import { preloadImages, clearImageCache, preloadCriticalImages } from '../utils/imageLoader'
 
 const props = defineProps({
   posts: {
@@ -177,7 +177,13 @@ const getPostContent = (post) => {
 
 // 获取帖子图片
 const getPostImages = (post) => {
-  return post.images || post.image_urls || []
+  const images = post.images || post.image_urls || []
+  console.log('PostStream - 帖子图片数据:', {
+    postId: post.id,
+    images: images,
+    hasImages: images.length > 0
+  })
+  return images
 }
 
 // 获取帖子点赞数
@@ -259,18 +265,22 @@ watch(() => props.posts, (newPosts) => {
       .flatMap(post => getPostImages(post))
       .filter(img => img && (img.startsWith('data:image/') || img.startsWith('http')))
     
+    console.log('发现图片URL:', imageUrls.length, '张')
+    
     if (imageUrls.length > 0) {
       // 优先预加载前5张图片
       const priorityImages = imageUrls.slice(0, 5)
+      console.log('预加载关键图片:', priorityImages)
       preloadCriticalImages(priorityImages)
       
       // 异步预加载其余图片
       setTimeout(() => {
         const remainingImages = imageUrls.slice(5, 15)
         if (remainingImages.length > 0) {
+          console.log('预加载其余图片:', remainingImages.length, '张')
           preloadImages(remainingImages, { maxConcurrent: 3 })
         }
-      }, 100)
+      }, 200)
     }
     
     // 智能清理缓存

@@ -146,9 +146,29 @@ export function clearFailedImages() {
  * @param {Array} urls - 图片URL数组
  */
 export function preloadCriticalImages(urls) {
-  preloadImages(urls, {
-    maxConcurrent: 5,
-    timeout: 3000,
-    priority: 'high'
+  if (!Array.isArray(urls) || urls.length === 0) return
+  
+  console.log('预加载关键图片:', urls.length, '张')
+  
+  // 过滤有效的URL
+  const validUrls = urls.filter(url => 
+    url && 
+    !imageCache.has(url) && 
+    !loadingImages.has(url) && 
+    !failedImages.has(url)
+  )
+  
+  if (validUrls.length === 0) {
+    console.log('所有图片已在缓存中或正在加载')
+    return
+  }
+  
+  // 高优先级预加载，使用更多并发
+  validUrls.forEach(url => {
+    lazyLoadImage(url, (img) => {
+      console.log('关键图片加载完成:', url)
+    }, {
+      timeout: 3000
+    })
   })
 } 

@@ -31,10 +31,19 @@
     
     <div class="post-content" @click="handleContentClick">{{ content }}</div>
     
-    <!-- 暂时隐藏图片区域，优先保证文字内容渲染 -->
-    <!-- <div v-if="images && images.length" class="post-images" :data-count="images.length">
+    <!-- 调试信息 -->
+    <div v-if="images && images.length" style="background: #f0f0f0; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;">
+      <p>调试信息 - 图片数量: {{ images.length }}</p>
+      <p>第一张图片: {{ images[0] ? images[0].substring(0, 50) + '...' : '无' }}</p>
+      <button @click="testImagePreload" style="background: #40BFFF; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+        测试预加载
+      </button>
+    </div>
+    
+    <!-- 图片显示区域 -->
+    <div v-if="images && images.length" class="post-images" :data-count="images.length">
       <div 
-        v-for="(img, index) in compressedImages" 
+        v-for="(img, index) in images" 
         :key="index" 
         class="post-image-wrapper"
         @click="loadFullImage(index)"
@@ -43,7 +52,7 @@
           :src="img" 
           fit="cover" 
           class="post-image"
-          :preview-src-list="fullImages"
+          :preview-src-list="images"
           :initial-index="index"
           preview-teleported
           :style="{ maxWidth: '100%', maxHeight: '100px', objectFit: 'cover' }"
@@ -54,7 +63,7 @@
           <span>点击查看大图</span>
         </div>
       </div>
-    </div> -->
+    </div>
     
     <div class="post-actions" style="display: flex !important; visibility: visible !important;">
       <div class="action-btn" :class="{active:showRepostBar}" @click="toggleRepostBar">
@@ -137,7 +146,7 @@ import { Share, ChatLineSquare, Star, PictureFilled, ChatDotRound } from '@eleme
 import AvatarUpload from './AvatarUpload.vue'
 import { fetchComments, addComment } from '../api/comment'
 import { parseAvatar } from '../utils/avatar'
-// import { lazyLoadImage, preloadImages } from '../utils/imageLoader'
+import { lazyLoadImage, preloadImages } from '../utils/imageLoader'
 
 const props = defineProps({
   avatar: String,
@@ -156,6 +165,13 @@ const props = defineProps({
     type: Boolean,
     default: false
   }
+})
+
+// 调试图片数据
+console.log('PostCard - 接收到的图片数据:', {
+  postId: props.postId,
+  images: props.images,
+  hasImages: props.images && props.images.length > 0
 })
 
 const emit = defineEmits(['like', 'comment', 'repost', 'content-click', 'more'])
@@ -291,39 +307,32 @@ const insertRepostEmoji = (emoji) => {
 }
 
 
-// 判断是否为缩略图 - 暂时禁用
-// const isThumbnail = (imgSrc) => {
-//   // 通过图片大小或URL特征判断是否为缩略图
-//   if (!imgSrc) return false
-//   const sizeKB = (imgSrc.length * 3) / 4 / 1024
-//   return sizeKB < 50 // 小于50KB认为是缩略图
-// }
+// 判断是否为缩略图
+const isThumbnail = (imgSrc) => {
+  // 通过图片大小或URL特征判断是否为缩略图
+  if (!imgSrc) return false
+  const sizeKB = (imgSrc.length * 3) / 4 / 1024
+  return sizeKB < 50 // 小于50KB认为是缩略图
+}
 
-// 加载完整图片用于预览 - 暂时禁用
-// const loadFullImage = async (index) => {
-//   if (!props.images || !props.images[index]) return
-//   
-//   const originalImage = props.images[index]
-//   
-//   // 如果原图还没加载过，先加载
-//   if (!loadedFullImages.value.has(originalImage)) {
-//     try {
-//       // 预加载原图
-//       await new Promise((resolve, reject) => {
-//         const img = new Image()
-//         img.onload = resolve
-//         img.onerror = reject
-//         img.src = originalImage
-//       })
-//       loadedFullImages.value.add(originalImage)
-//     } catch (error) {
-//       console.warn('原图加载失败:', originalImage)
-//     }
-//   }
-//   
-//   // 更新预览列表
-//   fullImages.value = props.images
-// }
+// 加载完整图片用于预览
+const loadFullImage = async (index) => {
+  if (!props.images || !props.images[index]) return
+  
+  const originalImage = props.images[index]
+  
+  // 预加载原图
+  try {
+    await new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = resolve
+      img.onerror = reject
+      img.src = originalImage
+    })
+  } catch (error) {
+    console.warn('原图加载失败:', originalImage)
+  }
+}
 
 // 图片懒加载 - 暂时禁用
 // const setupImageLazyLoading = () => {
@@ -431,14 +440,15 @@ const loadComments = async () => {
 
 // 组件挂载时设置图片懒加载
 onMounted(() => {
-  // setupImageLazyLoading()
+  // 预加载图片
+  if (props.images && props.images.length > 0) {
+    preloadImages(props.images, { maxConcurrent: 2 })
+  }
 })
 
 // 组件卸载时清理Observer
 onUnmounted(() => {
-  // if (imageIntersectionObserver.value) {
-  //   imageIntersectionObserver.value.disconnect()
-  // }
+  // 清理工作
 })
 
 // 处理点赞
@@ -454,6 +464,17 @@ const handleContentClick = () => {
 // 处理更多操作
 const handleMore = () => {
   emit('more', props.postId)
+}
+
+// 测试图片预加载
+const testImagePreload = () => {
+  console.log('测试图片预加载:', props.images)
+  if (props.images && props.images.length > 0) {
+    preloadImages(props.images, { maxConcurrent: 3 })
+    ElMessage.success('开始预加载图片')
+  } else {
+    ElMessage.warning('没有图片可预加载')
+  }
 }
 
 </script>
@@ -561,8 +582,8 @@ const handleMore = () => {
   color: var(--color-blue-dark);
 }
 
-/* 图片相关样式 - 暂时禁用 */
-/* .post-images {
+/* 图片相关样式 */
+.post-images {
   display: grid;
   gap: 8px;
   margin-bottom: 16px;
@@ -607,7 +628,7 @@ const handleMore = () => {
 }
 
 /* 针对不同数量图片的高度优化 */
-/* .post-images[data-count="1"] .post-image {
+.post-images[data-count="1"] .post-image {
   height: 80px;
 }
 
@@ -621,7 +642,7 @@ const handleMore = () => {
 
 .post-images[data-count="4"] .post-image {
   height: 40px;
-} */
+}
 
 .post-actions {
   display: flex !important;
@@ -801,13 +822,13 @@ const handleMore = () => {
     gap: 8px;
   }
   
-  /* .post-images {
+  .post-images {
     grid-template-columns: 1fr !important;
   }
   
   .post-images .post-image {
     height: 200px !important;
-  } */
+  }
   
   .post-header .el-avatar {
     width: 40px !important;
@@ -820,8 +841,8 @@ const handleMore = () => {
   }
 }
 
-/* 图片覆盖层样式 - 暂时禁用 */
-/* .post-image-wrapper {
+/* 图片覆盖层样式 */
+.post-image-wrapper {
   position: relative;
   cursor: pointer;
   overflow: hidden;
@@ -852,5 +873,5 @@ const handleMore = () => {
 
 .post-image-wrapper:hover .image-overlay {
   opacity: 1;
-} */
+}
 </style> 
