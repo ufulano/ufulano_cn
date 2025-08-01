@@ -286,6 +286,7 @@ watch(content, (newValue) => {
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 24px;
+  background-color: aliceblue;
 }
 
 .new-post-card {

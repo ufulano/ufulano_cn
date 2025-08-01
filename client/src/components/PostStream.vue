@@ -30,24 +30,28 @@
         ref="virtualListRef"
       >
         <template #default="{ item: post }">
-          <PostCard
-            v-if="post && typeof post === 'object' && 'id' in post"
-            :key="post.id"
-            :post-id="post.id"
-            :avatar="parseAvatar(post.avatar)"
-            :username="post.username || '未知用户'"
-            :time="formatTime(post.createdAt || post.time)"
-            :content="post.content"
-            :images="post.images || []"
-            :like-count="Number(post.likes || post.like_count || 0)"
-            :comment-count="Number(post.comments || post.comment_count || 0)"
-            :repost-count="Number(post.reposts || post.repost_count || 0)"
-            :read-count="Number(post.read_count || 0)"
-            :is-liked="false"
-            @like="handleLike(post)"
-            @comment="handleComment(post)"
-            @repost="handleRepost(post)"
-          />
+          <template v-if="post && typeof post === 'object' && 'id' in post">
+            <PostCard
+              :key="post.id"
+              :post-id="post.id"
+              :avatar="parseAvatar(post.avatar)"
+              :username="post.username || '未知用户'"
+              :time="formatTime(post.createdAt || post.time)"
+              :content="post.content"
+              :images="post.images || []"
+              :like-count="Number(post.likes || post.like_count || 0)"
+              :comment-count="Number(post.comments || post.comment_count || 0)"
+              :repost-count="Number(post.reposts || post.repost_count || 0)"
+              :read-count="Number(post.read_count || 0)"
+              :is-liked="false"
+              @like="handleLike(post)"
+              @comment="handleComment(post)"
+              @repost="handleRepost(post)"
+            />
+          </template>
+          <template v-else>
+            <div style="color: red; font-size: 12px;">无效帖子数据，已跳过</div>
+          </template>
         </template>
       </VirtualPostList>
     </section>
