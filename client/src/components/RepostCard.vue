@@ -104,8 +104,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Share, ChatDotRound, Star } from '@element-plus/icons-vue'
-import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
 import { toggleLike, getLikeStatus } from '../api/like'
 
 // Props
@@ -139,10 +137,23 @@ const originalPost = computed(() => {
 const formatTime = (time) => {
   if (!time) return ''
   const date = new Date(time)
-  return formatDistanceToNow(date, { 
-    addSuffix: true, 
-    locale: zhCN 
-  })
+  const now = new Date()
+  const diffInSeconds = Math.floor((now - date) / 1000)
+  
+  if (diffInSeconds < 60) {
+    return '刚刚'
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60)
+    return `${minutes}分钟前`
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600)
+    return `${hours}小时前`
+  } else if (diffInSeconds < 2592000) {
+    const days = Math.floor(diffInSeconds / 86400)
+    return `${days}天前`
+  } else {
+    return date.toLocaleDateString('zh-CN')
+  }
 }
 
 const parseImages = (imageUrl) => {
