@@ -1,14 +1,7 @@
 /**
  * 转发路由
- * 
- * 功能特性：
- * - 转发帖子：POST /api/repost
- * - 取消转发：DELETE /api/repost/:repostId
- * - 获取帖子转发列表：GET /api/repost/post/:postId
- * - 获取用户转发历史：GET /api/repost/user/:userId
- * - 检查转发状态：GET /api/repost/status/:postId
+ * 移除/api前缀以保持前后端一致
  */
-
 const express = require('express');
 const router = express.Router();
 const repostController = require('../controllers/repostController');

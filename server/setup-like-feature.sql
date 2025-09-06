@@ -41,3 +41,4 @@ SHOW COLUMNS FROM `Posts` LIKE '%like%';
 -- 显示索引信息
 SHOW INDEX FROM `Likes`;
 SHOW INDEX FROM `Posts` WHERE Key_name LIKE '%like%';
+

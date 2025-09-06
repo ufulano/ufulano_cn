@@ -25,3 +25,4 @@ ADD COLUMN IF NOT EXISTS `repost_count` INT NOT NULL DEFAULT 0 COMMENT '转发�
 -- 创建索引优化查询性能
 CREATE INDEX IF NOT EXISTS `idx_posts_repost_id` ON `Posts` (`repost_id`);
 CREATE INDEX IF NOT EXISTS `idx_posts_repost_count` ON `Posts` (`repost_count`);
+
