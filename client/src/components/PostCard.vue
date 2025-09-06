@@ -150,6 +150,8 @@ import { ElMessage } from 'element-plus'
 import { Share, ChatLineSquare, Star, PictureFilled, ChatDotRound } from '@element-plus/icons-vue'
 import AvatarUpload from './AvatarUpload.vue'
 import { fetchComments, addComment } from '../api/comment'
+import { createRepost } from '../api/repost'
+import { toggleLike, getLikeStatus } from '../api/like'
 import { parseAvatar } from '../utils/avatar'
 // import { lazyLoadImage, preloadImages } from '../utils/imageLoader'
 
@@ -411,27 +413,38 @@ const onPublishComment = async () => {
 
 // 发布转发
 const onPublishRepost = async () => {
-  if (!repostText.value.trim()) {
-    ElMessage.warning('请输入转发内容')
+  if (!props.postId) {
+    ElMessage.warning('帖子ID不存在')
     return
   }
   
   repostLoading.value = true
   try {
-    // TODO: 调用转发API
-    emit('repost', { postId: props.postId, content: repostText.value })
+    // 调用转发API
+    const response = await createRepost({
+      originalPostId: props.postId,
+      repostContent: repostText.value.trim() || null
+    })
     
-    // 如果勾选"同时评论"，也追加到评论区
-    if (repostAlsoComment.value) {
-      await onPublishComment()
+    if (response.success) {
+      // 如果勾选"同时评论"，也追加到评论区
+      if (repostAlsoComment.value && repostText.value.trim()) {
+        await addComment({ postId: props.postId, content: repostText.value })
+      }
+      
+      repostText.value = ''
+      repostAlsoComment.value = false
+      showRepostBar.value = false
+      ElMessage.success('转发成功')
+      
+      // 触发父组件的转发事件，用于刷新帖子列表
+      emit('repost', { postId: props.postId, repostData: response.data })
+    } else {
+      ElMessage.error(response.message || '转发失败')
     }
-    
-    repostText.value = ''
-    repostAlsoComment.value = false
-    showRepostBar.value = false
-    ElMessage.success('转发成功')
   } catch (error) {
-    ElMessage.error('转发失败')
+    console.error('转发失败:', error)
+    ElMessage.error(error.response?.data?.message || '转发失败，请重试')
   } finally {
     repostLoading.value = false
   }
@@ -448,9 +461,24 @@ const loadComments = async () => {
   }
 }
 
-// 组件挂载时设置图片懒加载
+// 初始化点赞状态
+const initLikeStatus = async () => {
+  if (!props.postId) return
+  
+  try {
+    const response = await getLikeStatus(props.postId)
+    if (response.success) {
+      isLiked.value = response.liked
+    }
+  } catch (error) {
+    console.error('获取点赞状态失败:', error)
+  }
+}
+
+// 组件挂载时设置图片懒加载和点赞状态
 onMounted(() => {
   // setupImageLazyLoading()
+  initLikeStatus()
 })
 
 // 组件卸载时清理Observer
@@ -461,8 +489,34 @@ onUnmounted(() => {
 })
 
 // 处理点赞
-const handleLike = () => {
-  emit('like', props.postId)
+const handleLike = async () => {
+  if (!props.postId) {
+    ElMessage.warning('帖子ID不存在')
+    return
+  }
+  
+  try {
+    const response = await toggleLike(props.postId)
+    
+    if (response.success) {
+      // 更新本地状态
+      isLiked.value = response.liked
+      
+      // 触发父组件事件，传递更新后的点赞数
+      emit('like', {
+        postId: props.postId,
+        liked: response.liked,
+        likeCount: response.likeCount
+      })
+      
+      ElMessage.success(response.message)
+    } else {
+      ElMessage.error(response.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('点赞操作失败:', error)
+    ElMessage.error(error.response?.data?.message || '点赞失败，请重试')
+  }
 }
 
 // 处理内容点击

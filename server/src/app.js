@@ -40,6 +40,7 @@ const postRoutes = require('./routes/post');
 const commentRoutes = require('./routes/comment');
 const likeRoutes = require('./routes/like');
 const userRoutes = require('./routes/user');
+const repostRoutes = require('./routes/repost');
 const sequelize = require('./config/database');
 const jwtSecret = process.env.JWT_SECRET;
 const User = require('./models/User');
@@ -106,6 +107,9 @@ console.log('点赞路由已配置: /api/likes');
 
 app.use('/api/user', userRoutes);
 console.log('用户路由已配置: /api/user');
+
+app.use('/api/repost', repostRoutes);
+console.log('转发路由已配置: /api/repost');
 
 // 添加路由调试中间件
 app.use('/api/comments/*', (req, res, next) => {

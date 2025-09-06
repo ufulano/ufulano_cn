@@ -27,7 +27,7 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Post, User } = require('../models');
+const { Post, User, Like } = require('../models');
 
 /**
  * 1. 点赞/取消点赞
@@ -52,7 +52,21 @@ exports.toggleLike = async (req, res) => {
     if (existingLike) {
       // 取消点赞
       await existingLike.destroy();
-      return res.json({ liked: false, message: '已取消点赞' });
+      
+      // 更新帖子的点赞数
+      await Post.decrement('like_count', {
+        where: { post_id: postId }
+      });
+      
+      // 获取更新后的点赞数
+      const updatedPost = await Post.findByPk(postId);
+      
+      return res.json({ 
+        success: true,
+        liked: false, 
+        message: '已取消点赞',
+        likeCount: updatedPost.like_count || 0
+      });
     } else {
       // 新增点赞
       await Like.create({
@@ -60,7 +74,21 @@ exports.toggleLike = async (req, res) => {
         post_id: postId,
         like_time: new Date()
       });
-      return res.status(201).json({ liked: true, message: '点赞成功' });
+      
+      // 更新帖子的点赞数
+      await Post.increment('like_count', {
+        where: { post_id: postId }
+      });
+      
+      // 获取更新后的点赞数
+      const updatedPost = await Post.findByPk(postId);
+      
+      return res.status(201).json({ 
+        success: true,
+        liked: true, 
+        message: '点赞成功',
+        likeCount: updatedPost.like_count || 0
+      });
     }
   } catch (error) {
     console.error(error);
@@ -89,15 +117,36 @@ exports.getLikes = async (req, res) => {
  */
 exports.checkLikeStatus = async (req, res) => {
   try {
+    const { postId } = req.params;
+    const userId = req.user ? req.user.user_id : null;
+    
+    if (!userId) {
+      return res.json({ liked: false, likeCount: 0 });
+    }
+    
     const like = await Like.findOne({
       where: {
-        user_id: req.user.user_id,
-        post_id: req.params.postId
+        user_id: userId,
+        post_id: postId
       }
     });
-    res.json({ liked: !!like });
+    
+    // 获取帖子点赞数
+    const post = await Post.findByPk(postId);
+    const likeCount = post ? post.like_count || 0 : 0;
+    
+    res.json({ 
+      success: true,
+      liked: !!like,
+      likeCount: likeCount
+    });
   } catch (error) {
-    res.status(500).json({ error: '查询失败' });
+    console.error('检查点赞状态失败:', error);
+    res.status(500).json({ 
+      success: false,
+      error: '查询失败',
+      message: error.message 
+    });
   }
 };
 

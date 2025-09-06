@@ -29,6 +29,7 @@ const User = require('./User');
 const Post = require('./Post');
 const Like = require('./Like');
 const Comment = require('./Comment');
+const Repost = require('./Repost');
 
 // 用户与帖子的关联
 User.hasMany(Post, {
@@ -85,11 +86,45 @@ Comment.belongsTo(Post, {
   as: 'post'
 });
 
+// 用户与转发的关联
+User.hasMany(Repost, {
+  foreignKey: 'user_id',
+  as: 'reposts'
+});
+
+Repost.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user'
+});
+
+// 帖子与转发的关联
+Post.hasMany(Repost, {
+  foreignKey: 'original_post_id',
+  as: 'reposts'
+});
+
+Repost.belongsTo(Post, {
+  foreignKey: 'original_post_id',
+  as: 'originalPost'
+});
+
+// 帖子自关联（转发关系）
+Post.belongsTo(Post, {
+  foreignKey: 'repost_id',
+  as: 'originalPost'
+});
+
+Post.hasMany(Post, {
+  foreignKey: 'repost_id',
+  as: 'reposts'
+});
+
 // 检查关联
 console.log('User associations:', Object.keys(User.associations));
 console.log('Post associations:', Object.keys(Post.associations));
 console.log('Like associations:', Object.keys(Like.associations));
 console.log('Comment associations:', Object.keys(Comment.associations));
+console.log('Repost associations:', Object.keys(Repost.associations));
 
 sequelize.sync({ alter: true }).then(() => {
   console.log('数据库表已同步');
@@ -97,4 +132,4 @@ sequelize.sync({ alter: true }).then(() => {
   console.error('数据库同步错误:', err);
 });
 
-module.exports = { User, Post, Like, Comment, sequelize };
+module.exports = { User, Post, Like, Comment, Repost, sequelize };

@@ -4,10 +4,6 @@
     <AppHeader />
     <main class="home-main">
       <div class="center-container">
-        <!-- 侧边栏 -->
-        <aside class="sidebar">
-          <FishingGame />
-        </aside>
         
         <!-- 主内容区域 -->
         <div class="content-wrapper">
@@ -56,7 +52,6 @@ import AppHeader from '../components/AppHeader.vue'
 import SearchBar from '../components/SearchBar.vue'
 import NewPostCard from '../components/NewPostCard.vue'
 import PostStream from '../components/PostStream.vue'
-import FishingGame from '../components/FishingGame.vue'
 import { fetchPosts, createPost } from '../api/post'
 import { useUserStore } from '../store/user'
 import { getCache, setCache, deleteCache } from '../utils/cacheManager'
@@ -151,9 +146,25 @@ const handleSearch = async (searchTerm) => {
 }
 
 // 点赞处理
-const handleLike = (post) => {
-  // TODO: 调用点赞API
-  ElMessage.success('点赞成功')
+const handleLike = async (data) => {
+  try {
+    // 如果是点赞成功后的回调，更新本地数据
+    if (data && typeof data === 'object' && 'postId' in data) {
+      // 更新帖子列表中的点赞状态和数量
+      const postIndex = posts.value.findIndex(p => p.post_id === data.postId)
+      if (postIndex !== -1) {
+        posts.value[postIndex].like_count = data.likeCount
+        // 这里可以添加更多状态更新逻辑
+      }
+      console.log('点赞状态已更新:', data)
+    } else {
+      // 点赞按钮点击事件，PostCard组件会处理点赞逻辑
+      console.log('点赞按钮被点击:', data)
+    }
+  } catch (error) {
+    console.error('点赞处理失败:', error)
+    ElMessage.error('点赞处理失败')
+  }
 }
 
 // 评论处理
@@ -162,9 +173,22 @@ const handleComment = (post) => {
 }
 
 // 转发处理
-const handleRepost = (post) => {
-  // TODO: 调用转发API
-  ElMessage.success('转发成功')
+const handleRepost = async (data) => {
+  try {
+    // 如果是转发成功后的回调，刷新帖子列表
+    if (data && data.repostData) {
+      // 清除缓存，重新加载帖子列表
+      deleteCache('posts_list')
+      await loadPosts()
+      ElMessage.success('转发成功，已刷新动态')
+    } else {
+      // 转发按钮点击事件，PostCard组件会处理转发逻辑
+      console.log('转发按钮被点击:', data)
+    }
+  } catch (error) {
+    console.error('转发处理失败:', error)
+    ElMessage.error('转发处理失败')
+  }
 }
 
 // 发布新帖子
@@ -259,7 +283,7 @@ onUnmounted(() => {
 
 .center-container {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1200px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -267,16 +291,8 @@ onUnmounted(() => {
   box-sizing: border-box;
   margin: 0 auto;
   position: relative;
-  gap: 24px;
 }
 
-.sidebar {
-  width: 320px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 100px;
-  height: fit-content;
-}
 
 .content-wrapper {
   width: 100%;
@@ -354,15 +370,6 @@ onUnmounted(() => {
 }
 
 /* 响应式设计 */
-@media (max-width: 1200px) {
-  .sidebar {
-    display: none;
-  }
-  
-  .center-container {
-    justify-content: center;
-  }
-}
 
 @media (max-width: 768px) {
   .home-main {

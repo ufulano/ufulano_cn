@@ -47,7 +47,18 @@
           :key="getPostKey(post, index)"
           class="post-item"
         >
+          <!-- 转发卡片 -->
+          <RepostCard
+            v-if="isRepost(post)"
+            :post="post"
+            :current-user-id="currentUserId"
+            @like="handleLike(post)"
+            @comment="handleComment(post)"
+            @repost="handleRepost(post)"
+          />
+          <!-- 普通帖子卡片 -->
           <PostCard
+            v-else
             :post-id="getPostId(post)"
             :avatar="parseAvatar(getPostAvatar(post))"
             :username="getPostUsername(post)"
@@ -90,6 +101,7 @@
 import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import PostCard from './PostCard.vue'
+import RepostCard from './RepostCard.vue'
 import { parseAvatar } from '../utils/avatar'
 import { preloadImages, clearImageCache, preloadCriticalImages } from '../utils/imageLoader'
 
@@ -166,6 +178,11 @@ const getPostTime = (post) => {
 // 获取帖子内容
 const getPostContent = (post) => {
   return post.content || post.text || post.message || ''
+}
+
+// 判断是否为转发帖子
+const isRepost = (post) => {
+  return post.repost_id || post.originalPost || (post.original_post_id && post.content)
 }
 
 // 获取帖子图片

@@ -59,6 +59,22 @@ Like.init(
     modelName: 'Like',
     tableName: 'Likes', // 表名
     timestamps: false,
+    indexes: [
+      {
+        fields: ['user_id']
+      },
+      {
+        fields: ['post_id']
+      },
+      {
+        fields: ['like_time']
+      },
+      {
+        unique: true,
+        fields: ['user_id', 'post_id'],
+        name: 'unique_user_post_like'
+      }
+    ]
   }
 );
 

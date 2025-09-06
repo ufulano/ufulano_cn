@@ -35,14 +35,23 @@ exports.getAllPosts = async (req, res) => {
     try {
         console.info('获取文章请求已到达 postController.js');
 
-        // 查询所有未删除的帖子
+        // 查询所有未删除的帖子，包括转发关系
         const posts = await Post.findAll({
             where: { is_deleted: false },
             include: [
                 {
                     model: User,
                     as: 'user', // 统一别名
-                    attributes: ['username', 'nickname', 'avatar_url']
+                    attributes: ['user_id', 'username', 'nickname', 'avatar_url']
+                },
+                {
+                    model: Post,
+                    as: 'originalPost',
+                    include: [{
+                        model: User,
+                        as: 'user',
+                        attributes: ['user_id', 'username', 'nickname', 'avatar_url']
+                    }]
                 }
             ],
             order: [['post_time', 'DESC']]

@@ -87,6 +87,30 @@ router.get(
 
 /**
  * @swagger
+ * /api/likes/{postId}/status:
+ *   get:
+ *     summary: 检查用户点赞状态
+ *     tags: [Like]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: 点赞状态
+ */
+router.get(
+  '/:postId/status',
+  param('postId').isInt({ min: 1 }),
+  checkLikeStatus
+);
+
+/**
+ * @swagger
  * /api/likes/user/history:
  *   get:
  *     summary: 获取当前用户点赞历史
