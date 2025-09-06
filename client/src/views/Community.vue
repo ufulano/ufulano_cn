@@ -86,7 +86,7 @@ const topics = ref([
   max-width: 900px;
   width: 100%;
   margin: 0 auto;
-  padding: 64px 16px 32px;
+  padding: 96px 16px 32px; /* 增加顶部间距以避免被固定头部遮挡 */
 }
 
 .community-hero-row {

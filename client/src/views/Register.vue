@@ -118,25 +118,104 @@ const goHome = () => {
 .register-bg {
   min-height: 100vh;
   width: 100vw;
-  background: linear-gradient(120deg, #e0e7ef 0%, var(--color-gray-light) 100%);
+  background: 
+    linear-gradient(135deg, #667eea 0%, #764ba2 100%),
+    linear-gradient(45deg, rgba(255, 214, 0, 0.1) 0%, rgba(64, 191, 255, 0.1) 100%);
+  background-blend-mode: overlay;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding-top: 80px;
-  padding-left: 24px;
-  padding-right: 24px;
+  justify-content: center;
+  padding: 96px 24px 24px 24px;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.register-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 30% 20%, rgba(255, 214, 0, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(64, 191, 255, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 .register-card-2col {
   display: flex;
   flex-direction: row;
   width: 820px;
   min-height: 480px;
-  background: var(--color-white);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
   border-radius: 36px;
-  box-shadow: 0 8px 48px 0 rgba(64,191,255,0.13);
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    0 10px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
   overflow: hidden;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.register-card-2col::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 36px;
+  padding: 3px;
+  background: conic-gradient(from 0deg, 
+    var(--color-blue) 0deg, 
+    var(--color-yellow) 90deg, 
+    var(--color-blue) 180deg, 
+    var(--color-yellow) 270deg, 
+    var(--color-blue) 360deg);
+  animation: rotateBorder 4s linear infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  z-index: -1;
+}
+
+.register-card-2col::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 40px;
+  background: conic-gradient(from 180deg, 
+    rgba(64, 191, 255, 0.4) 0deg, 
+    rgba(255, 214, 0, 0.4) 90deg, 
+    rgba(64, 191, 255, 0.4) 180deg, 
+    rgba(255, 214, 0, 0.4) 270deg, 
+    rgba(64, 191, 255, 0.4) 360deg);
+  animation: rotateBorder 4s linear infinite reverse;
+  z-index: -2;
+  filter: blur(12px);
+  opacity: 0.7;
+}
+
+@keyframes rotateBorder {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 .register-left {
   flex: 1.1;
@@ -169,27 +248,100 @@ const goHome = () => {
   width: 100%;
   max-width: 340px;
   margin: 0 auto;
-  border-radius: 18px;
-  box-shadow: var(--shadow-card);
-  border: none;
-  background: var(--color-white);
-  padding: 18px 0 0 0;
+  border-radius: 20px;
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.1),
+    0 5px 15px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 24px 0 0 0;
+  position: relative;
+  overflow: hidden;
+  background-clip: padding-box;
+}
+
+.register-form-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-blue) 0%, var(--color-yellow) 100%);
+}
+
+.register-form-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 20px;
+  padding: 2px;
+  background: linear-gradient(135deg, 
+    var(--color-blue) 0%, 
+    transparent 25%, 
+    var(--color-yellow) 50%, 
+    transparent 75%, 
+    var(--color-blue) 100%);
+  background-size: 300% 300%;
+  animation: shimmerBorder 2s ease-in-out infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  z-index: -1;
+}
+
+@keyframes shimmerBorder {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 .register-btn {
   width: 100%;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: bold;
   font-size: 1.08em;
-  box-shadow: var(--shadow-card);
-  background: var(--color-blue);
+  box-shadow: 
+    0 8px 20px rgba(64, 191, 255, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, var(--color-blue) 0%, #1890ff 100%);
   color: var(--color-white);
   border: none;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
+
+.register-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
 .register-btn:hover {
-  background: var(--color-yellow);
+  background: linear-gradient(135deg, var(--color-yellow) 0%, #ffed4e 100%);
   color: var(--color-black);
-  box-shadow: 0 4px 18px 0 rgba(255,214,0,0.18);
+  box-shadow: 
+    0 12px 25px rgba(255, 214, 0, 0.4),
+    0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.register-btn:hover::before {
+  left: 100%;
 }
 .register-links {
   display: flex;

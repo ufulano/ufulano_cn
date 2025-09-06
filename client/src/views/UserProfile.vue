@@ -407,7 +407,7 @@ onMounted(() => {
 .user-profile-container {
   display: flex;
   max-width: 1200px;  /* 最大宽度 */
-  margin: 80px auto 0;  /* 上边距80px，水平居中 */
+  margin: 96px auto 0;  /* 增加上边距以避免被固定头部遮挡 */
   gap: 24px;  /* 子元素间距 */
   padding: 0 20px;  /* 左右内边距 */
   flex: 1;  /* 填充剩余空间 */

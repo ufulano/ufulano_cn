@@ -2,18 +2,26 @@
   /* 蓝色主题色 */
   --color-blue: #40BFFF; /* 主蓝色，用于按钮、标题、主背景等 */
   --color-blue-dark: #1890ff; /* 深蓝色，用于渐变、hover等 */
+  --color-blue-light: #87CEEB; /* 浅蓝色，用于背景渐变 */
   /* 黄色主题色 */
   --color-yellow: #FFD600; /* 主黄色，用于按钮、强调、边框等 */
-  --color-yellow-light: #ffe066; /* 浅黄色，hover/背景 */
+  --color-yellow-light: #FFED4E; /* 浅黄色，hover/背景 */
+  --color-yellow-dark: #E6C200; /* 深黄色，用于阴影 */
   /* 基础色 */
   --color-white: #fff; /* 白色，卡片、背景 */
-  --color-black: #222; /* 黑色，正文、按钮文字 */
-  --color-gray-dark: #333; /* 深灰，正文、次要文字 */
-  --color-gray: #888; /* 灰色，辅助文字 */
-  --color-gray-light: #E6F7FF; /* 浅蓝灰，主背景色 */
-  /* 阴影 */
-  --shadow-main: 0 4px 24px 0 rgba(64,191,255,0.10);
-  --shadow-card: 0 2px 8px 0 rgba(64,191,255,0.06);
+  --color-black: #1a1a1a; /* 黑色，正文、按钮文字 */
+  --color-gray-dark: #2d3748; /* 深灰，正文、次要文字 */
+  --color-gray: #718096; /* 灰色，辅助文字 */
+  --color-gray-light: #f7fafc; /* 浅灰，主背景色 */
+  /* 高级阴影 */
+  --shadow-main: 0 20px 40px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+  --shadow-button: 0 8px 20px rgba(64, 191, 255, 0.3), 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-button-yellow: 0 8px 20px rgba(255, 214, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* 渐变 */
+  --gradient-blue: linear-gradient(135deg, #40BFFF 0%, #1890ff 100%);
+  --gradient-yellow: linear-gradient(135deg, #FFD600 0%, #FFED4E 100%);
+  --gradient-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
 }
 
 /* 示例用法：
@@ -28,14 +36,16 @@ html, body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 #app {
   background: var(--color-gray-light);
 }
 
-/* 移除所有渐变、奶黄色、金色、阴影、边框等样式 */
-
-/* 移除滚动条自定义样式，使用浏览器默认 */
 ::-webkit-scrollbar,
 ::-webkit-scrollbar-thumb {
   background: none !important;
@@ -51,21 +61,41 @@ html, body {
   transition: none !important;
 }
 
-/* 移除按钮、输入框等的金色、渐变、阴影，仅保留默认或天蓝色风格（如需可后续细调） */
+/* 高级按钮样式 */
 .el-button--primary {
-  background: #40BFFF !important;
+  background: var(--gradient-blue) !important;
   border: none !important;
   color: #fff !important;
   font-weight: bold;
-  letter-spacing: 1px;
-  box-shadow: none !important;
-  transition: background 0.5s, color 0.5s;
+  letter-spacing: 0.5px;
+  box-shadow: var(--shadow-button) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-radius: 12px !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.el-button--primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
 }
 
 .el-button--primary:hover {
-  background: #1890ff !important;
-  color: #fff !important;
+  background: var(--gradient-yellow) !important;
+  color: var(--color-black) !important;
   border: none !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-button-yellow) !important;
+}
+
+.el-button--primary:hover::before {
+  left: 100%;
 }
 
 .el-input__wrapper, .el-textarea__inner {
@@ -77,9 +107,31 @@ html, body {
   transition: background 0.5s;
 }
 
-.el-input__inner, .el-textarea__inner {
-  color: #222 !important;
-  font-family: inherit;
+/* 高级输入框样式 */
+.el-input__wrapper, .el-textarea__inner {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(64, 191, 255, 0.3) !important;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  color: var(--color-black) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.el-input__wrapper:hover, .el-textarea__inner:hover {
+  border-color: rgba(64, 191, 255, 0.5) !important;
+  box-shadow: 
+    0 6px 16px rgba(64, 191, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.el-input__wrapper.is-focus, .el-textarea__inner:focus {
+  border-color: var(--color-blue) !important;
+  box-shadow: 
+    0 0 0 3px rgba(64, 191, 255, 0.1),
+    0 8px 20px rgba(64, 191, 255, 0.15) !important;
 }
 
 .el-avatar {

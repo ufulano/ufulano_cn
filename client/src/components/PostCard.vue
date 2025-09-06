@@ -38,15 +38,13 @@
     <!-- 帖子内容区域 -->
     <div class="post-content" @click="handleContentClick">{{ content }}</div>
     
-
-    
     <!-- 图片显示区域 - 支持多图布局 -->
     <div v-if="images && images.length" class="post-images" :data-count="images.length">
       <div 
         v-for="(img, index) in images" 
         :key="index" 
         class="post-image-wrapper"
-        @click="loadFullImage(index)"
+        @click="handleImageClick(index)"
       >
         <el-image 
           :src="img" 
@@ -58,7 +56,7 @@
           :style="{ maxWidth: '100%', maxHeight: '100px', objectFit: 'cover' }"
           lazy
         />
-        <div v-if="isThumbnail(img)" class="image-overlay">
+        <div class="image-overlay">
           <el-icon><PictureFilled /></el-icon>
           <span>点击查看大图</span>
         </div>
@@ -153,7 +151,7 @@ import { Share, ChatLineSquare, Star, PictureFilled, ChatDotRound } from '@eleme
 import AvatarUpload from './AvatarUpload.vue'
 import { fetchComments, addComment } from '../api/comment'
 import { parseAvatar } from '../utils/avatar'
-import { lazyLoadImage, preloadImages } from '../utils/imageLoader'
+// import { lazyLoadImage, preloadImages } from '../utils/imageLoader'
 
 // 组件属性定义
 const props = defineProps({
@@ -174,8 +172,6 @@ const props = defineProps({
     default: false
   }
 })
-
-
 
 // 组件事件定义
 const emit = defineEmits(['like', 'comment', 'repost', 'content-click', 'more'])
@@ -314,32 +310,39 @@ const insertRepostEmoji = (emoji) => {
 }
 
 
-// 判断是否为缩略图
-const isThumbnail = (imgSrc) => {
-  // 通过图片大小或URL特征判断是否为缩略图
-  if (!imgSrc) return false
-  const sizeKB = (imgSrc.length * 3) / 4 / 1024
-  return sizeKB < 50 // 小于50KB认为是缩略图
-}
+// 判断是否为缩略图 - 暂时禁用
+// const isThumbnail = (imgSrc) => {
+//   // 通过图片大小或URL特征判断是否为缩略图
+//   if (!imgSrc) return false
+//   const sizeKB = (imgSrc.length * 3) / 4 / 1024
+//   return sizeKB < 50 // 小于50KB认为是缩略图
+// }
 
-// 加载完整图片用于预览
-const loadFullImage = async (index) => {
-  if (!props.images || !props.images[index]) return
-  
-  const originalImage = props.images[index]
-  
-  // 预加载原图
-  try {
-    await new Promise((resolve, reject) => {
-      const img = new Image()
-      img.onload = resolve
-      img.onerror = reject
-      img.src = originalImage
-    })
-  } catch (error) {
-    console.warn('原图加载失败:', originalImage)
-  }
-}
+// 加载完整图片用于预览 - 暂时禁用
+// const loadFullImage = async (index) => {
+//   if (!props.images || !props.images[index]) return
+//   
+//   const originalImage = props.images[index]
+//   
+//   // 如果原图还没加载过，先加载
+//   if (!loadedFullImages.value.has(originalImage)) {
+//     try {
+//       // 预加载原图
+//       await new Promise((resolve, reject) => {
+//         const img = new Image()
+//         img.onload = resolve
+//         img.onerror = reject
+//         img.src = originalImage
+//       })
+//       loadedFullImages.value.add(originalImage)
+//     } catch (error) {
+//       console.warn('原图加载失败:', originalImage)
+//     }
+//   }
+//   
+//   // 更新预览列表
+//   fullImages.value = props.images
+// }
 
 // 图片懒加载 - 暂时禁用
 // const setupImageLazyLoading = () => {
@@ -447,15 +450,14 @@ const loadComments = async () => {
 
 // 组件挂载时设置图片懒加载
 onMounted(() => {
-  // 预加载图片
-  if (props.images && props.images.length > 0) {
-    preloadImages(props.images, { maxConcurrent: 2 })
-  }
+  // setupImageLazyLoading()
 })
 
 // 组件卸载时清理Observer
 onUnmounted(() => {
-  // 清理工作
+  // if (imageIntersectionObserver.value) {
+  //   imageIntersectionObserver.value.disconnect()
+  // }
 })
 
 // 处理点赞
@@ -473,28 +475,100 @@ const handleMore = () => {
   emit('more', props.postId)
 }
 
-
+// 处理图片点击
+const handleImageClick = (index) => {
+  // 图片预览功能由 el-image 组件自动处理
+  console.log('点击图片:', index)
+}
 
 </script>
 
 <style scoped>
 .post-card {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 4px 24px 0 rgba(64,191,255,0.10);
-  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border: 2px solid transparent;
   margin-bottom: 32px;
-  padding: 24px 32px 18px 32px;
+  padding: 28px 36px 24px 36px;
   width: 100%;
-  max-width: 600px;
-  transition: box-shadow 0.3s;
+  max-width: 900px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   margin-left: auto;
   margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background-clip: padding-box;
+}
+
+.post-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-blue) 0%, var(--color-yellow) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.post-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 24px;
+  padding: 2px;
+  background: linear-gradient(45deg, 
+    var(--color-blue) 0%, 
+    transparent 30%, 
+    var(--color-yellow) 50%, 
+    transparent 70%, 
+    var(--color-blue) 100%);
+  background-size: 400% 400%;
+  animation: borderFlow 3s ease-in-out infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .post-card:hover {
-  box-shadow: 0 6px 32px 0 rgba(64,191,255,0.15);
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    0 12px 24px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-4px);
+}
+
+.post-card:hover::before {
+  opacity: 1;
+}
+
+.post-card:hover::after {
+  opacity: 1;
+}
+
+@keyframes borderFlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .post-header {
@@ -585,6 +659,8 @@ const handleMore = () => {
   display: grid;
   gap: 8px;
   margin-bottom: 16px;
+  flex-shrink: 0;
+  width: 100%;
 }
 
 .post-images[data-count="1"] {
@@ -618,6 +694,7 @@ const handleMore = () => {
   object-fit: cover;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  display: block;
 }
 
 .post-image:hover {
@@ -651,28 +728,54 @@ const handleMore = () => {
   opacity: 1 !important;
   position: relative !important;
   z-index: 10 !important;
+  flex-shrink: 0;
+  width: 100%;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 20px;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 24px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: #666;
   font-size: 0.95em;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
 }
 
 .action-btn:hover {
-  background: rgba(64, 191, 255, 0.1);
+  background: rgba(64, 191, 255, 0.15);
   color: var(--color-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(64, 191, 255, 0.2);
+}
+
+.action-btn:hover::before {
+  left: 100%;
 }
 
 .action-btn.active {
   color: var(--color-blue);
-  background: rgba(64, 191, 255, 0.1);
+  background: rgba(64, 191, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(64, 191, 255, 0.2);
 }
 
 .action-count {
@@ -845,6 +948,9 @@ const handleMore = () => {
   cursor: pointer;
   overflow: hidden;
   border-radius: 8px;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .image-overlay {

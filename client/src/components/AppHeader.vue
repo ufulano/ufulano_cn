@@ -99,21 +99,73 @@ const onLogout = () => {
 
 <style scoped>
 .home-header {
-  background: var(--color-blue);
+  background: rgba(64, 191, 255, 0.95);
+  backdrop-filter: blur(20px);
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 5vw;
+  padding: 0 20px;
   width: 100%;
   min-width: 0;
   left: 0;
   margin: 0;
   border-radius: 0;
-  box-shadow: none;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   position: fixed;
   top: 0;
   z-index: 100;
+  box-sizing: border-box;
+  border-bottom: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.home-header::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    var(--color-blue) 0%, 
+    var(--color-yellow) 25%, 
+    var(--color-blue) 50%, 
+    var(--color-yellow) 75%, 
+    var(--color-blue) 100%);
+  background-size: 200% 200%;
+  animation: headerBorderFlow 2s ease-in-out infinite;
+}
+
+.home-header::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, 
+    rgba(64, 191, 255, 0.3) 0%, 
+    rgba(255, 214, 0, 0.3) 25%, 
+    rgba(64, 191, 255, 0.3) 50%, 
+    rgba(255, 214, 0, 0.3) 75%, 
+    rgba(64, 191, 255, 0.3) 100%);
+  background-size: 200% 200%;
+  animation: headerBorderFlow 2s ease-in-out infinite reverse;
+  filter: blur(4px);
+  opacity: 0.6;
+}
+
+@keyframes headerBorderFlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 .header-left {
   display: flex;
@@ -146,54 +198,125 @@ const onLogout = () => {
   margin: 0 2px;
 }
 .more-btn {
-  background: var(--color-yellow) !important;
+  background: linear-gradient(135deg, var(--color-yellow) 0%, #ffed4e 100%) !important;
   color: var(--color-black) !important;
   border: none;
   font-weight: bold;
-  border-radius: 8px;
-  box-shadow: none;
-  padding: 0 14px;
+  border-radius: 12px;
+  box-shadow: 
+    0 6px 20px rgba(255, 214, 0, 0.3),
+    0 3px 8px rgba(0, 0, 0, 0.1);
+  padding: 0 16px;
   font-size: 1.08em;
-  transition: background 0.2s, color 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
+
+.more-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
 .more-btn:hover {
-  background: var(--color-yellow-light) !important;
-  color: var(--color-white) !important;
+  background: linear-gradient(135deg, #ffed4e 0%, var(--color-yellow) 100%) !important;
+  color: var(--color-black) !important;
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px rgba(255, 214, 0, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.more-btn:hover::before {
+  left: 100%;
 }
 .login-btn {
-  background: var(--color-white);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
   color: var(--color-blue);
-  border: 1.5px solid var(--color-blue);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   margin-left: 8px;
-  border-radius: 8px;
-  box-shadow: var(--shadow-card);
+  border-radius: 12px;
+  box-shadow: 
+    0 6px 20px rgba(255, 255, 255, 0.3),
+    0 3px 8px rgba(0, 0, 0, 0.1);
   font-weight: bold;
-  padding: 0 14px;
+  padding: 0 16px;
   font-size: 1.08em;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
+
+.login-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(64, 191, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
 .login-btn:hover {
-  background: var(--color-blue);
+  background: rgba(64, 191, 255, 0.9);
   color: var(--color-white);
-  box-shadow: 0 4px 18px 0 rgba(64,191,255,0.18);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px rgba(64, 191, 255, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.login-btn:hover::before {
+  left: 100%;
 }
 .register-btn {
-  background: var(--color-black);
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
   color: var(--color-white);
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   margin-left: 8px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: bold;
-  padding: 0 14px;
+  padding: 0 16px;
   font-size: 1.08em;
-  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
-  transition: background 0.2s, color 0.2s, border 0.2s, box-shadow 0.2s;
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.2),
+    0 3px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
+
+.register-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
 .register-btn:hover {
-  background: var(--color-white);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%);
   color: var(--color-black);
-  border: 1.5px solid var(--color-black);
-  box-shadow: 0 4px 18px 0 rgba(0,0,0,0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px rgba(255, 255, 255, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.register-btn:hover::before {
+  left: 100%;
 }
 :deep(.el-button--primary) {
   border-radius: 8px !important;

@@ -508,7 +508,7 @@ onMounted(() => {
 .settings-container {
   display: flex;
   max-width: 1200px;
-  margin: 80px auto 0;
+  margin: 96px auto 0;
   gap: 24px;
   padding: 0 20px;
   flex: 1;

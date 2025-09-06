@@ -3,32 +3,42 @@
   <div class="home-root">
     <AppHeader />
     <main class="home-main">
-      <!-- 搜索栏 -->
-      <SearchBar 
-        :loading="searchLoading" 
-        @search="handleSearch" 
-      />
-      
-      <!-- 新建帖子卡片 -->
-      <NewPostCard 
-        v-if="userStore.isLoggedIn"
-        :avatar="userStore.avatar"
-        :publishing="publishingPost"
-        @publish="publishNewPost"
-      />
-      
-      <!-- 帖子流 -->
-      <PostStream 
-        :posts="pagedPosts"
-        :loading="loading"
-        :error="error"
-        filter-mode="all"
-        :current-user-id="null"
-        @like="handleLike"
-        @comment="handleComment"
-        @repost="handleRepost"
-        @reload="loadPosts"
-      />
+      <div class="center-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+          <FishingGame />
+        </aside>
+        
+        <!-- 主内容区域 -->
+        <div class="content-wrapper">
+          <!-- 搜索栏 -->
+          <SearchBar 
+            :loading="searchLoading" 
+            @search="handleSearch" 
+          />
+          
+          <!-- 新建帖子卡片 -->
+          <NewPostCard 
+            v-if="userStore.isLoggedIn"
+            :avatar="userStore.avatar"
+            :publishing="publishingPost"
+            @publish="publishNewPost"
+          />
+          
+          <!-- 帖子流 -->
+          <PostStream 
+            :posts="pagedPosts"
+            :loading="loading"
+            :error="error"
+            filter-mode="all"
+            :current-user-id="null"
+            @like="handleLike"
+            @comment="handleComment"
+            @repost="handleRepost"
+            @reload="loadPosts"
+          />
+        </div>
+      </div>
     </main>
   </div>
 </template>
@@ -40,15 +50,16 @@
  * 特性：响应式布局、性能监控、智能缓存、无限滚动
  */
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import AppHeader from '../components/AppHeader.vue'
 import SearchBar from '../components/SearchBar.vue'
 import NewPostCard from '../components/NewPostCard.vue'
 import PostStream from '../components/PostStream.vue'
+import FishingGame from '../components/FishingGame.vue'
 import { fetchPosts, createPost } from '../api/post'
 import { useUserStore } from '../store/user'
-import { getCache, setCache, deleteCache, getCacheStats } from '../utils/cacheManager'
+import { getCache, setCache, deleteCache } from '../utils/cacheManager'
 import { PerformanceMonitor } from '../utils/performance'
 
 // 状态管理
@@ -57,7 +68,7 @@ const posts = ref([])                   // 帖子数据
 const loading = ref(false)              // 加载状态
 const error = ref(false)                // 错误状态
 const searchLoading = ref(false)        // 搜索加载状态
-const publishingPost = ref(false)        // 发布帖子状态
+const publishingPost = ref(false)       // 发布帖子状态
 const page = ref(1)                     // 当前页码
 const pageSize = 20                     // 每页显示数量
 
@@ -186,14 +197,20 @@ const publishNewPost = async (payload) => {
   } finally {
     publishingPost.value = false
   }
-
 }
 
 onMounted(() => {
   loadPosts()
-  const container = document.querySelector('.virtual-post-list')
+  const container = document.querySelector('.home-main')
   if (container) {
     container.addEventListener('scroll', handleScroll)
+  }
+})
+
+onUnmounted(() => {
+  const container = document.querySelector('.home-main')
+  if (container) {
+    container.removeEventListener('scroll', handleScroll)
   }
 })
 </script>
@@ -202,21 +219,180 @@ onMounted(() => {
 .home-root {
   display: flex;
   flex-direction: column;
-  background: var(--color-gray-light);
-  overflow-x: hidden;
-  box-sizing: border-box;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
   min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.home-root::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(255, 214, 0, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(64, 191, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 214, 0, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .home-main {
-  flex: 1 1 0;
-  width: 100vw;
-  background: var(--color-gray-light);
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 80px 0 24px 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+  width: 100%;
+  min-height: calc(100vh - 64px);
+  position: relative;
+  z-index: 1;
+}
+
+.center-container {
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 20px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  position: relative;
+  gap: 24px;
+}
+
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+}
+
+.content-wrapper {
+  width: 100%;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 32px 0 24px 0;
-  box-sizing: border-box;
-  overflow-x: hidden;
+  gap: 20px;
+  flex-shrink: 0;
+  margin: 0 auto;
+  position: relative;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
-</style> 
+
+.content-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 24px;
+  padding: 2px;
+  background: linear-gradient(45deg, 
+    var(--color-blue) 0%, 
+    var(--color-yellow) 25%, 
+    var(--color-blue) 50%, 
+    var(--color-yellow) 75%, 
+    var(--color-blue) 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease-in-out infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  z-index: -1;
+}
+
+.content-wrapper::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 26px;
+  background: linear-gradient(45deg, 
+    rgba(64, 191, 255, 0.3) 0%, 
+    rgba(255, 214, 0, 0.3) 25%, 
+    rgba(64, 191, 255, 0.3) 50%, 
+    rgba(255, 214, 0, 0.3) 75%, 
+    rgba(64, 191, 255, 0.3) 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease-in-out infinite reverse;
+  z-index: -2;
+  filter: blur(8px);
+  opacity: 0.6;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .sidebar {
+    display: none;
+  }
+  
+  .center-container {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-main {
+    padding: 70px 0 16px 0;
+  }
+  
+  .center-container {
+    padding: 0 16px;
+    max-width: 100%;
+  }
+  
+  .content-wrapper {
+    gap: 12px;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-main {
+    padding: 60px 0 12px 0;
+  }
+  
+  .center-container {
+    padding: 0 12px;
+    max-width: 100%;
+  }
+  
+  .content-wrapper {
+    gap: 8px;
+    max-width: 100%;
+  }
+}
+</style>

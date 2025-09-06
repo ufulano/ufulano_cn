@@ -225,4 +225,4 @@ export function preloadCriticalImages(urls) {
       timeout: 3000
     })
   })
-} 
+}

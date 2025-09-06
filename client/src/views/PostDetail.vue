@@ -157,7 +157,7 @@ onMounted(() => {
 }
 .post-detail-main {
   max-width: 700px;
-  margin: 40px auto 24px auto;
+  margin: 96px auto 24px auto;
   flex: 1;
 }
 .comment-section {

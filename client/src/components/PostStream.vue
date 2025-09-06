@@ -39,13 +39,6 @@
     
     <!-- 帖子列表 -->
     <section v-else class="post-list-section">
-      <!-- 调试信息 -->
-      <div style="background: #e8f5e8; border: 1px solid #4caf50; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
-        <p style="margin: 0; color: #2e7d32;"><strong>渲染信息:</strong></p>
-        <p style="margin: 5px 0; color: #2e7d32;">帖子数量: {{ posts.length }}</p>
-        <p style="margin: 5px 0; color: #2e7d32;">显示帖子数量: {{ displayPosts.length }}</p>
-        <p style="margin: 5px 0; color: #2e7d32;">当前页码: {{ currentPage }}</p>
-      </div>
       
       <!-- 帖子列表 -->
       <div class="post-list">
@@ -308,17 +301,15 @@ watch(() => props.posts, (newPosts) => {
 .error-section,
 .empty-section {
   width: 100%;
-  max-width: none;
+  max-width: 900px;
   margin: 32px auto;
   text-align: center;
 }
 
 .post-list-section {
   width: 100%;
-  max-width: none;
-  margin-top: 0;
-  margin-left: 0;
-  margin-right: 0;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .post-list {
