@@ -198,9 +198,9 @@ const publishNewPost = async (payload) => {
   publishingPost.value = true
   
   try {
-    // 检查是否是缩略图模式
+    // 检查是否是缩略图模式（静默处理，不弹窗）
     if (payload.isThumbnail) {
-      ElMessage.info('正在发布...')
+      console.log('正在发布缩略图...')
     }
     
     await createPost(payload)

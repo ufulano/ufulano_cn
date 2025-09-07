@@ -109,7 +109,7 @@ const onLike = async () => {
   likeLoading.value = true
   try {
     await toggleLike(route.params.id)
-    ElMessage.success('点赞成功')
+    // 移除点赞成功提示，避免频繁弹窗
     likeCount.value++
   } catch (e) {}
   finally {
@@ -122,7 +122,7 @@ const onComment = () => {
     commentLoading.value = true
     try {
       await addComment({ postId: route.params.id, content: commentForm.value.content })
-      ElMessage.success('评论成功')
+      // 移除评论成功提示，避免频繁弹窗
       commentForm.value.content = ''
       loadComments()
     } catch (e) {}

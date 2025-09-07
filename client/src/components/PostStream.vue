@@ -280,7 +280,7 @@ const loadMore = async () => {
 // 点赞处理
 const handleLike = (post) => {
   emit('like', post)
-  ElMessage.success('点赞成功')
+  // 移除点赞成功提示，避免频繁弹窗
 }
 
 // 评论处理
@@ -291,7 +291,7 @@ const handleComment = (post) => {
 // 转发处理
 const handleRepost = (post) => {
   emit('repost', post)
-  ElMessage.success('转发成功')
+  // 移除转发成功提示，避免频繁弹窗
 }
 
 // 监听帖子变化，预加载图片

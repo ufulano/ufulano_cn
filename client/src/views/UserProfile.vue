@@ -334,7 +334,7 @@ const handleLike = (post) => {
     return
   }
   console.log('点赞帖子:', post.id)
-  ElMessage.success('点赞成功')
+  // 移除点赞成功提示，避免频繁弹窗
 }
 
 /**
@@ -359,7 +359,7 @@ const handleRepost = (post) => {
     return
   }
   console.log('转发帖子:', post.id)
-  ElMessage.success('转发成功')
+  // 移除转发成功提示，避免频繁弹窗
 }
 
 /**
@@ -375,12 +375,12 @@ const debugUserPosts = () => {
   console.log('帖子数据:', posts.value)
   console.log('路由参数:', route.params)
   
-  // 显示调试信息
-  ElMessage.info(`帖子数量: ${posts.value.length}, 加载状态: ${loading.value}, 错误状态: ${error.value}`)
+  // 显示调试信息（仅在控制台输出，不弹窗）
+  console.log(`帖子数量: ${posts.value.length}, 加载状态: ${loading.value}, 错误状态: ${error.value}`)
   
-  // 如果帖子数量为0，尝试重新加载
+  // 如果帖子数量为0，尝试重新加载（静默处理）
   if (posts.value.length === 0) {
-    ElMessage.warning('没有帖子数据，尝试重新加载...')
+    console.log('没有帖子数据，尝试重新加载...')
     loadUserPosts()
   }
 }
