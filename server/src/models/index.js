@@ -33,8 +33,7 @@ const Repost = require('./Repost');
 
 // 用户与帖子的关联
 User.hasMany(Post, {
-  foreignKey: 'user_id',
-  as: 'posts' 
+  foreignKey: 'user_id'
 });
 
 Post.belongsTo(User, {
@@ -44,8 +43,7 @@ Post.belongsTo(User, {
 
 // 用户与点赞的关联
 User.hasMany(Like, {
-  foreignKey: 'user_id',
-  as: 'likes'
+  foreignKey: 'user_id'
 });
 
 Like.belongsTo(User, {
@@ -55,8 +53,7 @@ Like.belongsTo(User, {
 
 // 帖子与点赞的关联
 Post.hasMany(Like, {
-  foreignKey: 'post_id',
-  as: 'likes'
+  foreignKey: 'post_id'
 });
 
 Like.belongsTo(Post, {
@@ -66,8 +63,7 @@ Like.belongsTo(Post, {
 
 // 用户与评论的关联
 User.hasMany(Comment, {
-  foreignKey: 'user_id',
-  as: 'comments'
+  foreignKey: 'user_id'
 });
 
 Comment.belongsTo(User, {
@@ -77,8 +73,7 @@ Comment.belongsTo(User, {
 
 // 帖子与评论的关联
 Post.hasMany(Comment, {
-  foreignKey: 'post_id',
-  as: 'comments'
+  foreignKey: 'post_id'
 });
 
 Comment.belongsTo(Post, {
@@ -88,8 +83,7 @@ Comment.belongsTo(Post, {
 
 // 用户与转发的关联
 User.hasMany(Repost, {
-  foreignKey: 'user_id',
-  as: 'userReposts'
+  foreignKey: 'user_id'
 });
 
 Repost.belongsTo(User, {
@@ -99,24 +93,22 @@ Repost.belongsTo(User, {
 
 // 帖子与转发的关联
 Post.hasMany(Repost, {
-  foreignKey: 'original_post_id',
-  as: 'repostRecords'
+  foreignKey: 'original_post_id'
 });
 
 Repost.belongsTo(Post, {
   foreignKey: 'original_post_id',
-  as: 'originalPost'
+  as: 'repostedPost'
 });
 
 // 帖子自关联（转发关系）
 Post.belongsTo(Post, {
   foreignKey: 'repost_id',
-  as: 'repostedFrom'
+  as: 'originalPost'
 });
 
 Post.hasMany(Post, {
-  foreignKey: 'repost_id',
-  as: 'reposts'
+  foreignKey: 'repost_id'
 });
 
 // 检查关联

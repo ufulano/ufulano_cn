@@ -89,7 +89,7 @@ const createRepost = async (req, res) => {
         },
         {
           model: Post,
-          as: 'originalPost',
+          as: 'repostedPost',
           include: [{
             model: User,
             as: 'user',
@@ -243,7 +243,7 @@ const getUserReposts = async (req, res) => {
         },
         {
           model: Post,
-          as: 'originalPost',
+          as: 'repostedPost',
           include: [{
             model: User,
             as: 'user',
