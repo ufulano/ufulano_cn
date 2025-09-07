@@ -20,7 +20,7 @@ const { Op } = require('sequelize');
 const createRepost = async (req, res) => {
   try {
     const { originalPostId, repostContent } = req.body;
-    const userId = req.user.user_id;
+    const userId = req.user.userId;
 
     // 验证原帖是否存在
     const originalPost = await Post.findByPk(originalPostId, {
@@ -123,7 +123,7 @@ const createRepost = async (req, res) => {
 const deleteRepost = async (req, res) => {
   try {
     const { repostId } = req.params;
-    const userId = req.user.user_id;
+    const userId = req.user.userId;
 
     // 查找转发记录
     const repost = await Repost.findOne({
@@ -285,7 +285,7 @@ const getUserReposts = async (req, res) => {
 const checkRepostStatus = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user.user_id;
+    const userId = req.user.userId;
 
     const repost = await Repost.findOne({
       where: {

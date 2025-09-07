@@ -740,8 +740,7 @@ const handleImageClick = (index) => {
 
 .post-image {
   width: 100%;
-  height: 60px;
-  max-height: 100px;
+  height: 100%;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -756,21 +755,9 @@ const handleImageClick = (index) => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-/* 针对不同数量图片的高度优化 */
-.post-images[data-count="1"] .post-image {
-  height: 80px;
-}
-
-.post-images[data-count="2"] .post-image {
-  height: 60px;
-}
-
-.post-images[data-count="3"] .post-image {
-  height: 50px;
-}
-
-.post-images[data-count="4"] .post-image {
-  height: 40px;
+/* 所有图片都使用正方形显示 */
+.post-images .post-image {
+  height: 100%;
 }
 
 .post-actions {
@@ -982,7 +969,7 @@ const handleImageClick = (index) => {
   }
   
   .post-images .post-image {
-    height: 200px !important;
+    height: 100% !important;
   }
   
   .post-header .el-avatar {
@@ -1004,7 +991,7 @@ const handleImageClick = (index) => {
   border-radius: 8px;
   display: block;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1; /* 强制1:1宽高比，创建正方形 */
 }
 
 .image-overlay {

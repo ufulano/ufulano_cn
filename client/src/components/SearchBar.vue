@@ -87,12 +87,13 @@ watch(searchValue, (newValue) => {
   box-shadow: var(--shadow-card);
   padding: 36px 32px 28px 32px;
   margin-bottom: 32px;
-  width: 60%;
+  width: 100%;
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
   text-align: center;
   background: var(--color-white);
+  box-sizing: border-box;
 }
 
 .main-title {
@@ -117,9 +118,11 @@ watch(searchValue, (newValue) => {
 
 .search-input {
   width: 320px;
+  max-width: 100%;
   border-radius: 4px 0 0 4px;
   background: var(--color-white);
   border: 1.5px solid var(--color-blue);
+  box-sizing: border-box;
 }
 
 .search-btn {

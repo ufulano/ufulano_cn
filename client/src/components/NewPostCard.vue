@@ -361,12 +361,13 @@ watch(content, (newValue) => {
 
 <style scoped>
 .new-post-section {
-  width: 60%;
+  width: 100%;
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 24px;
   background-color:var(--color-white);
+  box-sizing: border-box;
 }
 
 .new-post-card {
@@ -416,27 +417,34 @@ watch(content, (newValue) => {
   display: grid;
   gap: 8px;
   margin-bottom: 16px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .new-post-images[data-count="1"] {
   grid-template-columns: 1fr;
   max-width: 300px;
+  width: 100%;
 }
 
 .new-post-images[data-count="2"] {
   grid-template-columns: repeat(2, 1fr);
   max-width: 400px;
+  width: 100%;
 }
 
 .new-post-images[data-count="3"] {
   grid-template-columns: repeat(3, 1fr);
   max-width: 450px;
+  width: 100%;
 }
 
 .new-post-images[data-count="4"] {
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
   max-width: 400px;
+  width: 100%;
 }
 
 .new-post-image-item {

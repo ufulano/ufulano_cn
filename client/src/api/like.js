@@ -6,10 +6,7 @@ import request from './request'
  * @returns {Promise} API响应
  */
 export const toggleLike = (postId) => {
-  return request({
-    url: `/likes/${postId}`,
-    method: 'POST'
-  })
+  return request.post(`/likes/${postId}`)
 }
 
 /**
@@ -18,10 +15,7 @@ export const toggleLike = (postId) => {
  * @returns {Promise} API响应
  */
 export const getLikeCount = (postId) => {
-  return request({
-    url: `/likes/${postId}`,
-    method: 'GET'
-  })
+  return request.get(`/likes/${postId}`)
 }
 
 /**
@@ -30,10 +24,7 @@ export const getLikeCount = (postId) => {
  * @returns {Promise} API响应
  */
 export const getLikeStatus = (postId) => {
-  return request({
-    url: `/likes/${postId}/status`,
-    method: 'GET'
-  })
+  return request.get(`/likes/${postId}/status`)
 }
 
 /**
@@ -41,10 +32,7 @@ export const getLikeStatus = (postId) => {
  * @returns {Promise} API响应
  */
 export const getUserLikeHistory = () => {
-  return request({
-    url: '/likes/user/history',
-    method: 'GET'
-  })
+  return request.get('/likes/user/history')
 }
 
 /**
@@ -53,11 +41,7 @@ export const getUserLikeHistory = () => {
  * @returns {Promise} API响应
  */
 export const getBatchLikeCounts = (postIds) => {
-  return request({
-    url: '/likes/batch-counts',
-    method: 'POST',
-    data: { postIds }
-  })
+  return request.post('/likes/batch-counts', { postIds })
 }
 
 /**
@@ -66,8 +50,5 @@ export const getBatchLikeCounts = (postIds) => {
  * @returns {Promise} API响应
  */
 export const getTopLikedPosts = (limit = 10) => {
-  return request({
-    url: `/likes/top/${limit}`,
-    method: 'GET'
-  })
+  return request.get(`/likes/top/${limit}`)
 }

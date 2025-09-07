@@ -36,7 +36,7 @@ const { Post, User, Like, sequelize } = require('../models');
 exports.toggleLike = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user.user_id; // 从JWT中获取的用户ID
+    const userId = req.user.userId; // 从JWT中获取的用户ID
 
     // 检查文章是否存在
     const post = await Post.findByPk(postId);
@@ -118,7 +118,7 @@ exports.getLikes = async (req, res) => {
 exports.checkLikeStatus = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user ? req.user.user_id : null;
+    const userId = req.user ? req.user.userId : null;
     
     if (!userId) {
       return res.json({ liked: false, likeCount: 0 });
@@ -157,7 +157,7 @@ exports.checkLikeStatus = async (req, res) => {
 exports.getUserLikeHistory = async (req, res) => {
   try {
     const likes = await Like.findAll({
-      where: { user_id: req.user.user_id },
+      where: { user_id: req.user.userId },
       include: [{
         model: Post,
         attributes: ['post_id', 'title']
