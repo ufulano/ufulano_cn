@@ -89,7 +89,7 @@ Comment.belongsTo(Post, {
 // 用户与转发的关联
 User.hasMany(Repost, {
   foreignKey: 'user_id',
-  as: 'reposts'
+  as: 'userReposts'
 });
 
 Repost.belongsTo(User, {
@@ -100,7 +100,7 @@ Repost.belongsTo(User, {
 // 帖子与转发的关联
 Post.hasMany(Repost, {
   foreignKey: 'original_post_id',
-  as: 'reposts'
+  as: 'repostRecords'
 });
 
 Repost.belongsTo(Post, {
@@ -111,7 +111,7 @@ Repost.belongsTo(Post, {
 // 帖子自关联（转发关系）
 Post.belongsTo(Post, {
   foreignKey: 'repost_id',
-  as: 'originalPost'
+  as: 'repostedFrom'
 });
 
 Post.hasMany(Post, {
