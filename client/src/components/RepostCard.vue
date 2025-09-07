@@ -161,7 +161,7 @@ import { ElMessage } from 'element-plus'
 import { Share, ChatDotRound, Star, ChatLineSquare } from '@element-plus/icons-vue'
 import { toggleLike, getLikeStatus } from '../api/like'
 import { createRepost } from '../api/repost'
-import { createComment } from '../api/comment'
+import { addComment } from '../api/comment'
 import { useUserStore } from '../store/user'
 
 // Props
@@ -352,7 +352,7 @@ const onPublishComment = async () => {
   commentLoading.value = true
   
   try {
-    const response = await createComment({
+    const response = await addComment({
       post_id: props.post.post_id,
       content: commentText.value.trim()
     })
