@@ -30,18 +30,18 @@
  */
 
 /**
- * 生成缩略图
+ * 生成正方形缩略图
  * 
  * 功能：
- * - 将大图片压缩为缩略图
- * - 保持图片比例
+ * - 将大图片压缩为正方形缩略图
+ * - 自动裁剪为正方形（取中心区域）
  * - 使用较低质量减少文件大小
  * 
  * @param {string} base64String - 原始base64图片数据
- * @param {number} maxWidth - 缩略图最大宽度
+ * @param {number} size - 缩略图尺寸（正方形边长）
  * @returns {Promise<string>} 缩略图base64数据
  */
-export function generateThumbnail(base64String, maxWidth = 200) {
+export function generateThumbnail(base64String, size = 200) {
   return new Promise((resolve, reject) => {
     const img = new Image()
     
@@ -50,7 +50,72 @@ export function generateThumbnail(base64String, maxWidth = 200) {
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
         
-        // 计算缩略图尺寸
+        // 计算缩略图尺寸 - 强制为正方形
+        let { width, height } = img
+        let targetSize = size
+        
+        // 如果图片不是正方形，需要裁剪
+        if (width !== height) {
+          // 计算裁剪区域（取较小的边作为正方形边长）
+          const minSize = Math.min(width, height)
+          const offsetX = (width - minSize) / 2
+          const offsetY = (height - minSize) / 2
+          
+          // 设置画布为正方形
+          canvas.width = targetSize
+          canvas.height = targetSize
+          
+          // 绘制裁剪后的正方形图片
+          ctx.drawImage(
+            img, 
+            offsetX, offsetY, minSize, minSize,  // 源图片裁剪区域
+            0, 0, targetSize, targetSize         // 目标画布区域
+          )
+        } else {
+          // 如果原图就是正方形，直接缩放
+          canvas.width = targetSize
+          canvas.height = targetSize
+          ctx.drawImage(img, 0, 0, targetSize, targetSize)
+        }
+        
+        // 使用较低质量生成缩略图
+        const thumbnail = canvas.toDataURL('image/jpeg', 0.7)
+        resolve(thumbnail)
+      } catch (error) {
+        reject(error)
+      }
+    }
+    
+    img.onerror = (error) => {
+      reject(new Error('图片加载失败'))
+    }
+    
+    img.src = base64String
+  })
+}
+
+/**
+ * 生成保持比例的缩略图
+ * 
+ * 功能：
+ * - 将大图片压缩为缩略图
+ * - 保持图片原始比例
+ * - 使用较低质量减少文件大小
+ * 
+ * @param {string} base64String - 原始base64图片数据
+ * @param {number} maxWidth - 缩略图最大宽度
+ * @returns {Promise<string>} 缩略图base64数据
+ */
+export function generateProportionalThumbnail(base64String, maxWidth = 200) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        
+        // 计算缩略图尺寸 - 保持比例
         let { width, height } = img
         if (width > maxWidth) {
           height = (height * maxWidth) / width
@@ -95,7 +160,7 @@ export function compressImage(base64String, maxWidth = 800, maxSizeKB = 500) {
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
         
-        // 计算新的尺寸
+        // 计算新的尺寸 - 保持原图比例
         let { width, height } = img
         if (width > maxWidth) {
           height = (height * maxWidth) / width

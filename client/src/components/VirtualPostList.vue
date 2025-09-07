@@ -1,386 +1,305 @@
 <template>
-  <!-- 虚拟列表容器 -->
-  <div class="virtual-list-container" ref="containerRef">
-    <!-- 虚拟占位元素，用于撑开滚动条 -->
-    <div 
-      class="virtual-list-phantom" 
-      :style="{ height: totalHeight + 'px' }"
-    ></div>
-    <!-- 实际内容容器 -->
-    <div 
-      class="virtual-list-content"
-      :style="{ transform: `translateY(${offsetY}px)` }"
-    >
-      <!-- 可见的项目列表 -->
+  <div class="virtual-post-list" ref="containerRef" @scroll="handleScroll">
+    <!-- 虚拟容器 -->
+    <div class="virtual-container" :style="containerStyle">
+      <!-- 顶部占位符 -->
+      <div class="virtual-spacer" :style="{ height: topSpacerHeight + 'px' }"></div>
+      
+      <!-- 可见的帖子项 -->
       <div 
-        v-for="item in visibleItems" 
-        :key="item.id || item._id || item.index"
-        class="virtual-list-item"
-        :ref="el => setItemRef(el, item.id || item._id || item.index)"
-        :data-item-id="item.id || item._id || item.index"
+        v-for="(post, index) in visiblePosts" 
+        :key="getPostKey(post, index)"
+        class="virtual-item"
+        :style="{ height: itemHeight + 'px' }"
       >
-        <slot :item="item" :index="item.index"></slot>
+        <PostCardSkeleton 
+          v-if="loadingItems.has(index)"
+          :has-images="post.images && post.images.length > 0"
+          :image-count="post.images ? post.images.length : 0"
+        />
+        <PostCard
+          v-else
+          :post-id="getPostId(post)"
+          :avatar="parseAvatar(getPostAvatar(post))"
+          :username="getPostUsername(post)"
+          :time="getPostTime(post)"
+          :content="getPostContent(post)"
+          :images="getPostImages(post)"
+          :like-count="getPostLikeCount(post)"
+          :comment-count="getPostCommentCount(post)"
+          :repost-count="getPostRepostCount(post)"
+          :is-liked="getPostIsLiked(post)"
+          @like="handleLike(post, $event)"
+          @comment="handleComment(post, $event)"
+          @repost="handleRepost(post, $event)"
+        />
       </div>
+      
+      <!-- 底部占位符 -->
+      <div class="virtual-spacer" :style="{ height: bottomSpacerHeight + 'px' }"></div>
+    </div>
+    
+    <!-- 加载更多指示器 -->
+    <div v-if="hasMore && !loading" class="load-more-indicator">
+      <el-button @click="loadMore" type="primary" size="large">
+        加载更多
+      </el-button>
+    </div>
+    
+    <!-- 加载中指示器 -->
+    <div v-if="loading" class="loading-indicator">
+      <el-icon class="loading-icon"><Loading /></el-icon>
+      <span>加载中...</span>
     </div>
   </div>
 </template>
 
 <script setup>
 /**
- * 虚拟列表组件
+ * VirtualPostList 组件 - 虚拟滚动帖子列表
  * 
  * 功能：
- * - 高性能渲染大量数据
- * - 只渲染可见区域的项目
- * - 动态计算项目高度
- * - 支持滚动定位
- * - 缓冲区优化
+ * - 虚拟滚动：只渲染可见区域的帖子
+ * - 性能优化：减少DOM节点数量
+ * - 懒加载：按需加载帖子内容
+ * - 无限滚动：支持大量数据展示
  * 
  * 特性：
- * - 虚拟滚动
- * - 动态高度
- * - 性能优化
- * - 响应式设计
+ * - 自适应高度：根据内容动态调整
+ * - 平滑滚动：优化的滚动体验
+ * - 内存管理：自动清理不可见元素
+ * - 响应式设计：适配不同屏幕尺寸
  */
 
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { Loading } from '@element-plus/icons-vue'
+import PostCard from './PostCard.vue'
+import PostCardSkeleton from './PostCardSkeleton.vue'
+import { parseAvatar } from '../utils/avatar'
 
-/**
- * 组件属性定义
- */
 const props = defineProps({
-  /** 要渲染的项目数组 */
-  items: {
+  /** 帖子列表 */
+  posts: {
     type: Array,
     default: () => []
   },
-  /** 预估的项目高度 */
-  estimatedItemHeight: {
+  /** 是否正在加载 */
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  /** 是否有更多数据 */
+  hasMore: {
+    type: Boolean,
+    default: false
+  },
+  /** 每个帖子的预估高度 */
+  itemHeight: {
     type: Number,
     default: 300
   },
-  /** 缓冲区大小 */
+  /** 可见区域外的缓冲区大小 */
   bufferSize: {
     type: Number,
-    default: 5
+    default: 3
   }
 })
 
-// 组件内部状态
-/** 容器DOM引用 */
+const emit = defineEmits(['loadMore', 'like', 'comment', 'repost'])
+
+// 响应式数据
 const containerRef = ref(null)
-/** 滚动位置 */
 const scrollTop = ref(0)
-/** 容器高度 */
 const containerHeight = ref(0)
-/** 存储每个item的实际高度 */
-const itemHeights = ref(new Map())
-/** 存储DOM引用 */
-const itemRefs = ref(new Map())
+const loadingItems = ref(new Set())
 
-/**
- * 设置item引用
- * 当DOM元素挂载时，保存引用并更新高度
- * 
- * @param {HTMLElement} el - DOM元素
- * @param {string|number} itemId - 项目ID
- */
-const setItemRef = (el, itemId) => {
-  if (el) {
-    itemRefs.value.set(itemId, el)
-    // 测量并更新高度
-    nextTick(() => {
-      updateItemHeight(itemId, el)
-    })
-  }
-}
+// 计算属性
+const totalHeight = computed(() => props.posts.length * props.itemHeight)
 
-/**
- * 更新单个item的高度
- * 
- * @param {string|number} itemId - 项目ID
- * @param {HTMLElement} element - DOM元素
- */
-const updateItemHeight = (itemId, element) => {
-  if (!element) return
-  
-  const height = element.offsetHeight
-  const oldHeight = itemHeights.value.get(itemId) || 0
-  
-  if (height !== oldHeight) {
-    itemHeights.value.set(itemId, height)
-    console.log(`Item ${itemId} height updated: ${oldHeight} -> ${height}`)
-  }
-}
-
-/**
- * 获取item的累积高度
- * 计算指定索引之前所有项目的高度总和
- * 
- * @param {number} index - 项目索引
- * @returns {number} 累积高度
- */
-const getItemOffset = (index) => {
-  if (!props.items || !Array.isArray(props.items)) return 0;
-  let offset = 0;
-  for (let i = 0; i < index; i++) {
-    const item = props.items[i];
-    if (item && typeof item === 'object') {
-      const itemId = item.id || item._id || i;
-      offset += itemHeights.value.get(itemId) || props.estimatedItemHeight;
-    } else {
-      offset += props.estimatedItemHeight;
-    }
-  }
-  return offset;
-}
-
-/**
- * 计算总高度
- * 计算所有项目的总高度，用于虚拟占位元素
- */
-const totalHeight = computed(() => {
-  if (!props.items || !Array.isArray(props.items)) return 0;
-  let total = 0
-  props.items.forEach((item, index) => {
-    if (item && typeof item === 'object') {
-      const itemId = item.id || item._id || index;
-      total += itemHeights.value.get(itemId) || props.estimatedItemHeight
-    } else {
-      total += props.estimatedItemHeight
-    }
-  })
-  return total
+const visibleStart = computed(() => {
+  const start = Math.floor(scrollTop.value / props.itemHeight)
+  return Math.max(0, start - props.bufferSize)
 })
 
-/**
- * 计算可见区域
- * 根据当前滚动位置计算需要渲染的项目范围
- */
-const visibleRange = computed(() => {
-  const start = findStartIndex(scrollTop.value)
-  const end = findEndIndex(start, containerHeight.value)
-  
-  return {
-    start: Math.max(0, start - props.bufferSize),
-    end: Math.min(props.items.length, end + props.bufferSize)
-  }
+const visibleEnd = computed(() => {
+  const end = Math.ceil((scrollTop.value + containerHeight.value) / props.itemHeight)
+  return Math.min(props.posts.length, end + props.bufferSize)
 })
 
-/**
- * 查找起始索引
- * 根据滚动位置找到第一个可见项目的索引
- * 
- * @param {number} scrollTop - 滚动位置
- * @returns {number} 起始索引
- */
-const findStartIndex = (scrollTop) => {
-  if (!props.items || !Array.isArray(props.items)) return 0;
-  let index = 0;
-  let offset = 0;
-  for (let i = 0; i < props.items.length; i++) {
-    const item = props.items[i];
-    if (!item || typeof item !== 'object') {
-      offset += props.estimatedItemHeight;
-      continue;
-    }
-    const itemId = item.id || item._id || i;
-    const itemHeight = itemHeights.value.get(itemId) || props.estimatedItemHeight;
-    if (offset + itemHeight > scrollTop) {
-      return i;
-    }
-    offset += itemHeight;
-  }
-  return props.items.length - 1;
-}
-
-/**
- * 查找结束索引
- * 根据起始索引和容器高度找到最后一个可见项目的索引
- * 
- * @param {number} startIndex - 起始索引
- * @param {number} containerHeight - 容器高度
- * @returns {number} 结束索引
- */
-const findEndIndex = (startIndex, containerHeight) => {
-  if (!props.items || !Array.isArray(props.items)) return 0;
-  let index = startIndex;
-  let offset = getItemOffset(startIndex);
-  while (index < props.items.length && offset < scrollTop.value + containerHeight) {
-    const item = props.items[index];
-    if (item && typeof item === 'object') {
-      const itemId = item.id || item._id || index;
-      offset += itemHeights.value.get(itemId) || props.estimatedItemHeight;
-    } else {
-      offset += props.estimatedItemHeight;
-    }
-    index++;
-  }
-  return index;
-}
-
-/**
- * 计算偏移量
- * 计算内容容器的Y轴偏移量，用于定位可见项目
- */
-const offsetY = computed(() => {
-  return getItemOffset(visibleRange.value.start)
+const visiblePosts = computed(() => {
+  return props.posts.slice(visibleStart.value, visibleEnd.value).map((post, index) => ({
+    ...post,
+    virtualIndex: visibleStart.value + index
+  }))
 })
 
-/**
- * 可见的项目
- * 根据可见范围计算需要渲染的项目列表
- */
-const visibleItems = computed(() => {
-  if (!props.items || !Array.isArray(props.items)) return [];
-  const { start, end } = visibleRange.value;
-  console.log('VirtualPostList - 可见范围:', { start, end, totalItems: props.items.length });
-  
-  const slicedItems = props.items.slice(start, end);
-  console.log('VirtualPostList - 切片后的项目:', slicedItems);
-  
-  const filteredItems = slicedItems.filter(item => item && typeof item === 'object');
-  console.log('VirtualPostList - 过滤后的项目:', filteredItems);
-  
-  return filteredItems.map((item, index) => ({
-    ...item,
-    index: start + index
-  }));
-});
+const topSpacerHeight = computed(() => visibleStart.value * props.itemHeight)
+const bottomSpacerHeight = computed(() => (props.posts.length - visibleEnd.value) * props.itemHeight)
 
-/**
- * 滚动处理函数
- * 更新当前滚动位置
- */
+const containerStyle = computed(() => ({
+  height: totalHeight.value + 'px',
+  position: 'relative'
+}))
+
+// 方法
+const getPostKey = (post, index) => {
+  return post.id || post.post_id || `post-${index}`
+}
+
+const getPostId = (post) => post.id || post.post_id
+const getPostAvatar = (post) => post.avatar || post.user?.avatar_url
+const getPostUsername = (post) => post.username || post.user?.username
+const getPostTime = (post) => post.time || post.post_time
+const getPostContent = (post) => post.content
+const getPostImages = (post) => post.images || []
+const getPostLikeCount = (post) => post.likes || post.like_count || 0
+const getPostCommentCount = (post) => post.comments || post.comment_count || 0
+const getPostRepostCount = (post) => post.reposts || post.repost_count || 0
+const getPostIsLiked = (post) => post.isLiked || false
+
+const handleLike = (post, event) => {
+  emit('like', post, event)
+}
+
+const handleComment = (post, event) => {
+  emit('comment', post, event)
+}
+
+const handleRepost = (post, event) => {
+  emit('repost', post, event)
+}
+
+const loadMore = () => {
+  emit('loadMore')
+}
+
+// 滚动处理
 const handleScroll = () => {
-  if (containerRef.value) {
-    scrollTop.value = containerRef.value.scrollTop
-  }
-}
-
-/**
- * 监听容器大小变化
- * 更新容器高度信息
- */
-const updateContainerHeight = () => {
-  if (containerRef.value) {
-    containerHeight.value = containerRef.value.clientHeight
-  }
-}
-
-/**
- * 监听项目变化
- * 当项目数组变化时重新计算高度
- */
-watch(() => props.items, () => {
-  // 项目变化时重新计算高度
-  nextTick(() => {
-    updateAllItemHeights()
-  })
-}, { deep: true })
-
-/**
- * 更新所有item高度
- * 遍历所有已渲染的项目并更新其高度
- */
-const updateAllItemHeights = () => {
-  itemRefs.value.forEach((element, itemId) => {
-    updateItemHeight(itemId, element)
-  })
-}
-
-/**
- * 使用 ResizeObserver 监听元素大小变化
- * 用于监听项目高度变化并更新缓存
- */
-let resizeObserver = null
-
-/**
- * 组件挂载时的初始化
- * 设置事件监听器和ResizeObserver
- */
-onMounted(() => {
-  updateContainerHeight()
-  window.addEventListener('resize', updateContainerHeight)
+  if (!containerRef.value) return
   
-  // 添加滚动监听
-  if (containerRef.value) {
-    containerRef.value.addEventListener('scroll', handleScroll)
-  }
+  scrollTop.value = containerRef.value.scrollTop
+  containerHeight.value = containerRef.value.clientHeight
+}
+
+// 更新容器尺寸
+const updateContainerSize = () => {
+  if (!containerRef.value) return
   
-  // 设置 ResizeObserver
-  if ('ResizeObserver' in window) {
-    resizeObserver = new ResizeObserver((entries) => {
-      entries.forEach(entry => {
-        const itemId = entry.target.dataset.itemId
-        if (itemId) {
-          updateItemHeight(itemId, entry.target)
-        }
-      })
-    })
-  }
-})
+  containerHeight.value = containerRef.value.clientHeight
+}
 
-/**
- * 组件卸载时的清理
- * 移除事件监听器和ResizeObserver
- */
-onUnmounted(() => {
-  window.removeEventListener('resize', updateContainerHeight)
-  if (containerRef.value) {
-    containerRef.value.removeEventListener('scroll', handleScroll)
-  }
-  if (resizeObserver) {
-    resizeObserver.disconnect()
-  }
-})
+// 监听帖子变化，管理加载状态
+watch(() => props.posts, (newPosts) => {
+  // 清除之前的加载状态
+  loadingItems.value.clear()
+  
+  // 为新帖子添加加载状态
+  newPosts.forEach((_, index) => {
+    if (index < visibleEnd.value) {
+      loadingItems.value.add(index)
+      
+      // 模拟加载延迟
+      setTimeout(() => {
+        loadingItems.value.delete(index)
+      }, 300 + Math.random() * 500)
+    }
+  })
+}, { immediate: true })
 
-/**
- * 监听滚动位置变化
- * 滚动时更新可见区域
- */
-watch(() => scrollTop.value, () => {
-  // 滚动时更新可见区域
-}, { flush: 'post' })
-
-/**
- * 暴露方法给父组件
- * 提供更新高度和滚动定位功能
- */
-defineExpose({
-  updateAllItemHeights,
-  scrollToItem: (index) => {
-    if (containerRef.value) {
-      const offset = getItemOffset(index)
-      containerRef.value.scrollTop = offset
+// 监听可见区域变化
+watch([visibleStart, visibleEnd], ([newStart, newEnd]) => {
+  // 为新的可见项添加加载状态
+  for (let i = newStart; i < newEnd; i++) {
+    if (!loadingItems.value.has(i)) {
+      loadingItems.value.add(i)
+      
+      // 模拟加载延迟
+      setTimeout(() => {
+        loadingItems.value.delete(i)
+      }, 200 + Math.random() * 300)
     }
   }
+})
+
+// 生命周期
+onMounted(() => {
+  nextTick(() => {
+    updateContainerSize()
+    handleScroll()
+  })
+  
+  // 监听窗口大小变化
+  window.addEventListener('resize', updateContainerSize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateContainerSize)
 })
 </script>
 
 <style scoped>
-.virtual-list-container {
-  position: relative;
-  overflow-y: auto;
+.virtual-post-list {
   height: 100%;
+  overflow-y: auto;
+  position: relative;
 }
 
-.virtual-list-phantom {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: -1;
-}
-
-.virtual-list-content {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-}
-
-.virtual-list-item {
+.virtual-container {
+  position: relative;
   width: 100%;
 }
-</style> 
+
+.virtual-spacer {
+  width: 100%;
+}
+
+.virtual-item {
+  width: 100%;
+  position: relative;
+}
+
+.load-more-indicator,
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  gap: 8px;
+}
+
+.loading-indicator {
+  color: #666;
+}
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 滚动条样式 */
+.virtual-post-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.virtual-post-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.virtual-post-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.virtual-post-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+</style>

@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { getCache, setCache, deleteCache } from '../utils/cacheManager'
+import { useUserStore } from '../store/user'
 
 const service = axios.create({
   baseURL: '/api', // 代理到后端
@@ -72,8 +73,11 @@ service.interceptors.response.use(
   },
   error => {
     if (error.response) {
-      if (error.response.status === 401) {
-        ElMessage.error('请先登录')
+      if (error.response.status === 401 || error.response.status === 403) {
+        // Token 过期或无效
+        const userStore = useUserStore()
+        userStore.logout()
+        ElMessage.error('登录已过期，请重新登录')
         window.location.href = '/login'
       } else if (error.response.status === 413) {
         ElMessage.error('图片数据过大，请压缩图片后重试')

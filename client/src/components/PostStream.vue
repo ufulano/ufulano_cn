@@ -1,10 +1,15 @@
 <template>
   <div class="post-stream">
-    <!-- 加载状态 -->
+    <!-- 加载状态 - 显示骨架屏 -->
     <section v-if="loading" class="loading-section">
-      <el-empty description="正在加载精彩内容..." :image-size="120">
-        <el-button type="primary" @click="$emit('reload')">重新加载</el-button>
-      </el-empty>
+      <div class="skeleton-posts">
+        <PostCardSkeleton 
+          v-for="n in 3" 
+          :key="`skeleton-${n}`"
+          :has-images="n % 2 === 0"
+          :image-count="n % 2 === 0 ? (n % 3) + 1 : 0"
+        />
+      </div>
     </section>
     
     <!-- 错误状态 -->
@@ -39,9 +44,22 @@
     
     <!-- 帖子列表 -->
     <section v-else class="post-list-section">
+      <!-- 使用虚拟滚动（当帖子数量较多时） -->
+      <VirtualPostList
+        v-if="useVirtualScroll"
+        :posts="displayPosts"
+        :loading="loadingMore"
+        :has-more="hasMorePosts"
+        :item-height="300"
+        :buffer-size="2"
+        @load-more="loadMore"
+        @like="handleLike"
+        @comment="handleComment"
+        @repost="handleRepost"
+      />
       
-      <!-- 帖子列表 -->
-      <div class="post-list">
+      <!-- 普通列表（当帖子数量较少时） -->
+      <div v-else class="post-list">
         <div 
           v-for="(post, index) in displayPosts" 
           :key="getPostKey(post, index)"
@@ -75,23 +93,23 @@
             @repost="handleRepost(post)"
           />
         </div>
-      </div>
-      
-      <!-- 加载更多 -->
-      <div v-if="hasMorePosts" class="load-more">
-        <el-button 
-          @click="loadMore" 
-          :loading="loadingMore"
-          type="primary"
-          size="large"
-        >
-          加载更多
-        </el-button>
-      </div>
-      
-      <!-- 没有更多内容 -->
-      <div v-else-if="posts.length > 0" class="no-more">
-        <p>没有更多内容了</p>
+        
+        <!-- 加载更多 -->
+        <div v-if="hasMorePosts" class="load-more">
+          <el-button 
+            @click="loadMore" 
+            :loading="loadingMore"
+            type="primary"
+            size="large"
+          >
+            加载更多
+          </el-button>
+        </div>
+        
+        <!-- 没有更多内容 -->
+        <div v-else-if="posts.length > 0" class="no-more">
+          <p>没有更多内容了</p>
+        </div>
       </div>
     </section>
   </div>
@@ -102,6 +120,8 @@ import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import PostCard from './PostCard.vue'
 import RepostCard from './RepostCard.vue'
+import PostCardSkeleton from './PostCardSkeleton.vue'
+import VirtualPostList from './VirtualPostList.vue'
 import { parseAvatar } from '../utils/avatar'
 import { preloadImages, clearImageCache, preloadCriticalImages } from '../utils/imageLoader'
 
@@ -137,6 +157,12 @@ const emit = defineEmits(['like', 'comment', 'repost', 'reload'])
 // 分页状态
 const currentPage = ref(1)
 const loadingMore = ref(false)
+
+// 虚拟滚动配置
+const useVirtualScroll = computed(() => {
+  // 当帖子数量超过20个时使用虚拟滚动
+  return displayPosts.value.length > 20
+})
 
 // 当前显示的帖子
 const displayPosts = computed(() => {
@@ -314,7 +340,18 @@ watch(() => props.posts, (newPosts) => {
   width: 100%;
 }
 
-.loading-section,
+.loading-section {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.skeleton-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .error-section,
 .empty-section {
   width: 100%;

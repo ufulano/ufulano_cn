@@ -89,7 +89,7 @@ const createRepost = async (req, res) => {
         },
         {
           model: Post,
-          as: 'repostedPost',
+          as: 'originalPost',
           include: [{
             model: User,
             as: 'user',

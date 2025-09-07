@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>缩略图测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .image-item {
+            text-align: center;
+        }
+        .image-item img {
+            max-width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .image-info {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>缩略图生成测试</h1>
+    
+    <div class="test-container">
+        <h2>上传图片测试</h2>
+        <input type="file" id="imageInput" accept="image/*" multiple>
+        <button onclick="processImages()">生成缩略图</button>
+        <button onclick="clearResults()">清除结果</button>
+    </div>
+    
+    <div id="results" class="image-grid"></div>
+
+    <script type="module">
+        // 导入缩略图生成函数
+        import { generateThumbnail, generateProportionalThumbnail } from './src/utils/imageCompression.js';
+        
+        // 将函数暴露到全局作用域
+        window.generateThumbnail = generateThumbnail;
+        window.generateProportionalThumbnail = generateProportionalThumbnail;
+        
+        function processImages() {
+            const input = document.getElementById('imageInput');
+            const files = input.files;
+            const results = document.getElementById('results');
+            
+            if (files.length === 0) {
+                alert('请选择图片文件');
+                return;
+            }
+            
+            results.innerHTML = '';
+            
+            Array.from(files).forEach(async (file, index) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const originalData = e.target.result;
+                        
+                        // 生成正方形缩略图
+                        const squareThumbnail = await generateThumbnail(originalData, 200);
+                        
+                        // 生成保持比例的缩略图
+                        const proportionalThumbnail = await generateProportionalThumbnail(originalData, 200);
+                        
+                        // 创建结果容器
+                        const container = document.createElement('div');
+                        container.className = 'image-item';
+                        
+                        container.innerHTML = `
+                            <h3>图片 ${index + 1}: ${file.name}</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <h4>原图</h4>
+                                    <img src="${originalData}" alt="原图">
+                                    <div class="image-info">大小: ${(file.size / 1024).toFixed(1)}KB</div>
+                                </div>
+                                <div>
+                                    <h4>正方形缩略图</h4>
+                                    <img src="${squareThumbnail}" alt="正方形缩略图">
+                                    <div class="image-info">大小: ${(squareThumbnail.length * 3 / 4 / 1024).toFixed(1)}KB</div>
+                                </div>
+                                <div>
+                                    <h4>比例缩略图</h4>
+                                    <img src="${proportionalThumbnail}" alt="比例缩略图">
+                                    <div class="image-info">大小: ${(proportionalThumbnail.length * 3 / 4 / 1024).toFixed(1)}KB</div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        results.appendChild(container);
+                    } catch (error) {
+                        console.error('处理图片失败:', error);
+                        alert(`处理图片 ${file.name} 失败: ${error.message}`);
+                    }
+                };
+                
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('imageInput').value = '';
+        }
+        
+        // 暴露函数到全局作用域
+        window.processImages = processImages;
+        window.clearResults = clearResults;
+    </script>
+</body>
+</html>

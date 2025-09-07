@@ -46,15 +46,14 @@
         class="post-image-wrapper"
         @click="handleImageClick(index)"
       >
-        <el-image 
+        <LazyImage 
           :src="img" 
-          fit="cover" 
+          :alt="`图片 ${index + 1}`"
+          width="100%"
+          height="100%"
+          object-fit="cover"
           class="post-image"
-          :preview-src-list="images"
-          :initial-index="index"
-          preview-teleported
-          :style="{ maxWidth: '100%', maxHeight: '100px', objectFit: 'cover' }"
-          lazy
+          @click="handleImageClick(index)"
         />
         <div class="image-overlay">
           <el-icon><PictureFilled /></el-icon>
@@ -149,6 +148,7 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Share, ChatLineSquare, Star, PictureFilled, ChatDotRound } from '@element-plus/icons-vue'
 import AvatarUpload from './AvatarUpload.vue'
+import LazyImage from './LazyImage.vue'
 import { fetchComments, addComment } from '../api/comment'
 import { createRepost } from '../api/repost'
 import { toggleLike, getLikeStatus } from '../api/like'
@@ -187,6 +187,7 @@ const showRepostBar = ref(false)   // 是否显示转发栏
 const repostAlsoComment = ref(false) // 转发时是否同时评论
 const commentLoading = ref(false)  // 评论发布中状态
 const repostLoading = ref(false)   // 转发发布中状态
+const isLiked = ref(props.isLiked) // 本地点赞状态
 
 // 表情符号列表
 const emojiList = [
@@ -474,6 +475,11 @@ const initLikeStatus = async () => {
     console.error('获取点赞状态失败:', error)
   }
 }
+
+// 监听 props.isLiked 变化，同步到本地状态
+watch(() => props.isLiked, (newValue) => {
+  isLiked.value = newValue
+}, { immediate: true })
 
 // 组件挂载时设置图片懒加载和点赞状态
 onMounted(() => {
