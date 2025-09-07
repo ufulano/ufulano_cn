@@ -27,7 +27,7 @@
 const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../middleware/authMiddleware');
-const { updateUserAvatar, updateUserProfile, getUserInfo, getUserPosts } = require('../controllers/userController');
+const { updateUserAvatar, updateUserProfile, getUserInfo, getUserPosts, getUserLikes } = require('../controllers/userController');
 
 /**
  * @swagger
@@ -128,5 +128,8 @@ router.get('/:userId', getUserInfo);
  *         description: 用户帖子列表
  */
 router.get('/:userId/posts', getUserPosts);
+
+// 获取用户点赞的帖子
+router.get('/:userId/likes', getUserLikes);
 
 module.exports = router; 

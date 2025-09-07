@@ -59,14 +59,6 @@ export function searchPosts(keyword) {
   return request.get('/posts/search', { params: { keyword } })
 }
 
-/**
- * 获取用户帖子
- * @param {string|number} userId - 用户ID
- * @returns {Promise<Array>} 用户帖子列表
- */
-export function getUserPosts(userId) {
-  return request.get(`/users/${userId}/posts`)
-}
 
 /**
  * 获取热门帖子

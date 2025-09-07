@@ -303,4 +303,49 @@ function formatPostTime(date) {
   if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}天前`;
   
   return postDate.toLocaleDateString();
-} 
+}
+
+/**
+ * 获取用户点赞的帖子
+ * GET /users/:userId/likes
+ */
+exports.getUserLikes = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { page = 1, limit = 10 } = req.query;
+        const offset = (page - 1) * limit;
+
+        const { Post, Like } = require('../models');
+        
+        const likes = await Like.findAndCountAll({
+            where: { user_id: userId },
+            include: [{
+                model: Post,
+                as: 'post',
+                where: { is_deleted: 0 },
+                include: [{
+                    model: User,
+                    as: 'user',
+                    attributes: ['user_id', 'username', 'nickname', 'avatar_url']
+                }]
+            }],
+            order: [['like_time', 'DESC']],
+            limit: parseInt(limit),
+            offset: parseInt(offset)
+        });
+
+        res.json({
+            success: true,
+            data: {
+                likes: likes.rows,
+                total: likes.count,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(likes.count / limit)
+            }
+        });
+    } catch (error) {
+        console.error('获取用户点赞失败:', error);
+        res.status(500).json({ message: '获取用户点赞失败' });
+    }
+}; 

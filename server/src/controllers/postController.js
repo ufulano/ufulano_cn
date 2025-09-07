@@ -86,7 +86,11 @@ exports.getAllPosts = async (req, res) => {
         });
 
         console.info('返回格式化后的帖子数据:', formattedPosts.length, '条');
-        res.json(formattedPosts);
+        res.json({
+            success: true,
+            data: formattedPosts,
+            total: formattedPosts.length
+        });
     } catch (err) {
         console.error('获取文章失败:', err);
         res.status(500).json({ 
@@ -252,7 +256,11 @@ exports.createPost = async (req, res) => {
             post = await Post.create(postData);
             console.info('帖子创建成功:', post.toJSON());
             console.log('创建后的帖子数据:', post.toJSON());
-            return res.status(201).json(post);
+            return res.status(201).json({
+                success: true,
+                data: post,
+                message: '帖子创建成功'
+            });
         } catch (createError) {
             console.error('Post.create() 失败:', createError);
             console.error('创建错误详情:', createError.message);
@@ -287,5 +295,108 @@ exports.createPost = async (req, res) => {
             error: process.env.NODE_ENV === 'development' ? err.message : undefined,
             details: process.env.NODE_ENV === 'development' ? err.stack : undefined
         });
+    }
+};
+
+/**
+ * 搜索帖子
+ * GET /posts/search
+ */
+exports.searchPosts = async (req, res) => {
+    try {
+        const { keyword } = req.query;
+        if (!keyword) {
+            return res.status(400).json({ message: '搜索关键词不能为空' });
+        }
+
+        const posts = await Post.findAll({
+            where: {
+                [Op.or]: [
+                    { content: { [Op.like]: `%${keyword}%` } },
+                    { topics: { [Op.like]: `%${keyword}%` } }
+                ],
+                is_deleted: 0
+            },
+            include: [{
+                model: User,
+                as: 'user',
+                attributes: ['user_id', 'username', 'nickname', 'avatar_url']
+            }],
+            order: [['post_time', 'DESC']],
+            limit: 50
+        });
+
+        res.json({
+            success: true,
+            data: posts,
+            total: posts.length
+        });
+    } catch (error) {
+        console.error('搜索帖子失败:', error);
+        res.status(500).json({ message: '搜索失败' });
+    }
+};
+
+/**
+ * 获取热门帖子
+ * GET /posts/hot
+ */
+exports.getHotPosts = async (req, res) => {
+    try {
+        const { limit = 10 } = req.query;
+        
+        const posts = await Post.findAll({
+            where: { is_deleted: 0 },
+            include: [{
+                model: User,
+                as: 'user',
+                attributes: ['user_id', 'username', 'nickname', 'avatar_url']
+            }],
+            order: [
+                ['like_count', 'DESC'],
+                ['comment_count', 'DESC'],
+                ['post_time', 'DESC']
+            ],
+            limit: parseInt(limit)
+        });
+
+        res.json({
+            success: true,
+            data: posts
+        });
+    } catch (error) {
+        console.error('获取热门帖子失败:', error);
+        res.status(500).json({ message: '获取热门帖子失败' });
+    }
+};
+
+/**
+ * 获取推荐帖子
+ * GET /posts/recommended
+ */
+exports.getRecommendedPosts = async (req, res) => {
+    try {
+        const { limit = 10 } = req.query;
+        
+        const posts = await Post.findAll({
+            where: { is_deleted: 0 },
+            include: [{
+                model: User,
+                as: 'user',
+                attributes: ['user_id', 'username', 'nickname', 'avatar_url']
+            }],
+            order: [
+                ['post_time', 'DESC']
+            ],
+            limit: parseInt(limit)
+        });
+
+        res.json({
+            success: true,
+            data: posts
+        });
+    } catch (error) {
+        console.error('获取推荐帖子失败:', error);
+        res.status(500).json({ message: '获取推荐帖子失败' });
     }
 };

@@ -31,7 +31,7 @@ const User = require('../models/User');
 const router = express.Router();
 const { login, register} = require('../controllers/authController'); 
 const authenticateToken = require('../middleware/authMiddleware');
-const { createPost, getAllPosts } = require('../controllers/postController');
+const { createPost, getAllPosts, searchPosts, getHotPosts, getRecommendedPosts } = require('../controllers/postController');
 
 /**
  * @swagger
@@ -77,5 +77,14 @@ router.get('/', getAllPosts);
  *         description: 帖子创建成功
  */
 router.post('/', authenticateToken, createPost);
+
+// 搜索帖子
+router.get('/search', searchPosts);
+
+// 获取热门帖子
+router.get('/hot', getHotPosts);
+
+// 获取推荐帖子
+router.get('/recommended', getRecommendedPosts);
 
 module.exports = router;

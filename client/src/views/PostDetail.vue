@@ -68,7 +68,7 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '../store/user'
 import { fetchPost } from '../api/post'
 import { fetchComments, addComment } from '../api/comment'
-import { likePost } from '../api/like'
+import { toggleLike } from '../api/like'
 import AppHeader from '../components/AppHeader.vue'
 import PostCard from '../components/PostCard.vue'
 import { parseAvatar } from '../utils/avatar'
@@ -108,7 +108,7 @@ const onLike = async () => {
   }
   likeLoading.value = true
   try {
-    await likePost(route.params.id)
+    await toggleLike(route.params.id)
     ElMessage.success('点赞成功')
     likeCount.value++
   } catch (e) {}
