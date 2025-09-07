@@ -68,12 +68,12 @@ export function lazyLoadImage(src, callback, options = {}) {
   
   const img = new Image()
   
-  // 设置加载超时
-  const timeout = options.timeout || 10000
+  // 设置加载超时 - 减少到5秒
+  const timeout = options.timeout || 5000
   const timeoutId = setTimeout(() => {
     loadingImages.delete(src)
     failedImages.add(src)
-    console.error('图片加载超时:', src)
+    console.warn('图片加载超时:', src)
   }, timeout)
   
   img.onload = () => {
@@ -222,7 +222,7 @@ export function preloadCriticalImages(urls) {
   // 高优先级预加载，使用更多并发
   validUrls.forEach(url => {
     lazyLoadImage(url, () => {}, {
-      timeout: 3000
+      timeout: 2000  // 关键图片2秒超时
     })
   })
 }

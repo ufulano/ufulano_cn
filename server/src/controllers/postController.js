@@ -61,9 +61,11 @@ exports.getAllPosts = async (req, res) => {
 
         // 转换数据结构
         const formattedPosts = posts.map(post => {
-            console.info('处理帖子:', post.post_id, '用户:', post.user?.username, '头像:', post.user?.avatar_url ? '存在' : '不存在');
-            return {
+            console.info('处理帖子:', post.post_id, '用户:', post.user?.username, '头像:', post.user?.avatar_url ? '存在' : '不存在', '转发ID:', post.repost_id);
+            
+            const formattedPost = {
                 id: post.post_id,
+                post_id: post.post_id, // 添加post_id字段
                 user_id: post.user_id, // 添加用户ID字段
                 username: post.user?.username || '未知用户',
                 nickname: post.user?.nickname || '',
@@ -81,8 +83,32 @@ exports.getAllPosts = async (req, res) => {
                 comments: post.comment_count || 0,
                 reposts: post.repost_count || 0,
                 likes: post.like_count || 0,
-                createdAt: post.post_time
+                createdAt: post.post_time,
+                // 转发相关字段
+                repost_id: post.repost_id || null,
+                original_post_id: post.repost_id || null,
+                is_repost: !!post.repost_id
             };
+            
+            // 如果有原帖数据，添加originalPost字段
+            if (post.originalPost) {
+                formattedPost.originalPost = {
+                    post_id: post.originalPost.post_id,
+                    user_id: post.originalPost.user_id,
+                    username: post.originalPost.user?.username || '未知用户',
+                    nickname: post.originalPost.user?.nickname || '',
+                    avatar_url: post.originalPost.user?.avatar_url || '',
+                    content: post.originalPost.content || '',
+                    image_url: post.originalPost.image_url,
+                    post_time: post.originalPost.post_time,
+                    like_count: post.originalPost.like_count || 0,
+                    comment_count: post.originalPost.comment_count || 0,
+                    repost_count: post.originalPost.repost_count || 0,
+                    user: post.originalPost.user
+                };
+            }
+            
+            return formattedPost;
         });
 
         console.info('返回格式化后的帖子数据:', formattedPosts.length, '条');

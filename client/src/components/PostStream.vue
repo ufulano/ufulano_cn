@@ -208,7 +208,23 @@ const getPostContent = (post) => {
 
 // 判断是否为转发帖子
 const isRepost = (post) => {
-  return post.repost_id || post.originalPost || (post.original_post_id && post.content)
+  // 检查多种转发标识
+  const hasRepostId = post.repost_id || post.original_post_id
+  const hasOriginalPost = post.originalPost || post.original_post
+  const hasRepostContent = post.content && (post.repost_id || post.original_post_id)
+  
+  const isRepostPost = hasRepostId || hasOriginalPost || hasRepostContent
+  
+  console.log('转发判断:', {
+    postId: post.id || post._id,
+    hasRepostId,
+    hasOriginalPost,
+    hasRepostContent,
+    isRepostPost,
+    postKeys: Object.keys(post)
+  })
+  
+  return isRepostPost
 }
 
 // 获取帖子图片

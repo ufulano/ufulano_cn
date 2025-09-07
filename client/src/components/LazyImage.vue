@@ -142,9 +142,18 @@ const startLoading = () => {
   error.value = false
   progress.value = 0
   
+  // 设置超时定时器 - 减少超时时间到3秒
+  const timeoutId = setTimeout(() => {
+    if (!loaded.value) {
+      loading.value = false
+      error.value = true
+      console.warn('图片加载超时:', props.src)
+    }
+  }, 3000)
+  
   // 模拟加载进度
   const progressInterval = setInterval(() => {
-    if (progress.value < 90) {
+    if (progress.value < 90 && loading.value) {
       progress.value += Math.random() * 10
     }
   }, 100)
@@ -153,6 +162,7 @@ const startLoading = () => {
   const checkLoaded = () => {
     if (loaded.value) {
       clearInterval(progressInterval)
+      clearTimeout(timeoutId)
       progress.value = 100
     }
   }
@@ -160,11 +170,11 @@ const startLoading = () => {
   // 监听加载状态
   const unwatch = watch(loaded, checkLoaded)
   
-  // 5秒后强制清除定时器
+  // 2秒后强制清除定时器
   setTimeout(() => {
     clearInterval(progressInterval)
     unwatch()
-  }, 5000)
+  }, 2000)
 }
 
 const onImageLoad = () => {
