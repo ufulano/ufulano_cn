@@ -96,8 +96,8 @@ app.use('/api', authRoutes);
 console.log('认证路由已配置: /api');
 
 // 使用帖子操作路由
-app.use('/api', postRoutes);
-console.log('帖子路由已配置: /api');
+app.use('/api/posts', postRoutes);
+console.log('帖子路由已配置: /api/posts');
 
 app.use('/api/comments', commentRoutes);
 console.log('评论路由已配置: /api/comments');

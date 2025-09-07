@@ -28,7 +28,6 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Post, User, Like, sequelize } = require('../models');
-const LikeModel = require('../models/Like');
 
 /**
  * 1. 点赞/取消点赞
@@ -46,8 +45,7 @@ exports.toggleLike = async (req, res) => {
     }
 
     // 检查是否已点赞
-    const LikeModelToUse = Like || LikeModel;
-    const existingLike = await LikeModelToUse.findOne({
+    const existingLike = await Like.findOne({
       where: { user_id: userId, post_id: postId }
     });
 
@@ -71,7 +69,7 @@ exports.toggleLike = async (req, res) => {
       });
     } else {
       // 新增点赞
-      await LikeModelToUse.create({
+      await Like.create({
         user_id: userId,
         post_id: postId,
         like_time: new Date()
@@ -104,8 +102,7 @@ exports.toggleLike = async (req, res) => {
  */
 exports.getLikes = async (req, res) => {
   try {
-    const LikeModelToUse = Like || LikeModel;
-    const count = await LikeModelToUse.count({
+    const count = await Like.count({
       where: { post_id: req.params.postId }
     });
     res.json({ likes: count });
@@ -127,8 +124,7 @@ exports.checkLikeStatus = async (req, res) => {
       return res.json({ liked: false, likeCount: 0 });
     }
     
-    const LikeModelToUse = Like || LikeModel;
-    const like = await LikeModelToUse.findOne({
+    const like = await Like.findOne({
       where: {
         user_id: userId,
         post_id: postId
@@ -160,8 +156,7 @@ exports.checkLikeStatus = async (req, res) => {
  */
 exports.getUserLikeHistory = async (req, res) => {
   try {
-    const LikeModelToUse = Like || LikeModel;
-    const likes = await LikeModelToUse.findAll({
+    const likes = await Like.findAll({
       where: { user_id: req.user.user_id },
       include: [{
         model: Post,
@@ -186,10 +181,9 @@ exports.getBatchLikeCounts = async (req, res) => {
       return res.status(400).json({ error: '参数必须为数组' });
     }
 
-    const LikeModelToUse = Like || LikeModel;
     const counts = {};
     for (const postId of postIds) {
-      counts[postId] = await LikeModelToUse.count({ where: { post_id: postId } });
+      counts[postId] = await Like.count({ where: { post_id: postId } });
     }
     res.json(counts);
   } catch (error) {
@@ -204,8 +198,7 @@ exports.getBatchLikeCounts = async (req, res) => {
 exports.getTopLikedPosts = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
-    const LikeModelToUse = Like || LikeModel;
-    const result = await LikeModelToUse.findAll({
+    const result = await Like.findAll({
       attributes: [
         'post_id',
         [sequelize.fn('COUNT', sequelize.col('like_id')), 'like_count']
@@ -230,8 +223,7 @@ exports.getTopLikedPosts = async (req, res) => {
  */
 exports.adminDeleteLike = async (req, res) => {
   try {
-    const LikeModelToUse = Like || LikeModel;
-    const like = await LikeModelToUse.findByPk(req.params.likeId);
+    const like = await Like.findByPk(req.params.likeId);
     if (!like) {
       return res.status(404).json({ error: '点赞记录不存在' });
     }
@@ -249,8 +241,7 @@ exports.adminDeleteLike = async (req, res) => {
 exports.getDailyLikeAnalytics = async (req, res) => {
   try {
     const days = parseInt(req.query.days) || 7;
-    const LikeModelToUse = Like || LikeModel;
-    const result = await LikeModelToUse.findAll({
+    const result = await Like.findAll({
       attributes: [
         [sequelize.fn('DATE', sequelize.col('like_time')), 'date'],
         [sequelize.fn('COUNT', sequelize.col('like_id')), 'count']

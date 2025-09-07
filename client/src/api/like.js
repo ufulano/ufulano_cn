@@ -1,14 +1,3 @@
-/**
- * 点赞相关API
- * 
- * 功能特性：
- * - 点赞/取消点赞：切换点赞状态
- * - 获取点赞状态：检查用户是否已点赞
- * - 获取点赞数量：获取帖子点赞数
- * - 用户点赞历史：获取用户点赞记录
- * - 批量点赞状态：批量获取多个帖子的点赞状态
- */
-
 import request from './request'
 
 /**
@@ -82,7 +71,3 @@ export const getTopLikedPosts = (limit = 10) => {
     method: 'GET'
   })
 }
-
-// 兼容性函数（保持向后兼容）
-export const likePost = toggleLike
-export const unlikePost = toggleLike 
