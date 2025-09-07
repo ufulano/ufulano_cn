@@ -36,12 +36,6 @@
         </div>
       </div>
     </main>
-    
-    <!-- 性能监控组件（仅开发环境） -->
-    <PerformanceMonitor 
-      :post-count="posts.length"
-      :image-count="totalImageCount"
-    />
   </div>
 </template>
 
@@ -62,7 +56,7 @@ import PerformanceMonitor from '../components/PerformanceMonitor.vue'
 import { fetchPosts, createPost } from '../api/post'
 import { useUserStore } from '../store/user'
 import { getCache, setCache, deleteCache } from '../utils/cacheManager'
-import { PerformanceMonitor } from '../utils/performance'
+import { PerformanceMonitor as PerformanceMonitorClass } from '../utils/performance'
 
 // 状态管理
 const userStore = useUserStore()        // 用户状态管理
@@ -75,7 +69,7 @@ const page = ref(1)                     // 当前页码
 const pageSize = 20                     // 每页显示数量
 
 // 性能监控实例
-const performanceMonitor = new PerformanceMonitor()
+const performanceMonitor = new PerformanceMonitorClass()
 
 // 过滤帖子（搜索功能）
 const filteredPosts = computed(() => {
@@ -84,13 +78,6 @@ const filteredPosts = computed(() => {
 
 // 分页帖子数据
 const pagedPosts = computed(() => filteredPosts.value.slice(0, page.value * pageSize))
-
-// 计算总图片数量
-const totalImageCount = computed(() => {
-  return posts.value.reduce((total, post) => {
-    return total + (post.images ? post.images.length : 0)
-  }, 0)
-})
 
 // 滚动加载更多
 const handleScroll = (e) => {
@@ -102,7 +89,7 @@ const handleScroll = (e) => {
   }
 }
 
-// 加载帖子数据（带缓存和分阶段加载）
+// 加载帖子数据（带缓存）
 const loadPosts = async () => {
   performanceMonitor.mark('loadPosts-start')
   
@@ -128,16 +115,7 @@ const loadPosts = async () => {
       postData = response.data
     }
     
-    // 第一阶段：立即显示帖子卡片（无图片）
-    posts.value = postData.map(post => ({
-      ...post,
-      images: [] // 先清空图片，后续异步加载
-    }))
-    
-    // 第二阶段：异步加载图片
-    setTimeout(() => {
-      loadPostImages(postData)
-    }, 100)
+    posts.value = postData
     
     // 缓存数据（5分钟）
     setCache(cacheKey, postData, 5 * 60 * 1000)
@@ -149,38 +127,6 @@ const loadPosts = async () => {
     performanceMonitor.measure('loadPosts-error', 'loadPosts-start')
   } finally {
     loading.value = false
-  }
-}
-
-// 异步加载帖子图片
-const loadPostImages = async (originalPosts) => {
-  try {
-    // 分批加载图片，避免阻塞UI
-    const batchSize = 3
-    for (let i = 0; i < originalPosts.length; i += batchSize) {
-      const batch = originalPosts.slice(i, i + batchSize)
-      
-      // 并行处理当前批次的图片
-      await Promise.all(batch.map(async (post, index) => {
-        if (post.images && post.images.length > 0) {
-          // 延迟加载图片，模拟网络延迟
-          await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300))
-          
-          // 更新对应帖子的图片
-          const postIndex = i + index
-          if (posts.value[postIndex]) {
-            posts.value[postIndex].images = post.images
-          }
-        }
-      }))
-      
-      // 批次间稍作延迟，避免阻塞
-      if (i + batchSize < originalPosts.length) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
-    }
-  } catch (error) {
-    console.warn('图片加载失败:', error)
   }
 }
 
