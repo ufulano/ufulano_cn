@@ -1,100 +1,121 @@
 <template>
-  <!-- 转发卡片组件 -->
-  <div class="repost-card">
-    <!-- 转发信息头部 -->
-    <div class="repost-header">
-      <div class="repost-info">
-        <el-icon class="repost-icon">
-          <Share />
-        </el-icon>
-        <span class="repost-text">
-          <strong>{{ reposterName }}</strong> 转发了
-        </span>
-      </div>
-      <div class="repost-time">
-        {{ formatTime(post.post_time) }}
-      </div>
-    </div>
-
-    <!-- 转发内容（如果有） -->
-    <div v-if="post.content" class="repost-content">
-      <p class="repost-text-content">{{ post.content }}</p>
-    </div>
-
-    <!-- 原帖内容 -->
-    <div class="original-post" :class="{ 'has-repost-content': post.content }">
-      <div class="original-post-header">
-        <div class="user-info">
-          <el-avatar 
-            :src="originalPost.user?.avatar_url" 
-            :size="32"
-            class="user-avatar"
-          >
-            {{ originalPost.user?.nickname?.charAt(0) || originalPost.user?.username?.charAt(0) }}
-          </el-avatar>
-          <div class="user-details">
-            <span class="username">{{ originalPost.user?.nickname || originalPost.user?.username }}</span>
-            <span class="user-handle">@{{ originalPost.user?.username }}</span>
-          </div>
+  <!-- 链式转发卡片组件 -->
+  <div class="repost-chain-card">
+    <!-- 转发链条连接线 -->
+    <div class="chain-line"></div>
+    
+    <!-- 当前转发层 -->
+    <div class="repost-layer">
+      <!-- 转发信息头部 -->
+      <div class="repost-header">
+        <div class="repost-info">
+          <el-icon class="repost-icon">
+            <Share />
+          </el-icon>
+          <span class="repost-text">
+            <strong>{{ reposterName }}</strong> 转发了
+          </span>
         </div>
-        <div class="original-time">
-          {{ formatTime(originalPost.post_time) }}
+        <div class="repost-time">
+          {{ formatTime(post.post_time) }}
         </div>
       </div>
 
-      <div class="original-content">
-        <p v-if="originalPost.content" class="original-text">{{ originalPost.content }}</p>
+      <!-- 转发内容（如果有） -->
+      <div v-if="post.content" class="repost-content">
+        <p class="repost-text-content">{{ post.content }}</p>
+      </div>
+
+      <!-- 原帖内容或嵌套转发 -->
+      <div class="original-post" :class="{ 'has-repost-content': post.content }">
+        <!-- 如果原帖也是转发，递归显示转发链条 -->
+        <RepostCard 
+          v-if="originalPost.is_repost && originalPost.originalPost"
+          :post="originalPost"
+          :current-user-id="currentUserId"
+          @like="handleNestedLike"
+          @comment="handleNestedComment"
+          @repost="handleNestedRepost"
+          @view-user="handleNestedViewUser"
+          class="nested-repost"
+        />
         
-        <!-- 原帖图片 -->
-        <div v-if="originalPost.image_url" class="original-images">
-          <div class="image-grid" :class="getImageGridClass(originalPost.image_url)">
-            <div 
-              v-for="(image, index) in parseImages(originalPost.image_url)" 
-              :key="index"
-              class="image-item"
-              @click="previewImage(image, index)"
-            >
-              <img 
-                :src="image" 
-                :alt="`图片 ${index + 1}`"
-                class="post-image"
-                loading="lazy"
-              />
+        <!-- 普通原帖内容 -->
+        <template v-else>
+          <div class="original-post-header">
+            <div class="user-info">
+              <el-avatar 
+                :src="originalPost.user?.avatar_url" 
+                :size="32"
+                class="user-avatar"
+              >
+                {{ originalPost.user?.nickname?.charAt(0) || originalPost.user?.username?.charAt(0) }}
+              </el-avatar>
+              <div class="user-details">
+                <span class="username">{{ originalPost.user?.nickname || originalPost.user?.username }}</span>
+                <span class="user-handle">@{{ originalPost.user?.username }}</span>
+              </div>
+            </div>
+            <div class="original-time">
+              {{ formatTime(originalPost.post_time) }}
             </div>
           </div>
-        </div>
+
+          <div class="original-content">
+            <p v-if="originalPost.content" class="original-text">{{ originalPost.content }}</p>
+            
+            <!-- 原帖图片 -->
+            <div v-if="originalPost.image_url" class="original-images">
+              <div class="image-grid" :class="getImageGridClass(originalPost.image_url)">
+                <div 
+                  v-for="(image, index) in parseImages(originalPost.image_url)" 
+                  :key="index"
+                  class="image-item"
+                  @click="previewImage(image, index)"
+                >
+                  <img 
+                    :src="image" 
+                    :alt="`图片 ${index + 1}`"
+                    class="post-image"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 原帖互动统计 -->
+          <div class="original-stats">
+            <div class="stat-item">
+              <el-icon><ChatDotRound /></el-icon>
+              <span>{{ originalPost.comment_count || 0 }}</span>
+            </div>
+            <div class="stat-item">
+              <el-icon><Share /></el-icon>
+              <span>{{ originalPost.repost_count || 0 }}</span>
+            </div>
+            <div class="stat-item">
+              <el-icon><Star /></el-icon>
+              <span>{{ originalPost.like_count || 0 }}</span>
+            </div>
+          </div>
+        </template>
       </div>
 
-      <!-- 原帖互动统计 -->
-      <div class="original-stats">
-        <div class="stat-item">
+      <!-- 当前层转发操作栏 -->
+      <div class="repost-actions">
+        <div class="action-item" @click="handleComment">
           <el-icon><ChatDotRound /></el-icon>
-          <span>{{ originalPost.comment_count || 0 }}</span>
+          <span>{{ post.comment_count || 0 }}</span>
         </div>
-        <div class="stat-item">
+        <div class="action-item" @click="handleRepost">
           <el-icon><Share /></el-icon>
-          <span>{{ originalPost.repost_count || 0 }}</span>
+          <span>{{ post.repost_count || 0 }}</span>
         </div>
-        <div class="stat-item">
-          <el-icon><Star /></el-icon>
-          <span>{{ originalPost.like_count || 0 }}</span>
+        <div class="action-item" @click="handleLike">
+          <el-icon :class="{ 'liked': isLiked }"><Star /></el-icon>
+          <span>{{ post.like_count || 0 }}</span>
         </div>
-      </div>
-    </div>
-
-    <!-- 转发操作栏 -->
-    <div class="repost-actions">
-      <div class="action-item" @click="handleComment">
-        <el-icon><ChatDotRound /></el-icon>
-        <span>{{ post.comment_count || 0 }}</span>
-      </div>
-      <div class="action-item" @click="handleRepost">
-        <el-icon><Share /></el-icon>
-        <span>{{ post.repost_count || 0 }}</span>
-      </div>
-      <div class="action-item" @click="handleLike">
-        <el-icon :class="{ 'liked': isLiked }"><Star /></el-icon>
-        <span>{{ post.like_count || 0 }}</span>
       </div>
     </div>
   </div>
@@ -222,6 +243,23 @@ const handleRepost = () => {
   emit('repost', props.post)
 }
 
+// 嵌套转发事件处理
+const handleNestedLike = (event) => {
+  emit('like', event)
+}
+
+const handleNestedComment = (event) => {
+  emit('comment', event)
+}
+
+const handleNestedRepost = (event) => {
+  emit('repost', event)
+}
+
+const handleNestedViewUser = (event) => {
+  emit('view-user', event)
+}
+
 // 初始化点赞状态
 const initLikeStatus = async () => {
   if (!props.post.post_id) return
@@ -243,18 +281,72 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.repost-card {
+.repost-chain-card {
+  position: relative;
   background: #fff;
   border-radius: 16px;
-  padding: 16px;
   margin-bottom: 12px;
   border: 1px solid #e1e8ed;
   transition: all 0.2s ease;
+  overflow: hidden;
 }
 
-.repost-card:hover {
+.repost-chain-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
+}
+
+/* 转发链条连接线 */
+.chain-line {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    #1da1f2 0%,
+    #1da1f2 20%,
+    #e1e8ed 20%,
+    #e1e8ed 80%,
+    #1da1f2 80%,
+    #1da1f2 100%
+  );
+  z-index: 1;
+}
+
+/* 当前转发层 */
+.repost-layer {
+  position: relative;
+  padding: 16px 16px 16px 40px;
+  background: #fff;
+  border-radius: 16px;
+  z-index: 2;
+}
+
+/* 嵌套转发样式 */
+.nested-repost {
+  margin-top: 8px;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  background: #fafbfc;
+}
+
+.nested-repost .chain-line {
+  left: 20px;
+  background: linear-gradient(
+    to bottom,
+    #657786 0%,
+    #657786 20%,
+    #e1e8ed 20%,
+    #e1e8ed 80%,
+    #657786 80%,
+    #657786 100%
+  );
+}
+
+.nested-repost .repost-layer {
+  padding-left: 40px;
 }
 
 .repost-header {
@@ -264,6 +356,22 @@ onMounted(() => {
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid #f0f0f0;
+  position: relative;
+}
+
+.repost-header::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: #1da1f2;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #1da1f2;
+  z-index: 3;
 }
 
 .repost-info {
@@ -309,6 +417,18 @@ onMounted(() => {
   padding: 16px;
   background: #fafbfc;
   transition: all 0.2s ease;
+  position: relative;
+  margin-left: 8px;
+}
+
+.original-post::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #e1e8ed;
 }
 
 .original-post:hover {
@@ -318,6 +438,17 @@ onMounted(() => {
 
 .original-post.has-repost-content {
   margin-top: 8px;
+}
+
+/* 嵌套转发的原帖样式 */
+.nested-repost .original-post {
+  background: #f8f9fa;
+  border-color: #e1e8ed;
+  margin-left: 0;
+}
+
+.nested-repost .original-post::before {
+  display: none;
 }
 
 .original-post-header {
@@ -486,13 +617,40 @@ onMounted(() => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .repost-card {
-    padding: 12px;
+  .repost-chain-card {
     border-radius: 12px;
+  }
+  
+  .repost-layer {
+    padding: 12px 12px 12px 32px;
+  }
+  
+  .chain-line {
+    left: 16px;
+    width: 1px;
+  }
+  
+  .repost-header::before {
+    left: -16px;
+    width: 6px;
+    height: 6px;
   }
   
   .original-post {
     padding: 12px;
+    margin-left: 4px;
+  }
+  
+  .original-post::before {
+    left: -4px;
+  }
+  
+  .nested-repost .repost-layer {
+    padding-left: 32px;
+  }
+  
+  .nested-repost .chain-line {
+    left: 16px;
   }
   
   .image-grid.single,
