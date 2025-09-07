@@ -14,19 +14,19 @@ const {
   getDailyLikeAnalytics,
 } = require('../controllers/likeController');
 
-// 1. 点赞/取消点赞
+// 1. 获取帖子点赞数
+router.get(
+  '/:postId',
+  param('postId').isInt({ min: 1 }),
+  getLikes
+);
+
+// 2. 点赞/取消点赞
 router.post(
   '/:postId',
   authenticateToken,
   param('postId').isInt({ min: 1 }),
   toggleLike
-);
-
-// 2. 获取帖子点赞数
-router.get(
-  '/:postId',
-  param('postId').isInt({ min: 1 }),
-  getLikes
 );
 
 // 3. 检查用户点赞状态

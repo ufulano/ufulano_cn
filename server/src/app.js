@@ -91,11 +91,10 @@ app.use(morgan('combined', { stream: accessLogStream }));
 // 5. 路由配置
 console.log('=== 配置路由 ===');
 
-// 使用用户认证路由
-app.use('/api', authRoutes);
-console.log('认证路由已配置: /api');
+// RESTful API 路由配置
+app.use('/api/auth', authRoutes);
+console.log('认证路由已配置: /api/auth');
 
-// 使用帖子操作路由
 app.use('/api/posts', postRoutes);
 console.log('帖子路由已配置: /api/posts');
 
@@ -105,11 +104,11 @@ console.log('评论路由已配置: /api/comments');
 app.use('/api/likes', likeRoutes);
 console.log('点赞路由已配置: /api/likes');
 
-app.use('/api/user', userRoutes);
-console.log('用户路由已配置: /api/user');
+app.use('/api/users', userRoutes);
+console.log('用户路由已配置: /api/users');
 
-app.use('/api/repost', repostRoutes);
-console.log('转发路由已配置: /api/repost');
+app.use('/api/reposts', repostRoutes);
+console.log('转发路由已配置: /api/reposts');
 
 // 添加路由调试中间件
 app.use('/api/comments/*', (req, res, next) => {

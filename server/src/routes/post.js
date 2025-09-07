@@ -43,7 +43,7 @@ const { createPost, getAllPosts } = require('../controllers/postController');
  *       200:
  *         description: 帖子列表
  */
-router.get('/getAllPosts', getAllPosts);
+router.get('/', getAllPosts);
 
 /**
  * @swagger
@@ -76,6 +76,6 @@ router.get('/getAllPosts', getAllPosts);
  *       201:
  *         description: 帖子创建成功
  */
-router.post('/createPost', authenticateToken, createPost);
+router.post('/', authenticateToken, createPost);
 
 module.exports = router;

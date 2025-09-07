@@ -17,12 +17,12 @@ router.post('/', repostController.createRepost);
 router.delete('/:repostId', repostController.deleteRepost);
 
 // 获取帖子的转发列表
-router.get('/post/:postId', repostController.getRepostsByPost);
+router.get('/posts/:postId', repostController.getRepostsByPost);
 
 // 获取用户的转发历史
-router.get('/user/:userId', repostController.getUserReposts);
+router.get('/users/:userId', repostController.getUserReposts);
 
 // 检查用户是否已转发某帖子
-router.get('/status/:postId', repostController.checkRepostStatus);
+router.get('/posts/:postId/status', repostController.checkRepostStatus);
 
 module.exports = router;

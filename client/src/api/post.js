@@ -6,7 +6,7 @@ import request from './request'
  * @returns {Promise<Array>} 帖子列表
  */
 export function fetchPosts(params) {
-  return request.get('/getAllPosts', { params })
+  return request.get('/posts', { params })
 }
 
 /**
@@ -28,7 +28,7 @@ export function fetchPost(id) {
  * @returns {Promise<Object>} 创建结果
  */
 export function createPost(data) {
-  return request.post('/createPost', data)
+  return request.post('/posts', data)
 }
 
 /**
@@ -56,7 +56,7 @@ export function updatePost(postId, data) {
  * @returns {Promise<Array>} 搜索结果
  */
 export function searchPosts(keyword) {
-  return request.get('/searchPosts', { params: { keyword } })
+  return request.get('/posts/search', { params: { keyword } })
 }
 
 /**
@@ -65,7 +65,7 @@ export function searchPosts(keyword) {
  * @returns {Promise<Array>} 用户帖子列表
  */
 export function getUserPosts(userId) {
-  return request.get(`/user/${userId}/posts`)
+  return request.get(`/users/${userId}/posts`)
 }
 
 /**
@@ -73,7 +73,7 @@ export function getUserPosts(userId) {
  * @returns {Promise<Array>} 热门帖子列表
  */
 export function getHotPosts() {
-  return request.get('/hotPosts')
+  return request.get('/posts/hot')
 }
 
 /**
@@ -81,5 +81,5 @@ export function getHotPosts() {
  * @returns {Promise<Array>} 推荐帖子列表
  */
 export function getRecommendedPosts() {
-  return request.get('/recommendedPosts')
+  return request.get('/posts/recommended')
 } 

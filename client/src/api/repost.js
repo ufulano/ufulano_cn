@@ -20,7 +20,7 @@ import request from './request'
  */
 export const createRepost = (data) => {
   return request({
-    url: '/repost',
+    url: '/reposts',
     method: 'POST',
     data
   })
@@ -33,7 +33,7 @@ export const createRepost = (data) => {
  */
 export const deleteRepost = (repostId) => {
   return request({
-    url: `/repost/${repostId}`,
+    url: `/reposts/${repostId}`,
     method: 'DELETE'
   })
 }
@@ -48,7 +48,7 @@ export const deleteRepost = (repostId) => {
  */
 export const getRepostsByPost = (postId, params = {}) => {
   return request({
-    url: `/repost/post/${postId}`,
+    url: `/reposts/posts/${postId}`,
     method: 'GET',
     params
   })
@@ -64,7 +64,7 @@ export const getRepostsByPost = (postId, params = {}) => {
  */
 export const getUserReposts = (userId, params = {}) => {
   return request({
-    url: `/repost/user/${userId}`,
+    url: `/reposts/users/${userId}`,
     method: 'GET',
     params
   })
@@ -77,7 +77,7 @@ export const getUserReposts = (userId, params = {}) => {
  */
 export const checkRepostStatus = (postId) => {
   return request({
-    url: `/repost/status/${postId}`,
+    url: `/reposts/posts/${postId}/status`,
     method: 'GET'
   })
 }
