@@ -435,15 +435,4 @@ node server/check-table.js
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 开启 Pull Request
 
-## 📄 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 📞 联系方式
-
-- 项目地址: [GitHub Repository](https://github.com/yourusername/ufulano_cn)
-- 问题反馈: [Issues](https://github.com/yourusername/ufulano_cn/issues)
-
----
-
-⭐️ 如果这个项目对你有帮助，请给它一个 Star！
