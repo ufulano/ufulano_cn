@@ -363,6 +363,12 @@ graph TB
 
 详细API文档请访问: http://localhost:3000/api-docs (Swagger自动生成)
 
+### 导出API文档
+```bash
+# 导出为多种格式 (JSON, YAML, Markdown)
+node export-swagger-docs.js
+```
+
 ## 🛠️ 开发指南
 
 ### 前端开发

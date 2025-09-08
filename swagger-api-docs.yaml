@@ -1,0 +1,223 @@
+openapi: 3.0.0
+info:
+  title: Ufulano 社交网站 API 文档
+  version: 1.0.0
+  description: 基于 OpenAPI 3.0 的自动生成接口文档
+  contact:
+    name: Ufulano Team
+    email: contact@ufulano.cn
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: http://localhost:3000
+    description: 开发服务器
+  - url: https://your-domain.com
+    description: 生产服务器
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer Token认证
+paths:
+  /api/login:
+    post:
+      summary: 用户登录
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                remember:
+                  type: boolean
+      responses:
+        '200':
+          description: 登录成功
+  /api/register:
+    post:
+      summary: 用户注册
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: 注册成功
+  /api/comments/{postId}:
+    get:
+      summary: 获取某帖评论流
+      tags:
+        - Comment
+      parameters:
+        - in: path
+          name: postId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 评论列表
+  /api/comments:
+    post:
+      summary: 发布评论
+      tags:
+        - Comment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                postId:
+                  type: integer
+                content:
+                  type: string
+      responses:
+        '201':
+          description: 评论发布成功
+  /api/getAllPosts:
+    get:
+      summary: 获取所有帖子
+      tags:
+        - Post
+      responses:
+        '200':
+          description: 帖子列表
+  /api/createPost:
+    post:
+      summary: 创建新帖子
+      tags:
+        - Post
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                images:
+                  type: array
+                  items:
+                    type: string
+                topics:
+                  type: array
+                  items:
+                    type: string
+                visibility:
+                  type: string
+      responses:
+        '201':
+          description: 帖子创建成功
+  /api/user/avatar:
+    post:
+      summary: 更新用户头像
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                avatar_url:
+                  type: string
+      responses:
+        '200':
+          description: 头像更新成功
+  /api/user/profile:
+    put:
+      summary: 更新用户信息
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nickname:
+                  type: string
+                bio:
+                  type: string
+                location:
+                  type: string
+                gender:
+                  type: string
+                birthday:
+                  type: string
+      responses:
+        '200':
+          description: 用户信息更新成功
+  /api/user/{userId}:
+    get:
+      summary: 获取用户信息
+      tags:
+        - User
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 用户信息
+  /api/user/{userId}/posts:
+    get:
+      summary: 获取用户帖子
+      tags:
+        - User
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: 用户帖子列表
+tags: []
