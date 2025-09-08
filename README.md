@@ -328,9 +328,9 @@ graph TB
            proxy_pass http://localhost:3000;
            proxy_set_header Host $host;
            proxy_set_header X-Real-IP $remote_addr;
-       }
-   }
-   ```
+  }
+}
+```
 
 4. **启动服务**
    ```bash
@@ -339,7 +339,7 @@ graph TB
    pm2 start server/src/app.js --name ufulano-server
    pm2 save
    pm2 startup
-   ```
+```
 
 ## 📚 API文档
 
@@ -361,7 +361,7 @@ graph TB
 - `POST /api/comments` - 发布评论
 - `POST /api/reposts` - 转发帖子
 
-详细API文档请查看 [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
+详细API文档请访问: http://localhost:3000/api-docs (Swagger自动生成)
 
 ## 🛠️ 开发指南
 
@@ -422,10 +422,11 @@ node server/check-table.js
 ## 📝 项目文档
 
 - [项目设计文档](./PROJECT_DESIGN.md) - 完整的项目架构和技术栈说明
-- [API文档](./API_DOCUMENTATION.md) - 详细的API接口文档
 - [项目开发日志](./PROJECT_LOG.md) - 开发过程记录和问题解决
 - [部署检查清单](./DEPLOYMENT_CHECKLIST.md) - 部署步骤和注意事项
 - [项目展示](./PROJECT_SHOWCASE.md) - 项目功能展示和技术亮点
+- [Swagger API文档说明](./SWAGGER_API_DOCS.md) - Swagger自动生成文档的使用说明
+- [在线API文档](http://localhost:3000/api-docs) - 交互式API文档界面
 
 ## 🤝 贡献指南
 
@@ -436,3 +437,4 @@ node server/check-table.js
 5. 开启 Pull Request
 
 
+ 
